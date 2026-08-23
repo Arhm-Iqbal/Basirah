@@ -1,5 +1,6 @@
-import { PagePlaceholder } from '@/components/page-placeholder';
+import { redirect } from 'next/navigation';
 
+// The public entry point people are given; the form itself lives behind the app shell.
 export default function ReportPage() {
-  return <PagePlaceholder title="Report an Incident" />;
+  redirect('/app/report');
 }
