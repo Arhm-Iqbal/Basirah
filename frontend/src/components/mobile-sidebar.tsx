@@ -4,6 +4,8 @@ import gsap from 'gsap';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+import { Logo } from '@/components/logo';
+
 const NAV_LINKS = [
   { href: '/about', label: 'About Us' },
   { href: '/report', label: 'Report' },
@@ -69,7 +71,7 @@ export function MobileSidebar() {
         className="fixed inset-y-0 right-0 z-50 flex w-72 translate-x-full flex-col gap-1 bg-white px-6 py-6 shadow-xl"
       >
         <div className="mb-6 flex items-center justify-between">
-          <span className="text-lg font-semibold tracking-tight text-basirah-teal">Basirah</span>
+          <Logo className="h-8 w-auto" />
           <button
             type="button"
             onClick={() => setIsOpen(false)}

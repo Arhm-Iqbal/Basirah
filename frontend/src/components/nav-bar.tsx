@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { Logo } from '@/components/logo';
 import { MobileSidebar } from '@/components/mobile-sidebar';
 
 const NAV_LINKS = [
@@ -13,8 +14,8 @@ export function NavBar() {
   return (
     <header className="sticky top-0 z-50 border-b border-basirah-teal/10 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-lg font-semibold tracking-tight text-basirah-teal">
-          Basirah
+        <Link href="/" aria-label="Basirah home">
+          <Logo className="h-8 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

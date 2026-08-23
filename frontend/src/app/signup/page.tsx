@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
 import { AuthDivider } from '@/components/auth-divider';
@@ -13,14 +12,14 @@ const isSupabaseConfigured = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 );
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignUp = async () => {
     if (!isSupabaseConfigured) {
       setError('Supabase isn’t configured yet — add the keys to frontend/.env.local.');
       return;
@@ -46,7 +45,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleEmailLogin = async (event: FormEvent) => {
+  const handleEmailSignUp = async (event: FormEvent) => {
     event.preventDefault();
 
     if (!isSupabaseConfigured) {
@@ -56,21 +55,24 @@ export default function LoginPage() {
 
     setIsLoading(true);
     setError(null);
+    setMessage(null);
 
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      });
 
       if (error) {
         setError(error.message);
-        setIsLoading(false);
-        return;
+      } else {
+        setMessage('Check your email to confirm your account.');
       }
-
-      router.push('/');
-      router.refresh();
     } catch {
       setError('Could not reach Supabase. Check frontend/.env.local.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -82,14 +84,16 @@ export default function LoginPage() {
           <Logo className="h-10 w-auto" />
         </Link>
 
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-basirah-teal">Log in</h1>
+        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-basirah-teal">
+          Create an account
+        </h1>
         <p className="mt-2 text-sm text-basirah-teal/70">
-          Access incident reports, alerts, and your community&apos;s dashboard.
+          Set up access to your community&apos;s incident reports and alerts.
         </p>
 
         <button
           type="button"
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleSignUp}
           disabled={isLoading}
           className="mt-8 flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-basirah-teal/15 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -99,7 +103,7 @@ export default function LoginPage() {
 
         <AuthDivider />
 
-        <form onSubmit={handleEmailLogin} className="flex flex-col gap-4">
+        <form onSubmit={handleEmailSignUp} className="flex flex-col gap-4">
           <div>
             <label htmlFor="email" className="text-xs font-medium text-basirah-teal/70">
               Email
@@ -121,12 +125,14 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               required
+              minLength={8}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="mt-1.5 w-full rounded-lg border border-basirah-teal/15 px-3.5 py-2.5 text-sm text-basirah-teal outline-none focus:border-basirah-rust"
             />
+            <p className="mt-1.5 text-xs text-basirah-teal/50">At least 8 characters.</p>
           </div>
 
           <button
@@ -134,11 +140,12 @@ export default function LoginPage() {
             disabled={isLoading}
             className="mt-1 flex w-full cursor-pointer items-center justify-center rounded-full bg-basirah-rust px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isLoading ? 'Logging in…' : 'Log in'}
+            {isLoading ? 'Creating account…' : 'Sign up'}
           </button>
         </form>
 
         {error && <p className="mt-4 text-sm text-basirah-rust">{error}</p>}
+        {message && <p className="mt-4 text-sm text-basirah-teal">{message}</p>}
 
         {!isSupabaseConfigured && !error && (
           <p className="mt-4 text-xs text-basirah-teal/50">
@@ -154,17 +161,13 @@ export default function LoginPage() {
         </Link>
 
         <p className="mt-6 text-center text-sm text-basirah-teal/70">
-          Don&apos;t have an account?{' '}
+          Already have an account?{' '}
           <Link
-            href="/signup"
+            href="/login"
             className="font-semibold text-basirah-rust transition-colors hover:text-basirah-rust/80"
           >
-            Sign up
+            Log in
           </Link>
-        </p>
-
-        <p className="mt-6 text-center text-xs text-basirah-teal/50">
-          By continuing you agree to Basirah&apos;s community guidelines.
         </p>
       </div>
     </main>
