@@ -98,7 +98,7 @@ export function GetStarted() {
 
         <div className="mt-14 flex justify-center">
           <a
-            href="#"
+            href="/signup"
             className="rounded-full bg-basirah-teal px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-teal/90"
           >
             Get Started Now

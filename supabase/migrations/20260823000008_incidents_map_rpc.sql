@@ -4,6 +4,10 @@
 -- description is not exposed (that is where identifying detail leaks), and coordinates
 -- are rounded to roughly 100 m so a pin cannot single out a house.
 --
+-- security definer is load-bearing: incidents is RLS deny-by-default, so a plain
+-- function would run as anon and return nothing. This function IS the boundary --
+-- it bypasses RLS and hands back only the curated columns below.
+--
 -- Only verified incidents appear. An unverified report is visible to its own author
 -- through RLS on the incidents table, never here -- verification gates broadcast.
 create or replace function public.incidents_map(
@@ -23,6 +27,7 @@ returns table (
 )
 language sql
 stable
+security definer
 set search_path = public, extensions
 as $$
   select i.id,
@@ -44,5 +49,7 @@ as $$
   limit least(greatest(in_limit, 1), 500);
 $$;
 
+revoke execute on function public.incidents_map(double precision, double precision, integer, integer)
+  from public;
 grant execute on function public.incidents_map(double precision, double precision, integer, integer)
   to anon, authenticated;

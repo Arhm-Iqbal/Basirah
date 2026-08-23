@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: '/resources', label: 'Resources' },
   { href: '/contact', label: 'Contact' },
   { href: '/login', label: 'Log in' },
+  { href: '/signup', label: 'Sign up' },
 ];
 
 export function MobileSidebar() {

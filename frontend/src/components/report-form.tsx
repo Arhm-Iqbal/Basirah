@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { createClient } from '@/lib/supabase/client';
 import { useGeolocation } from '@/lib/use-geolocation';
@@ -71,8 +71,16 @@ export function ReportForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<Created | null>(null);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   const { coords, status: geoStatus, locate } = useGeolocation();
+
+  useEffect(() => {
+    createClient()
+      .auth.getSession()
+      .then(({ data }) => setSignedIn(Boolean(data.session)))
+      .catch(() => setSignedIn(false));
+  }, []);
 
   // useGeolocation owns coords and exposes no reset, so clearing is tracked here.
   const activeCoords = locationCleared ? null : coords;
@@ -107,7 +115,7 @@ export function ReportForm() {
       const token = session?.access_token;
 
       if (!token) {
-        setError('Your session has expired. Sign in again to submit this report.');
+        setError('Sign in to submit this report. Guests can fill the form, then log in or sign up.');
         return;
       }
 
@@ -189,6 +197,20 @@ export function ReportForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {signedIn === false && (
+        <p className="rounded-2xl border border-basirah-rust/20 bg-basirah-rust/5 px-4 py-3 text-sm text-basirah-teal/80">
+          You can fill this now.{' '}
+          <Link href="/login" className="font-semibold text-basirah-rust hover:text-basirah-rust/80">
+            Log in
+          </Link>{' '}
+          or{' '}
+          <Link href="/signup" className="font-semibold text-basirah-rust hover:text-basirah-rust/80">
+            sign up
+          </Link>{' '}
+          to submit.
+        </p>
+      )}
+
       <fieldset>
         <legend className={labelClass}>Where did this happen?</legend>
         <div className="mt-3 inline-flex rounded-full border border-basirah-teal/15 bg-white p-1">
