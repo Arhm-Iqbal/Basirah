@@ -2,24 +2,18 @@ import Link from 'next/link';
 
 import { Logo } from '@/components/logo';
 import { MobileSidebar } from '@/components/mobile-sidebar';
-
-const NAV_LINKS = [
-  { href: '/about', label: 'About Us' },
-  { href: '/report', label: 'Report' },
-  { href: '/resources', label: 'Resources' },
-  { href: '/contact', label: 'Contact' },
-];
+import { MARKETING_NAV_LINKS } from '@/lib/nav-links';
 
 export function NavBar() {
   return (
     <header className="sticky top-0 z-50 border-b border-basirah-teal/10 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         <Link href="/" aria-label="Basirah home">
-          <Logo className="h-8 w-auto" />
+          <Logo className="h-7 w-auto sm:h-8" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {NAV_LINKS.map((link) => (
+          {MARKETING_NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -38,7 +32,7 @@ export function NavBar() {
             Log in
           </Link>
           <Link
-            href="/#get-started"
+            href="/signup"
             className="rounded-full bg-basirah-rust px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90"
           >
             Get Started

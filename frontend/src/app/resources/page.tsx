@@ -1,4 +1,4 @@
-import { NavBar } from '@/components/nav-bar';
+import { MarketingPage } from '@/components/marketing-page';
 
 export const metadata = { title: 'Resources · Basirah' };
 
@@ -23,25 +23,22 @@ const RESOURCES = [
 
 export default function ResourcesPage() {
   return (
-    <>
-      <NavBar />
-      <main className="mx-auto max-w-3xl px-6 py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-basirah-teal sm:text-4xl">
-          Resources
-        </h1>
-        <p className="mt-4 text-basirah-teal/70">
-          Practical starting points for communities and mosque administrators.
-        </p>
+    <MarketingPage>
+      <h1 className="text-3xl font-semibold tracking-tight text-basirah-teal sm:text-4xl">
+        Resources
+      </h1>
+      <p className="mt-4 text-basirah-teal/70">
+        Practical starting points for communities and mosque administrators.
+      </p>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          {RESOURCES.map((r) => (
-            <div key={r.title} className="rounded-2xl bg-white p-6">
-              <h2 className="font-semibold tracking-tight text-basirah-teal">{r.title}</h2>
-              <p className="mt-2 text-sm text-basirah-teal/70">{r.body}</p>
-            </div>
-          ))}
-        </div>
-      </main>
-    </>
+      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        {RESOURCES.map((resource) => (
+          <div key={resource.title} className="rounded-2xl bg-white p-6">
+            <h2 className="font-semibold tracking-tight text-basirah-teal">{resource.title}</h2>
+            <p className="mt-2 text-sm text-basirah-teal/70">{resource.body}</p>
+          </div>
+        ))}
+      </div>
+    </MarketingPage>
   );
 }

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { StatusBadge } from '@/components/report-form';
+import { StatusBadge } from '@/components/status-badge';
 import { fetchOwnIncidents, type OwnIncident } from '@/lib/queries';
 
 const CHANNEL_LABELS: Record<string, string> = {

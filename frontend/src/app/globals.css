@@ -10,9 +10,39 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background-color: var(--color-basirah-cream);
   color: var(--color-basirah-teal);
+  overflow-x: hidden;
+  min-height: 100dvh;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+textarea,
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='url'],
+input[type='datetime-local'] {
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  textarea,
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='url'],
+  input[type='datetime-local'] {
+    font-size: 0.875rem;
+  }
 }
