@@ -1,1 +1,14 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-basirah-rust: #942106;
+  --color-basirah-teal: #043334;
+  --color-basirah-cyan: #d0fafb;
+  --color-basirah-cream: #ece8d9;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-basirah-cream);
+  color: var(--color-basirah-teal);
+}
