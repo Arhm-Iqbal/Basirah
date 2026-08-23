@@ -1,1 +1,37 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif;
+
+  --color-ink: #043334;
+  --color-rust: #942106;
+  --color-mist: #d0fafb;
+  --color-cream: #ece8d9;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+  }
+
+  /*
+   * Scoped to controls that do not paint their own focus ring. Inputs and textareas use a
+   * border-plus-ring treatment instead, so a second outline on top of them reads as a glitch.
+   */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  [role='button']:focus-visible {
+    @apply outline-ink outline-2 outline-offset-2;
+  }
+
+  dialog::backdrop {
+    background-color: rgb(4 51 52 / 0.6);
+  }
+}
