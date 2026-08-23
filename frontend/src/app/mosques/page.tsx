@@ -1,15 +1,18 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mosques',
+  title: 'Mosque and Community Events',
 };
 
 export default function MosquesPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-20">
-      <h1 className="text-ink text-3xl font-semibold tracking-tight">Mosques near you</h1>
+      <h1 className="text-ink text-3xl font-semibold tracking-tight">
+        Mosque and Community Events
+      </h1>
       <p className="text-ink/75 mt-3 leading-relaxed">
-        Prayer times, events, facilities, and contact details. Not built yet.
+        Upcoming events, programs, prayer times, facilities, and contact details for mosques near
+        you. Not built yet.
       </p>
     </main>
   );

@@ -3,7 +3,7 @@ import { ReportIncidentTrigger } from '@/components/report-incident/ReportIncide
 
 const NAV_LINKS = [
   { href: '/support', label: 'Find Community Support' },
-  { href: '/mosques', label: 'Mosques' },
+  { href: '/mosques', label: 'Mosque Events' },
 ];
 
 export function SiteHeader() {

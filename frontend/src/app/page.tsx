@@ -13,9 +13,9 @@ const SECTIONS = [
   {
     href: '/mosques',
     icon: Building2,
-    title: 'Mosques Near You',
-    body: 'Prayer times, upcoming events, facilities, and contact details for mosques in your area.',
-    cta: 'Find a mosque',
+    title: 'Mosque and Community Events',
+    body: 'Upcoming events, programs, prayer times, and contact details for mosques in your area.',
+    cta: 'Browse events',
   },
 ];
 
