@@ -6,6 +6,13 @@
   --color-basirah-cyan: #d0fafb;
   --color-basirah-cream: #ece8d9;
   --font-sans: var(--font-creato-display), ui-sans-serif, system-ui, sans-serif;
+
+  /* Aliases for the report-incident flow (merged from the Hassan branch), which was built
+     against this naming convention. Same palette as the basirah-* tokens above. */
+  --color-ink: var(--color-basirah-teal);
+  --color-rust: var(--color-basirah-rust);
+  --color-mist: var(--color-basirah-cyan);
+  --color-cream: var(--color-basirah-cream);
 }
 
 html {
