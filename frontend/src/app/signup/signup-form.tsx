@@ -7,6 +7,7 @@ import { AuthDivider } from '@/components/auth-divider';
 import { GoogleIcon } from '@/components/google-icon';
 import { Logo } from '@/components/logo';
 import { createClient } from '@/lib/supabase/client';
+import { signInWithGoogle } from '@/lib/supabase/oauth';
 
 const isSupabaseConfigured = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -29,18 +30,9 @@ export default function SignUpForm() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
-      });
-
-      if (error) {
-        setError(error.message);
-        setIsLoading(false);
-      }
-    } catch {
-      setError('Could not reach Supabase. Check frontend/.env.local.');
+      await signInWithGoogle();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not start Google sign-in.');
       setIsLoading(false);
     }
   };

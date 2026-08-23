@@ -39,12 +39,7 @@ function lineFromPoints(points: THREE.Vector3[], color: number, opacity: number)
   return { line: new THREE.Line(geometry, material), geometry, material };
 }
 
-function vertexDots(
-  points: THREE.Vector3[],
-  color: number,
-  size: number,
-  opacity: number,
-) {
+function vertexDots(points: THREE.Vector3[], color: number, size: number, opacity: number) {
   const filtered = points.filter((_, index) => index < points.length - 1);
   const geometry = new THREE.BufferGeometry().setFromPoints(filtered);
   const material = new THREE.PointsMaterial({
@@ -140,14 +135,7 @@ export function HeroCanvas() {
       ];
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
-          interlace.push(
-            nodes[i].x,
-            nodes[i].y,
-            nodes[i].z,
-            nodes[j].x,
-            nodes[j].y,
-            nodes[j].z,
-          );
+          interlace.push(nodes[i].x, nodes[i].y, nodes[i].z, nodes[j].x, nodes[j].y, nodes[j].z);
         }
       }
       const linkGeometry = new THREE.BufferGeometry();
@@ -215,7 +203,11 @@ export function HeroCanvas() {
         geometry.dispose();
         material.dispose();
       });
+      // dispose() frees GPU resources but keeps the WebGL context alive. Browsers cap
+      // how many contexts exist at once, so without forceContextLoss this leaks one per
+      // mount and MapLibre later fails to acquire one -- the map renders blank.
       renderer.dispose();
+      renderer.forceContextLoss();
       container.removeChild(renderer.domElement);
     };
   }, []);
