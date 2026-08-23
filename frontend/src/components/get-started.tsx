@@ -31,7 +31,7 @@ export function GetStarted() {
     const cards = sectionRef.current.querySelectorAll('[data-card]');
 
     const ctx = gsap.context(() => {
-      gsap.set(cards, { opacity: 0, y: 32 });
+      gsap.set(cards, { opacity: 0, y: 32, scale: 0.96 });
       gsap.set([lineFillXRef.current, lineFillYRef.current], { scaleX: 0, scaleY: 0 });
 
       const seam = gsap.timeline({
@@ -39,7 +39,7 @@ export function GetStarted() {
           trigger: sectionRef.current,
           start: 'top 70%',
           end: 'top 15%',
-          scrub: 0.6,
+          scrub: 1,
         },
       });
 
@@ -50,7 +50,7 @@ export function GetStarted() {
       );
 
       cards.forEach((card, index) => {
-        seam.to(card, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, index);
+        seam.to(card, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'sine.out' }, index);
       });
     }, sectionRef);
 
@@ -82,12 +82,12 @@ export function GetStarted() {
               <div
                 key={step.title}
                 data-card
-                className="flex items-start gap-4 sm:flex-col sm:items-center sm:text-center"
+                className="flex items-start gap-4 sm:h-full sm:flex-col sm:items-center sm:text-center"
               >
                 <span className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-basirah-rust text-sm font-semibold text-white">
                   {index + 1}
                 </span>
-                <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-basirah-teal/5 sm:mt-5 sm:w-full sm:p-8">
+                <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-basirah-teal/5 sm:mt-5 sm:flex sm:w-full sm:flex-1 sm:flex-col sm:justify-center sm:p-8">
                   <h3 className="text-lg font-semibold text-basirah-teal">{step.title}</h3>
                   <p className="mt-2 text-sm text-basirah-teal/70">{step.description}</p>
                 </div>
