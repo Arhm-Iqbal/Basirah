@@ -1,13 +1,15 @@
 'use client';
 
 import gsap from 'gsap';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 const NAV_LINKS = [
-  { href: '#about', label: 'About Us' },
-  { href: '#report', label: 'Report' },
-  { href: '#resources', label: 'Resources' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/about', label: 'About Us' },
+  { href: '/report', label: 'Report' },
+  { href: '/resources', label: 'Resources' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/login', label: 'Log in' },
 ];
 
 export function MobileSidebar() {
@@ -90,23 +92,23 @@ export function MobileSidebar() {
         </div>
 
         {NAV_LINKS.map((link) => (
-          <a
+          <Link
             key={link.href}
             href={link.href}
             onClick={() => setIsOpen(false)}
             className="rounded-md px-2 py-2.5 text-sm font-medium text-basirah-teal/80 hover:bg-basirah-cream hover:text-basirah-rust"
           >
             {link.label}
-          </a>
+          </Link>
         ))}
 
-        <a
-          href="#get-started"
+        <Link
+          href="/#get-started"
           onClick={() => setIsOpen(false)}
           className="mt-4 rounded-full bg-basirah-rust px-5 py-2.5 text-center text-sm font-semibold text-white hover:bg-basirah-rust/90"
         >
           Get Started
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -5,7 +5,11 @@
   --color-basirah-teal: #043334;
   --color-basirah-cyan: #d0fafb;
   --color-basirah-cream: #ece8d9;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-creato-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {

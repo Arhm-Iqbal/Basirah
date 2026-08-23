@@ -1,30 +1,50 @@
 'use client';
 
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useEffect, useRef } from 'react';
 
 import { HeroCanvas } from '@/components/hero-canvas';
 
 export function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!rootRef.current) return;
+    if (!sectionRef.current || !rootRef.current) return;
+
+    gsap.registerPlugin(ScrollTrigger);
     const targets = rootRef.current.querySelectorAll('[data-animate]');
 
-    gsap.set(targets, { opacity: 0, y: 24 });
-    gsap.to(targets, {
-      opacity: 1,
-      y: 0,
-      duration: 0.7,
-      ease: 'power3.out',
-      stagger: 0.12,
-      delay: 0.1,
-    });
+    const ctx = gsap.context(() => {
+      gsap.set(targets, { opacity: 0, y: 24 });
+      gsap.to(targets, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        ease: 'power3.out',
+        stagger: 0.12,
+        delay: 0.1,
+      });
+
+      gsap.to(rootRef.current, {
+        yPercent: 18,
+        opacity: 0.3,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-basirah-teal">
+    <section ref={sectionRef} className="relative overflow-hidden bg-basirah-teal">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgb(208_250_251_/_15%),_transparent_60%)]" />
       <HeroCanvas />
 
@@ -32,18 +52,11 @@ export function Hero() {
         ref={rootRef}
         className="relative mx-auto flex max-w-4xl flex-col items-center px-6 py-28 text-center sm:py-32"
       >
-        <span
-          data-animate
-          className="rounded-full bg-basirah-cyan/10 px-4 py-1.5 text-xs font-medium tracking-wider text-basirah-cyan uppercase"
-        >
-          Community Security Infrastructure
-        </span>
-
         <h1
           data-animate
-          className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl"
+          className="text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl"
         >
-          Protecting mosques across Canada, together.
+          Protecting Muslims across Canada, together.
         </h1>
 
         <p data-animate className="mt-6 max-w-2xl text-lg text-basirah-cream/90">
@@ -59,7 +72,7 @@ export function Hero() {
             Get Started
           </a>
           <a
-            href="#about"
+            href="/about"
             className="rounded-full border border-white/20 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
           >
             Learn more
