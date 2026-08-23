@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@basirah/shared": "workspace:*",
-    "hono": "^4.6.14"
+    "@hono/zod-validator": "^0.9.0",
+    "@supabase/supabase-js": "^2.112.3",
+    "hono": "^4.6.14",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",

@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Env } from './lib/env';
+import { mosques } from './routes/mosques';
+import { incidents } from './routes/incidents';
+import { tips } from './routes/tips';
 
 const app = new Hono<Env>();
 
@@ -16,8 +19,17 @@ app.use('*', (c, next) => {
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
+app.route('/v1/mosques', mosques);
+app.route('/v1/incidents', incidents);
+app.route('/v1/tips', tips);
+
 app.notFound((c) =>
   c.json({ error: { code: 'not_found', message: 'No route matches this path.' } }, 404),
 );
+
+app.onError((err, c) => {
+  console.error(err);
+  return c.json({ error: { code: 'internal_error', message: 'Something went wrong.' } }, 500);
+});
 
 export default app;
