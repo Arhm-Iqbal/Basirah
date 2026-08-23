@@ -78,8 +78,8 @@ export default function SignUpForm() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-basirah-teal px-6 py-16">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
+    <main className="flex min-h-[100dvh] items-center justify-center bg-basirah-teal px-4 py-10 sm:px-6 sm:py-16">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl sm:p-8">
         <Link href="/" aria-label="Basirah home">
           <Logo className="h-10 w-auto" />
         </Link>

@@ -24,7 +24,7 @@ const RESOURCES = [
 export default function ResourcesPage() {
   return (
     <MarketingPage>
-      <h1 className="text-3xl font-semibold tracking-tight text-basirah-teal sm:text-4xl">
+      <h1 className="text-2xl font-semibold tracking-tight text-basirah-teal sm:text-3xl md:text-4xl">
         Resources
       </h1>
       <p className="mt-4 text-basirah-teal/70">

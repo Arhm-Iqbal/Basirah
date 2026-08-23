@@ -2,8 +2,9 @@
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+
+import { TealButtonLink } from '@/components/button-link';
 
 const STEPS = [
   {
@@ -23,7 +24,6 @@ const STEPS = [
 export function GetStarted() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const lineFillXRef = useRef<HTMLDivElement>(null);
-  const lineFillYRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -41,7 +41,7 @@ export function GetStarted() {
 
     const ctx = gsap.context(() => {
       gsap.set(cards, { opacity: 0, y: 32, scale: 0.96 });
-      gsap.set([lineFillXRef.current, lineFillYRef.current], { scaleX: 0, scaleY: 0 });
+      gsap.set(lineFillXRef.current, { scaleX: 0 });
 
       const seam = gsap.timeline({
         scrollTrigger: {
@@ -52,11 +52,7 @@ export function GetStarted() {
         },
       });
 
-      seam.to(
-        [lineFillXRef.current, lineFillYRef.current],
-        { scaleX: 1, scaleY: 1, ease: 'none', duration: cards.length },
-        0,
-      );
+      seam.to(lineFillXRef.current, { scaleX: 1, ease: 'none', duration: 3 }, 0);
 
       cards.forEach((card, index) => {
         seam.to(card, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'sine.out' }, index);
@@ -95,7 +91,9 @@ export function GetStarted() {
                 </span>
                 <div className="mt-5 flex w-full flex-1 flex-col justify-center rounded-2xl bg-white p-8 shadow-sm ring-1 ring-basirah-teal/5">
                   <h3 className="text-lg font-semibold text-basirah-teal">{step.title}</h3>
-                  <p className="mt-2 text-sm text-basirah-teal/70">{step.description}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-basirah-teal/70">
+                    {step.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -103,12 +101,9 @@ export function GetStarted() {
         </div>
 
         <div className="mt-14 flex justify-center">
-          <Link
-            href="/signup"
-            className="rounded-full bg-basirah-teal px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-teal/90"
-          >
-            Get Started Now
-          </Link>
+          <TealButtonLink href="/signup" className="w-auto min-w-[12rem]">
+            Get started
+          </TealButtonLink>
         </div>
       </div>
     </section>

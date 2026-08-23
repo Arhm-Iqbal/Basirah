@@ -33,9 +33,9 @@ export function NavBar() {
           </Link>
           <Link
             href="/signup"
-            className="rounded-full bg-basirah-rust px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-basirah-rust px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90"
           >
-            Get Started
+            Get started
           </Link>
         </div>
 

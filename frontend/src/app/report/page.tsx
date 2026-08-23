@@ -5,7 +5,7 @@ export const metadata = { title: 'Report an Incident · Basirah' };
 
 export default function ReportPage() {
   return (
-    <MarketingPage className="mx-auto w-full max-w-2xl px-6 py-10 sm:py-14">
+    <MarketingPage className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-14">
       <h1 className="text-2xl font-semibold tracking-tight text-basirah-teal sm:text-3xl">
         Report an incident
       </h1>

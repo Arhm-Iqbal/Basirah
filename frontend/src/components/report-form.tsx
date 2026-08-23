@@ -165,13 +165,11 @@ export function ReportForm() {
         </p>
         {created.claim_code ? (
           <div className="mt-5 rounded-xl border border-basirah-rust/25 bg-basirah-rust/5 p-4">
-            <p className="text-sm font-semibold text-basirah-rust">Save this code now</p>
+            <p className="text-sm font-semibold text-basirah-rust">Save this code</p>
             <p className="mt-1 text-xs text-basirah-teal/70">
-              It is the only way to check on this report. We store no account, no contact details,
-              and no way to trace it back to you — so we cannot recover this code or look your
-              report up without it.
+              This is the only way to check on your report later.
             </p>
-            <p className="mt-3 font-mono text-xl tracking-widest text-basirah-teal">
+            <p className="mt-3 break-all font-mono text-lg tracking-widest text-basirah-teal sm:text-xl">
               {created.claim_code}
             </p>
           </div>

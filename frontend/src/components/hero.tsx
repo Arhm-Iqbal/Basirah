@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 
 import { HeroCanvas } from '@/components/hero-canvas';
+import { PrimaryButtonLink, SecondaryButtonLink } from '@/components/button-link';
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -37,8 +38,8 @@ export function Hero() {
       });
 
       gsap.to(rootRef.current, {
-        yPercent: 18,
-        opacity: 0.3,
+        yPercent: 12,
+        opacity: 0.35,
         ease: 'none',
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -54,23 +55,29 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-basirah-teal">
-      <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top_right,_rgb(208_250_251_/_15%),_transparent_60%)] md:block" />
-      <div className="pointer-events-none absolute inset-0 hidden md:block">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,_rgb(208_250_251_/_12%),_transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-basirah-teal/20 via-transparent to-basirah-teal" />
+      <div className="pointer-events-none absolute inset-0">
         <HeroCanvas />
       </div>
 
       <div
         ref={rootRef}
-        className="relative mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center sm:px-6 sm:py-28 md:py-32"
+        className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-4 py-16 text-center sm:px-6 sm:py-24 md:py-32"
       >
+        <p
+          data-animate
+          className="text-xs font-medium tracking-[0.2em] text-basirah-cyan/80 uppercase"
+        >
+          Basirah
+        </p>
+
         <h1
           data-animate
-          className="max-w-xs text-2xl font-semibold leading-tight tracking-tight text-white sm:max-w-2xl sm:text-4xl md:text-6xl"
+          className="mt-4 max-w-xs text-2xl font-semibold leading-tight tracking-tight text-white sm:max-w-2xl sm:text-4xl md:text-6xl"
         >
           <span className="md:hidden">Community security for Canadian mosques.</span>
-          <span className="hidden md:inline">
-            Protecting Muslims across Canada, together.
-          </span>
+          <span className="hidden md:inline">Protecting Muslims across Canada, together.</span>
         </h1>
 
         <p
@@ -86,27 +93,19 @@ export function Hero() {
 
         <div
           data-animate
-          className="mt-8 flex w-full max-w-xs flex-col gap-3 sm:mt-10 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4"
+          className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:mt-10 sm:max-w-md sm:flex-row sm:justify-center"
         >
-          <Link
-            href="/report"
-            className="rounded-full bg-basirah-rust px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90 sm:px-8"
-          >
-            Report an incident
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded-full border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10 sm:px-8 md:hidden"
-          >
-            Create account
-          </Link>
-          <Link
-            href="/about"
-            className="hidden rounded-full border border-white/20 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10 md:inline-block"
-          >
-            Learn more
-          </Link>
+          <PrimaryButtonLink href="/report">Report an incident</PrimaryButtonLink>
+          <SecondaryButtonLink href="/signup">Create account</SecondaryButtonLink>
         </div>
+
+        <Link
+          data-animate
+          href="/about"
+          className="mt-5 text-sm font-medium text-basirah-cyan/90 transition-colors hover:text-white"
+        >
+          Learn how Basirah works →
+        </Link>
       </div>
     </section>
   );
