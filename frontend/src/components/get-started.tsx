@@ -37,8 +37,8 @@ export function GetStarted() {
       const seam = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 65%',
-          end: 'bottom 55%',
+          start: 'top 70%',
+          end: 'top 15%',
           scrub: 0.6,
         },
       });
