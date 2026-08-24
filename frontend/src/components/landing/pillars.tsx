@@ -20,7 +20,7 @@ const PILLARS = [
   },
   {
     icon: Building2,
-    title: 'Mosques Near You',
+    title: 'Mosques and Community',
     description:
       'Discover nearby mosques, events, services, programs, and community resources.',
     cta: 'Explore Mosques',
@@ -32,11 +32,11 @@ export function Pillars() {
   return (
     <section id="pillars" className="scroll-mt-20 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
-        <h2 className="max-w-2xl text-3xl leading-tight font-semibold tracking-tight text-balance text-basirah-teal sm:text-5xl">
-          One platform. Three ways to support your community.
-        </h2>
+        <h1 className="max-w-2xl text-3xl leading-tight font-semibold tracking-tight text-balance text-basirah-teal sm:text-5xl">
+          Report. Connect. Protect.
+        </h1>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {PILLARS.map(({ icon: Icon, title, description, cta, href }) => (
             <Link
               key={title}
@@ -46,7 +46,7 @@ export function Pillars() {
               <span className="flex size-12 items-center justify-center rounded-2xl bg-white text-basirah-rust">
                 <Icon className="size-6" aria-hidden />
               </span>
-              <h3 className="mt-8 text-xl font-semibold tracking-tight text-basirah-teal sm:text-2xl">
+              <h3 className="mt-8 text-lg font-semibold tracking-tight whitespace-nowrap text-basirah-teal sm:text-xl">
                 {title}
               </h3>
               <p className="mt-3 flex-1 leading-relaxed text-basirah-teal/70">{description}</p>

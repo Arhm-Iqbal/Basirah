@@ -1,3 +1,4 @@
+import { User } from 'lucide-react';
 import Link from 'next/link';
 
 import { Logo } from '@/components/logo';
@@ -6,7 +7,7 @@ import { NAV_LINKS } from '@/components/nav-links';
 
 export function NavBar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-basirah-teal/10 bg-white/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-basirah-teal/10 bg-basirah-cyan">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-6 focus:z-10 focus:rounded-lg focus:bg-basirah-teal focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
@@ -16,7 +17,7 @@ export function NavBar() {
 
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
         <Link href="/" aria-label="Basirah home" className="shrink-0">
-          <Logo className="h-9 w-auto" />
+          <Logo className="h-20 w-auto" />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-9 md:flex">
@@ -43,6 +44,13 @@ export function NavBar() {
             className="rounded-xl bg-basirah-teal px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
             Sign Up
+          </Link>
+          <Link
+            href="/profile"
+            aria-label="Your profile"
+            className="ml-1 flex size-10 items-center justify-center rounded-full bg-white text-basirah-teal transition-colors hover:bg-basirah-cream"
+          >
+            <User className="size-5" aria-hidden />
           </Link>
         </div>
 

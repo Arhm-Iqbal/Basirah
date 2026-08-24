@@ -3,13 +3,9 @@ import Link from 'next/link';
 import { Logo } from '@/components/logo';
 
 const FOOTER_LINKS = [
-  { href: '/report', label: 'Report' },
-  { href: '/support', label: 'Find Support' },
-  { href: '/mosques', label: 'Mosques' },
-  { href: '/resources', label: 'Resources' },
+  { href: '/contact', label: 'Contact' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/terms', label: 'Terms' },
-  { href: '/contact', label: 'Contact' },
 ];
 
 export function SiteFooter() {
@@ -22,7 +18,7 @@ export function SiteFooter() {
             aria-label="Basirah home"
             className="inline-flex w-fit rounded-2xl bg-white px-5 py-3"
           >
-            <Logo className="h-9 w-auto" />
+            <Logo className="h-16 w-auto" />
           </Link>
 
           <nav aria-label="Footer">

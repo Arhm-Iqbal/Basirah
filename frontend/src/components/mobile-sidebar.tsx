@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X } from 'lucide-react';
+import { Menu, User, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -94,6 +94,14 @@ export function MobileSidebar() {
         </nav>
 
         <div className="mt-auto flex flex-col gap-3 border-t border-basirah-teal/10 pt-6">
+          <Link
+            href="/profile"
+            onClick={close}
+            className="flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-basirah-teal hover:bg-basirah-cream"
+          >
+            <User className="size-5" aria-hidden />
+            Your profile
+          </Link>
           <Link
             href="/login"
             onClick={close}
