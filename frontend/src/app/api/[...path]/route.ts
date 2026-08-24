@@ -1,6 +1,7 @@
 import 'server-only';
 
 import backend, { type Bindings } from '@basirah/backend';
+import { after } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -52,7 +53,15 @@ async function handler(request: Request) {
     redirect: request.redirect,
   });
 
-  return backend.fetch(backendRequest, bindings);
+  // Hono's `c.executionCtx` only exists when an execution context is supplied. The
+  // incidents route uses it to generate the report PDF after returning the successful
+  // response. Bridge that work to Next's post-response lifecycle so a saved report never
+  // becomes a 500 just because this handler is running on Vercel instead of Cloudflare.
+  return backend.fetch(backendRequest, bindings, {
+    waitUntil: (task) => after(task),
+    passThroughOnException: () => {},
+    props: {},
+  });
 }
 
 export {
