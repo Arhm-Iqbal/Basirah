@@ -15,9 +15,8 @@ export default function ReportPage() {
       <h1 className="font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-basirah-teal sm:text-3xl">
         Report an incident
       </h1>
-      <p className="mt-2 max-w-lg text-base leading-relaxed text-basirah-teal/75">
-        You will be asked one thing at a time, and most questions are a tap. Only a description is
-        required. You can report without an account.
+      <p className="mt-2 max-w-md text-base leading-relaxed text-pretty text-basirah-teal/75">
+        One question at a time. Only a description is required, and you do not need an account.
       </p>
       <div className="mt-10">
         <ReportWizard />

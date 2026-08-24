@@ -1,5 +1,6 @@
 'use client';
 
+import { Check, FileText, Globe, MapPin, ShieldOff, TriangleAlert, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { IncidentActionPlan } from '@basirah/shared';
@@ -213,6 +214,66 @@ function OptionMark({ checked, multi }: { checked: boolean; multi?: boolean }) {
   );
 }
 
+// Selection has to survive a glance on a phone held by someone upset, so the chosen card
+// inverts to a solid fill with a check rather than shifting by a few percent of tint.
+function ChoiceCard({
+  icon: Icon,
+  title,
+  body,
+  selected,
+  onClick,
+}: {
+  icon: typeof MapPin;
+  title: string;
+  body: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 text-start transition-[background-color,border-color,box-shadow] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none ${
+        selected
+          ? 'border-basirah-teal bg-basirah-teal shadow-[0_8px_20px_-10px_rgb(4_51_52_/_55%)]'
+          : 'border-basirah-teal/20 bg-white hover:border-basirah-teal/60 hover:bg-basirah-cream/45'
+      }`}
+    >
+      <span
+        aria-hidden
+        className={`flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors duration-150 motion-reduce:transition-none ${
+          selected ? 'bg-white/15 text-white' : 'bg-basirah-cream text-basirah-teal'
+        }`}
+      >
+        <Icon className="size-4.5" />
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span
+          className={`block text-base font-semibold text-balance ${selected ? 'text-white' : 'text-basirah-teal'}`}
+        >
+          {title}
+        </span>
+        <span
+          className={`mt-0.5 block text-sm leading-relaxed text-pretty ${selected ? 'text-white/75' : 'text-basirah-teal/70'}`}
+        >
+          {body}
+        </span>
+      </span>
+
+      <span
+        aria-hidden
+        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full transition-opacity duration-150 motion-reduce:transition-none ${
+          selected ? 'bg-white opacity-100' : 'opacity-0'
+        }`}
+      >
+        <Check className="size-3.5 text-basirah-teal" strokeWidth={3} />
+      </span>
+    </button>
+  );
+}
+
 function Choice({
   legend,
   hintText,
@@ -256,8 +317,8 @@ function Choice({
               key={o.value}
               className={`${optionRow} ${
                 checked
-                  ? 'border-basirah-teal bg-basirah-teal/5'
-                  : 'border-basirah-teal/25 hover:border-basirah-teal/50 hover:bg-basirah-teal/[0.03]'
+                  ? 'border-basirah-teal bg-basirah-cream'
+                  : 'border-basirah-teal/25 bg-white hover:border-basirah-teal/60 hover:bg-basirah-cream/45'
               } has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-basirah-teal`}
             >
               <input
@@ -337,8 +398,8 @@ function MultiChoice({
               key={o.value}
               className={`${optionRow} ${
                 checked
-                  ? 'border-basirah-teal bg-basirah-teal/5'
-                  : 'border-basirah-teal/25 hover:border-basirah-teal/50 hover:bg-basirah-teal/[0.03]'
+                  ? 'border-basirah-teal bg-basirah-cream'
+                  : 'border-basirah-teal/25 bg-white hover:border-basirah-teal/60 hover:bg-basirah-cream/45'
               } has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-basirah-teal`}
             >
               <input
@@ -604,115 +665,87 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
   if (!started) {
     return (
       <div>
-        <div className="rounded-lg border border-basirah-rust/30 bg-basirah-rust/8 p-4">
-          <h2 className="text-base font-semibold text-basirah-rust">
-            Are you in immediate danger?
-          </h2>
-          <p className="mt-1.5 text-base leading-relaxed text-basirah-teal">
-            If you or someone else is in immediate danger, call 911. This form is for documentation
-            and follow-up, not emergency response.
+        <div className="flex items-start gap-3 rounded-xl border border-basirah-rust/35 bg-basirah-rust/10 p-4">
+          <TriangleAlert className="mt-0.5 size-5 shrink-0 text-basirah-rust" aria-hidden />
+          <p className="text-base leading-relaxed text-pretty text-basirah-teal">
+            <span className="font-semibold text-basirah-rust">In immediate danger? Call 911.</span>{' '}
+            This form is for documentation, not emergency response.
           </p>
         </div>
 
-        <fieldset className="mt-6">
-          <legend className="font-display text-lg font-semibold tracking-[-0.015em] text-basirah-teal">
-            How would you like to submit?
-          </legend>
-          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/75">
-            {accountContext
-              ? 'Choose whether this report is linked to your account.'
-              : 'Reports started on this page are anonymous by default.'}
-          </p>
-          <div className={`mt-3 grid gap-2.5 ${accountContext ? 'sm:grid-cols-2' : ''}`}>
-            <button
-              type="button"
-              onClick={() => choosePrivacy('anonymous')}
-              aria-pressed={privacy === 'anonymous'}
-              className={`cursor-pointer rounded-lg border p-3.5 text-start transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
-                privacy === 'anonymous'
-                  ? 'border-basirah-teal bg-basirah-teal/8'
-                  : 'border-basirah-teal/25 hover:border-basirah-teal'
-              }`}
-            >
-              <span className="block text-base font-semibold text-basirah-teal">
-                Anonymous report
-              </span>
-              <span className="mt-1 block text-sm leading-relaxed text-basirah-teal/80">
-                No account or contact details are attached. You will not be asked for your name,
-                email, phone, or other personal information.
-              </span>
-            </button>
-
-            {accountContext && (
-              <button
-                type="button"
+        {accountContext ? (
+          <fieldset className="mt-8">
+            <legend className="font-display text-lg font-semibold tracking-[-0.015em] text-basirah-teal">
+              How would you like to submit?
+            </legend>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <ChoiceCard
+                icon={ShieldOff}
+                title="Anonymous"
+                body="No name, email, or contact details."
+                selected={privacy === 'anonymous'}
+                onClick={() => choosePrivacy('anonymous')}
+              />
+              <ChoiceCard
+                icon={UserRound}
+                title="Save to my account"
+                body="Appears in your reports. Details stay optional."
+                selected={privacy === 'account'}
                 onClick={() => choosePrivacy('account')}
-                aria-pressed={privacy === 'account'}
-                className={`cursor-pointer rounded-lg border p-3.5 text-start transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
-                  privacy === 'account'
-                    ? 'border-basirah-teal bg-basirah-teal/8'
-                    : 'border-basirah-teal/25 hover:border-basirah-teal'
-                }`}
-              >
-                <span className="block text-base font-semibold text-basirah-teal">
-                  Save to my account
-                </span>
-                <span className="mt-1 block text-sm leading-relaxed text-basirah-teal/80">
-                  Links the report to your account so it appears in My reports. Personal details
-                  remain optional.
-                </span>
-              </button>
-            )}
-          </div>
-        </fieldset>
+              />
+            </div>
+          </fieldset>
+        ) : (
+          // Nothing to choose here -- this entry point is always anonymous -- so it states the
+          // fact instead of dressing it as a one-option question.
+          <p className="mt-8 flex items-center gap-2.5 text-base font-semibold text-basirah-teal">
+            <ShieldOff className="size-4.5 shrink-0 text-basirah-teal/70" aria-hidden />
+            Anonymous — no name, email, or contact details.
+          </p>
+        )}
 
-        <fieldset className="mt-6">
+        <fieldset className="mt-8">
           <legend className="font-display text-lg font-semibold tracking-[-0.015em] text-basirah-teal">
             Where did this happen?
           </legend>
-          <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {(
               [
                 {
                   value: 'in_person',
+                  icon: MapPin,
                   title: 'In person',
-                  body: 'At a mosque, in public, at work, or at school.',
+                  body: 'A mosque, public, work, or school.',
                 },
                 {
                   value: 'online',
+                  icon: Globe,
                   title: 'Online',
-                  body: 'Social media, messages, email, or a website.',
+                  body: 'Social media, messages, email, or a site.',
                 },
-              ] as { value: IncidentRoute; title: string; body: string }[]
+              ] as { value: IncidentRoute; icon: typeof MapPin; title: string; body: string }[]
             ).map((option) => (
-              <button
+              <ChoiceCard
                 key={option.value}
-                type="button"
+                icon={option.icon}
+                title={option.title}
+                body={option.body}
+                selected={report.route === option.value}
                 onClick={() => set('route', option.value)}
-                aria-pressed={report.route === option.value}
-                className={`cursor-pointer rounded-lg border p-3.5 text-start transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
-                  report.route === option.value
-                    ? 'border-basirah-teal bg-basirah-teal/8'
-                    : 'border-basirah-teal/25 hover:border-basirah-teal'
-                }`}
-              >
-                <span className="block text-base font-semibold text-basirah-teal">
-                  {option.title}
-                </span>
-                <span className="mt-1 block text-sm leading-relaxed text-basirah-teal/80">
-                  {option.body}
-                </span>
-              </button>
+              />
             ))}
           </div>
         </fieldset>
 
+        {/* The default disabled treatment is opacity alone, which on teal reads as broken
+            rather than as not-yet. This one keeps its edges and stays legible. */}
         <Button
-          className="mt-6 w-full sm:w-auto"
+          size="lg"
+          className="mt-8 w-full disabled:bg-basirah-teal/15 disabled:text-basirah-teal/65 disabled:opacity-100 sm:w-auto"
           disabled={!report.route || !privacy}
           onClick={() => setStarted(true)}
         >
-          <img src="/icons/report-white.png" alt="" width={14} height={16} className="h-4 w-auto" />
+          <FileText className="size-4.5" aria-hidden />
           Start this report
         </Button>
       </div>

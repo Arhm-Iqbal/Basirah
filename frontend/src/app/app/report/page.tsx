@@ -8,8 +8,8 @@ export default function AppReportPage() {
       <h1 className="font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-basirah-teal sm:text-[2rem]">
         Report an incident
       </h1>
-      <p className="mt-2 max-w-lg text-base leading-relaxed text-basirah-teal">
-        One question at a time. Answer in your own words. Only the description is required.
+      <p className="mt-2 max-w-md text-base leading-relaxed text-pretty text-basirah-teal/75">
+        One question at a time. Only a description is required.
       </p>
       <div className="mt-6">
         <ReportWizard accountContext />
