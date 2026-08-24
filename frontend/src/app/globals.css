@@ -116,6 +116,54 @@ input[type='datetime-local'] {
   }
 }
 
+.user-pages-bg {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 0;
+  height: min(52vh, 32rem);
+  pointer-events: none;
+  background-image: url('/user%20pages%20background.png');
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% auto;
+  mix-blend-mode: screen;
+  opacity: 0.38;
+  mask-image: linear-gradient(to top, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.4) 48%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.85) 0%,
+    rgb(0 0 0 / 0.4) 48%,
+    transparent 100%
+  );
+}
+
+.map-drawer {
+  transform: translateX(100%);
+  transition-property: transform;
+  transition-duration: 320ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.map-drawer.is-open {
+  transform: translateX(0);
+}
+
+[dir='rtl'] .map-drawer {
+  transform: translateX(-100%);
+}
+
+[dir='rtl'] .map-drawer.is-open {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-drawer {
+    transition: none;
+    transform: none;
+  }
+}
+
 .auth-lantern {
   position: absolute;
   top: -8px;

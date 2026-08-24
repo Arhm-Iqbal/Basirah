@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { AddMosqueForm } from '@/components/add-mosque-form';
 import { Button } from '@/components/button-link';
 import { LocationGate } from '@/components/location-gate';
 import { RadiusChips, useSearchRadius } from '@/components/radius-chips';
@@ -15,9 +16,11 @@ function distance(metres: number) {
 export function MosqueFinder({
   addedIds,
   onAdded,
+  onCreated,
 }: {
   addedIds: Set<string>;
   onAdded: (mosque: NearbyMosque) => void;
+  onCreated: () => void;
 }) {
   const { coords, status, locate, setManual } = useGeolocation();
   const {
@@ -34,6 +37,7 @@ export function MosqueFinder({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (status === 'idle') locate();
@@ -58,6 +62,27 @@ export function MosqueFinder({
 
   if (!coords) {
     return <LocationGate status={status} onLocate={locate} onManual={setManual} />;
+  }
+
+  if (adding) {
+    return (
+      <div>
+        <h3 className="font-display text-base font-medium tracking-[-0.015em] text-basirah-teal">
+          Add a mosque
+        </h3>
+        <p className="mt-1 mb-6 text-sm text-basirah-teal/55">
+          Tell us what you know. Only the name is required.
+        </p>
+        <AddMosqueForm
+          nearby={coords}
+          onCreated={() => {
+            setAdding(false);
+            onCreated();
+          }}
+          onCancel={() => setAdding(false)}
+        />
+      </div>
+    );
   }
 
   const add = async (mosque: NearbyMosque) => {
@@ -131,6 +156,13 @@ export function MosqueFinder({
           );
         })}
       </ul>
+
+      <div className="mt-6 border-t border-basirah-teal/10 pt-5">
+        <p className="text-sm text-basirah-teal/60">Don&apos;t see your mosque?</p>
+        <Button size="sm" variant="ghost" className="mt-2.5" onClick={() => setAdding(true)}>
+          Add it
+        </Button>
+      </div>
     </section>
   );
 }

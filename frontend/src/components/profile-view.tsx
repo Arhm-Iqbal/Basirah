@@ -152,16 +152,24 @@ export function ProfileView({ email }: { email: string | null }) {
       {
         id: mosque.id,
         name: mosque.name,
+        lat: mosque.lat,
+        lng: mosque.lng,
         address: mosque.address,
         city: mosque.city,
         province: null,
         phone: mosque.phone,
         website: mosque.website,
         source: 'osm',
-        role: 'member',
+        verified_at: null,
         added_at: new Date().toISOString(),
       },
     ]);
+  };
+
+  const reload = () => {
+    void fetchMyMosques()
+      .then(setMosques)
+      .catch(() => undefined);
   };
 
   const addedIds = new Set(mosques.map((m) => m.id));
@@ -214,7 +222,7 @@ export function ProfileView({ email }: { email: string | null }) {
             Near you
           </h2>
           <div className="mt-4">
-            <MosqueFinder addedIds={addedIds} onAdded={onAdded} />
+            <MosqueFinder addedIds={addedIds} onAdded={onAdded} onCreated={reload} />
           </div>
         </section>
       )}

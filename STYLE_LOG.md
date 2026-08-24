@@ -16,6 +16,15 @@ Why: <why you made this choice>
 
 ---
 
+## 2026-08-23 — Mosque details open in a side panel
+
+What: Clicking a mosque pin (or a verified incident) now opens a cream side panel
+with name, address, distance, phone, website, directions, and published hours.
+The map popup is gone. The map pads right so the pin stays in view; Escape and
+the close control dismiss the panel.
+Why: A 260px balloon on the map hid the pin and could not hold hours or actions.
+A side panel is the place to read a mosque, not a sticker on the tiles.
+
 ## 2026-08-23 — Auth card: less gloss, more size, more contrast
 
 What: Replaced the frosted glass login/signup panel with a solid cream card (`max-w-md` /

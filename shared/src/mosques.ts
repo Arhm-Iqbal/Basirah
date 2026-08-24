@@ -40,3 +40,22 @@ export const mosqueEnrichment = z.object({
   fetched_at: isoTimestamp,
 });
 export type MosqueEnrichment = z.infer<typeof mosqueEnrichment>;
+
+// Submitted by a member who could not find their mosque. Only the name is required --
+// someone adding the place they pray should not be blocked because they do not know the
+// postal code.
+export const mosqueCreate = z.object({
+  name: z.string().min(2).max(200),
+  address: z.string().max(300).optional(),
+  city: z.string().max(120).optional(),
+  province: z
+    .enum(['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'])
+    .optional(),
+  postal_code: z.string().max(12).optional(),
+  phone: z.string().max(40).optional(),
+  website: z.string().url().max(300).optional(),
+  lat: latitude.optional(),
+  lng: longitude.optional(),
+  notes: z.string().max(1000).optional(),
+});
+export type MosqueCreate = z.infer<typeof mosqueCreate>;

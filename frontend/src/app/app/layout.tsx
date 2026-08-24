@@ -12,9 +12,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect('/login');
 
   return (
-    <div className="flex min-h-screen flex-col bg-basirah-cream">
+    <div className="relative isolate flex min-h-dvh flex-col bg-basirah-cream">
+      <div aria-hidden className="user-pages-bg" />
       <AppTabs />
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
+      <main className="relative z-10 flex-1 pb-20 md:pb-0">{children}</main>
     </div>
   );
 }

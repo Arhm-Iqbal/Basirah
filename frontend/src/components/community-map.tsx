@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Map, { Marker, Popup, type MapRef } from 'react-map-gl/maplibre';
+import Map, { Marker, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import { LocationGate } from '@/components/location-gate';
+import { MapDetailPanel } from '@/components/map-detail-panel';
 import { RadiusChips, useSearchRadius } from '@/components/radius-chips';
 import {
   fetchMapIncidents,
+  fetchMyMosques,
   fetchNearbyMosques,
   type MapIncident,
   type NearbyMosque,
@@ -16,19 +18,21 @@ import { useGeolocation } from '@/lib/use-geolocation';
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 
-type Selection = { kind: 'mosque'; item: NearbyMosque } | { kind: 'incident'; item: MapIncident };
-
-function formatDistance(metres: number) {
-  return metres < 1000 ? `${Math.round(metres)} m away` : `${(metres / 1000).toFixed(1)} km away`;
+function metresBetween(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6_371_000;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const lat1 = (a.lat * Math.PI) / 180;
+  const lat2 = (b.lat * Math.PI) / 180;
+  const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  return 2 * R * Math.asin(Math.sqrt(h));
 }
+
+type Selection = { kind: 'mosque'; item: NearbyMosque } | { kind: 'incident'; item: MapIncident };
 
 function formatLabel(value: string | null) {
   if (!value) return 'Uncategorised';
   return value.replace(/_/g, ' ').replace(/^./, (char) => char.toUpperCase());
-}
-
-function formatWhen(iso: string) {
-  return new Date(iso).toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 export function CommunityMap() {
@@ -50,6 +54,7 @@ export function CommunityMap() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Selection | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   useEffect(() => {
     if (status === 'idle') locate();
@@ -65,11 +70,34 @@ export function CommunityMap() {
     setIsLoading(true);
     setError(null);
     setSelected(null);
+    setPanelOpen(false);
 
-    Promise.all([fetchNearbyMosques(lat, lng, radius), fetchMapIncidents(lat, lng, radius)])
-      .then(([nextMosques, nextIncidents]) => {
+    Promise.all([
+      fetchNearbyMosques(lat, lng, radius),
+      fetchMapIncidents(lat, lng, radius),
+      fetchMyMosques().catch(() => []),
+    ])
+      .then(([nextMosques, nextIncidents, mine]) => {
         if (!active) return;
-        setMosques(nextMosques);
+        const seen = new Set(nextMosques.map((m) => m.id));
+        const extras = mine.flatMap((m) =>
+          seen.has(m.id) || m.lat == null || m.lng == null
+            ? []
+            : [
+                {
+                  id: m.id,
+                  name: m.name,
+                  lat: m.lat,
+                  lng: m.lng,
+                  address: m.address,
+                  city: m.city,
+                  phone: m.phone,
+                  website: m.website,
+                  distance_m: metresBetween({ lat, lng }, { lat: m.lat, lng: m.lng }),
+                },
+              ],
+        );
+        setMosques([...nextMosques, ...extras].sort((a, b) => a.distance_m - b.distance_m));
         setIncidents(nextIncidents);
       })
       .catch((err: unknown) => {
@@ -91,6 +119,27 @@ export function CommunityMap() {
     if (!coords) return;
     mapRef.current?.flyTo({ center: [coords.lng, coords.lat], zoom: 12, duration: 900 });
   }, [coords]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const width = map.getContainer().clientWidth;
+    const right = panelOpen ? Math.min(360, Math.round(width * 0.92)) : 0;
+    map.easeTo({ padding: { top: 0, right, bottom: 0, left: 0 }, duration: 350 });
+  }, [panelOpen]);
+
+  useEffect(() => {
+    if (panelOpen || !selected) return;
+    const id = window.setTimeout(() => setSelected(null), 320);
+    return () => window.clearTimeout(id);
+  }, [panelOpen, selected]);
+
+  const showSelection = (next: Selection) => {
+    setSelected(next);
+    setPanelOpen(true);
+  };
+
+  const requestClose = () => setPanelOpen(false);
 
   const locationMessage = status === 'manual' ? 'Showing the area you entered.' : null;
 
@@ -171,73 +220,6 @@ export function CommunityMap() {
             />
           </Marker>
         ))}
-
-        {selected?.kind === 'mosque' && (
-          <Popup
-            longitude={selected.item.lng}
-            latitude={selected.item.lat}
-            anchor="bottom"
-            offset={16}
-            maxWidth="260px"
-            closeOnClick={false}
-            onClose={() => setSelected(null)}
-          >
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-basirah-teal">{selected.item.name}</p>
-              {selected.item.address && (
-                <p className="text-xs text-basirah-teal/70">
-                  {selected.item.address}
-                  {selected.item.city ? `, ${selected.item.city}` : ''}
-                </p>
-              )}
-              <p className="text-xs font-medium text-basirah-rust">
-                {formatDistance(selected.item.distance_m)}
-              </p>
-              {selected.item.phone && (
-                <a
-                  href={`tel:${selected.item.phone}`}
-                  className="block text-xs font-medium text-basirah-teal underline-offset-2 transition-colors hover:text-basirah-rust hover:underline"
-                >
-                  {selected.item.phone}
-                </a>
-              )}
-              {selected.item.website && (
-                <a
-                  href={selected.item.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block truncate text-xs font-medium text-basirah-teal underline-offset-2 transition-colors hover:text-basirah-rust hover:underline"
-                >
-                  Visit website
-                </a>
-              )}
-            </div>
-          </Popup>
-        )}
-
-        {selected?.kind === 'incident' && (
-          <Popup
-            longitude={selected.item.lng}
-            latitude={selected.item.lat}
-            anchor="bottom"
-            offset={16}
-            maxWidth="260px"
-            closeOnClick={false}
-            onClose={() => setSelected(null)}
-          >
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-basirah-teal">
-                {formatLabel(selected.item.category)}
-              </p>
-              <p className="text-xs text-basirah-teal/70">
-                Reported via {formatLabel(selected.item.channel).toLowerCase()}
-              </p>
-              <p className="text-xs text-basirah-teal/70">
-                {formatWhen(selected.item.occurred_at ?? selected.item.created_at)}
-              </p>
-            </div>
-          </Popup>
-        )}
       </Map>
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
@@ -265,7 +247,9 @@ export function CommunityMap() {
           )}
         </div>
 
-        <div className="pointer-events-auto flex flex-col items-end gap-2">
+        <div
+          className={`pointer-events-auto flex flex-col items-end gap-2 ${selected ? 'invisible' : ''}`}
+        >
           <button
             type="button"
             onClick={locate}
@@ -282,7 +266,11 @@ export function CommunityMap() {
         </div>
       </div>
 
-      <ul className="absolute bottom-3 start-3 space-y-1.5 rounded-2xl border border-basirah-teal/10 bg-white/90 px-3 py-2.5 text-xs text-basirah-teal/80 backdrop-blur">
+      <ul
+        className={`absolute bottom-3 start-3 space-y-1.5 rounded-2xl border border-basirah-teal/10 bg-white/90 px-3 py-2.5 text-xs text-basirah-teal/80 backdrop-blur ${
+          selected ? 'max-sm:hidden' : ''
+        }`}
+      >
         <li className="flex items-center gap-2">
           <img src="/icons/masjid-pin.png" alt="" width={11} height={14} className="shrink-0" />
           Mosque
@@ -298,6 +286,8 @@ export function CommunityMap() {
           </li>
         )}
       </ul>
+
+      {selected && <MapDetailPanel selected={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }

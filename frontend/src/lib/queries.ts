@@ -88,13 +88,15 @@ export async function geocodePlace(query: string): Promise<GeocodeResult[]> {
 export type MyMosque = {
   id: string;
   name: string;
+  lat: number | null;
+  lng: number | null;
   address: string | null;
   city: string | null;
   province: string | null;
   phone: string | null;
   website: string | null;
   source: string;
-  role: string;
+  verified_at: string | null;
   added_at: string;
 };
 
@@ -123,9 +125,31 @@ async function unwrap(res: Response) {
 }
 
 export async function fetchMyMosques(): Promise<MyMosque[]> {
-  const res = await fetch(`${API_URL}/v1/me/mosques`, { headers: await authHeaders() });
-  const body = (await unwrap(res)) as { data: MyMosque[] };
-  return body.data;
+  const { data, error } = await createClient().rpc('profile_mosques');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as MyMosque[];
+}
+
+export type NewMosque = {
+  name: string;
+  address?: string;
+  city?: string;
+  province?: string;
+  postal_code?: string;
+  phone?: string;
+  website?: string;
+  lat?: number;
+  lng?: number;
+  notes?: string;
+};
+
+export async function createMosque(input: NewMosque): Promise<{ id: string; name: string }> {
+  const res = await fetch(`${API_URL}/v1/me/mosques/new`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify(input),
+  });
+  return (await unwrap(res)) as { id: string; name: string };
 }
 
 export async function addMosqueToProfile(mosqueId: string): Promise<void> {
