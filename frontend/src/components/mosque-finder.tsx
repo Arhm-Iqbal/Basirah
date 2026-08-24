@@ -137,7 +137,8 @@ export function MosqueFinder({
 
       {!isLoading && results.length === 0 && !error && (
         <p className="mt-5 text-base text-basirah-teal">
-          Nothing within {distance(radius)}. Try a wider radius.
+          No listings are available within {distance(radius)} yet. Try a wider radius, or add a
+          mosque you know. This does not mean there are no mosques nearby.
         </p>
       )}
 

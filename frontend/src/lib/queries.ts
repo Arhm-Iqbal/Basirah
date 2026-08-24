@@ -14,6 +14,28 @@ export type NearbyMosque = {
   distance_m: number;
 };
 
+function displayMosqueName(value: string) {
+  const name = value.trim();
+  if (/^https?:\/\//i.test(name)) {
+    try {
+      const host = new URL(name).hostname.replace(/^www\./i, '');
+      const stem = host
+        .split('.')[0]
+        ?.replace(/[-_]+/g, ' ')
+        .replace(/mosque$/i, ' mosque');
+      if (stem) {
+        return stem.replace(/\b\w/g, (letter) => letter.toUpperCase()).trim();
+      }
+    } catch {
+      return 'Mosque (name not verified)';
+    }
+  }
+  if (/^(masjid\s+mosque|mosque\s+masjid)$/i.test(name)) {
+    return 'Mosque (name not verified)';
+  }
+  return name || 'Mosque (name not verified)';
+}
+
 export async function fetchNearbyMosques(
   lat: number,
   lng: number,
@@ -27,7 +49,10 @@ export async function fetchNearbyMosques(
     in_limit: limit,
   });
   if (error) throw new Error(error.message);
-  return (data ?? []) as NearbyMosque[];
+  return ((data ?? []) as NearbyMosque[]).map((mosque) => ({
+    ...mosque,
+    name: displayMosqueName(mosque.name),
+  }));
 }
 
 export type OwnIncident = {

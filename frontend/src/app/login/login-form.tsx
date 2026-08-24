@@ -92,11 +92,23 @@ export default function LoginForm() {
         Log in to read reports and alerts for your mosque.
       </p>
 
+      <Link
+        href="/demo"
+        className="mt-6 flex min-h-11 w-full items-center justify-center rounded-full bg-basirah-teal px-6 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#0a4749] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none motion-reduce:active:scale-100"
+      >
+        Explore the demo profile
+      </Link>
+      <p className="mt-2 text-center text-xs leading-relaxed text-basirah-teal/70">
+        No account needed. The demo is read-only and uses sample data.
+      </p>
+
+      <AuthDivider label="Sign in to your account" />
+
       <button
         type="button"
         onClick={handleGoogleLogin}
         disabled={isLoading}
-        className="mt-8 flex min-h-11 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-basirah-teal/20 bg-white/45 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-basirah-teal/20 bg-white/45 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <GoogleIcon />
         Log in with Google

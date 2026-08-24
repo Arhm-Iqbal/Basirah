@@ -6,9 +6,11 @@
 
 Privacy-first incident reporting and community support for Muslims facing hate in Canada.
 
-[Try the live app](https://basirah-hazel.vercel.app) · [Watch the unlisted demo](https://www.youtube.com/watch?v=yF5vLf88a18)
+[Try the live app](https://basirah-hazel.vercel.app) · [Open the read-only judge demo](https://basirah-hazel.vercel.app/demo) · [Watch the unlisted demo](https://www.youtube.com/watch?v=yF5vLf88a18)
 
 Basirah was built for The Harvest Anti-Muslim Hate Hackathon. It gives someone one place to document an online or in-person incident, keep supporting evidence together, and get practical next steps for the situation they described. It also provides nearby mosque discovery and an Edmonton directory of community businesses and professionals.
+
+Reviewers can also select **Explore the demo profile** on the login page. It uses sample data, requires no credentials, and cannot write to the database.
 
 ## What it does
 
@@ -21,6 +23,10 @@ Basirah was built for The Harvest Anti-Muslim Hate Hackathon. It gives someone o
 - Provides searchable businesses, health professionals, and lawyers, with authenticated community submissions reviewed before publication.
 
 Basirah does not submit reports to a platform, police service, or support organization on a user's behalf. If anyone is in immediate danger, call 911.
+
+## Current map coverage
+
+The location search accepts any Canadian city or device location. The production mosque dataset currently contains OpenStreetMap records for Edmonton and Sherwood Park, plus the Greater Toronto Area. Other Canadian locations can still be searched, but they may show no stored listings until the directory is expanded. An empty result does not mean there are no mosques nearby.
 
 ## How it was built
 

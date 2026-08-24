@@ -8,31 +8,63 @@ export type GeoStatus =
   'idle' | 'prompting' | 'locating' | 'ready' | 'denied' | 'unavailable' | 'manual';
 
 const STORAGE_KEY = 'basirah.coords';
+const DEVICE_CACHE_MS = 15 * 60 * 1000;
+const MANUAL_CACHE_MS = 24 * 60 * 60 * 1000;
+
+type StoredCoords = Coords & {
+  source: 'device' | 'manual';
+  saved_at: number;
+};
 
 // There is deliberately no fallback city. Silently centring on the wrong place is worse
 // than admitting we do not know yet: someone in Edmonton seeing Toronto mosques has no
 // way to tell the map is broken rather than empty.
 export function useGeolocation() {
   const [coords, setCoords] = useState<Coords | null>(null);
-  const [status, setStatus] = useState<GeoStatus>('idle');
+  const [status, setStatus] = useState<GeoStatus>('prompting');
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        setCoords(JSON.parse(saved) as Coords);
-        setStatus('ready');
+        const parsed = JSON.parse(saved) as Partial<StoredCoords>;
+        const source = parsed.source === 'manual' ? 'manual' : 'device';
+        const maxAge = source === 'manual' ? MANUAL_CACHE_MS : DEVICE_CACHE_MS;
+        const valid =
+          typeof parsed.lat === 'number' &&
+          Number.isFinite(parsed.lat) &&
+          parsed.lat >= -90 &&
+          parsed.lat <= 90 &&
+          typeof parsed.lng === 'number' &&
+          Number.isFinite(parsed.lng) &&
+          parsed.lng >= -180 &&
+          parsed.lng <= 180 &&
+          typeof parsed.saved_at === 'number' &&
+          Date.now() - parsed.saved_at <= maxAge;
+
+        if (valid) {
+          setCoords({ lat: parsed.lat as number, lng: parsed.lng as number });
+          setStatus(source === 'manual' ? 'manual' : 'ready');
+          return;
+        }
+        localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
       // Private mode and blocked site data both throw here; a missing cache is not an error.
     }
+    setStatus('idle');
   }, []);
 
   const remember = useCallback((next: Coords, nextStatus: GeoStatus) => {
     setCoords(next);
     setStatus(nextStatus);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      const stored: StoredCoords = {
+        ...next,
+        source: nextStatus === 'manual' ? 'manual' : 'device',
+        saved_at: Date.now(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
     } catch {
       // Not being able to cache the fix is survivable; the session still has it.
     }
@@ -95,7 +127,9 @@ export function useGeolocation() {
         // restored from cache or typed in by hand stays valid whatever the permission says.
         if (result.state === 'denied') {
           setStatus((current) =>
-            current === 'idle' || current === 'locating' ? 'denied' : current,
+            current === 'prompting' || current === 'idle' || current === 'locating'
+              ? 'denied'
+              : current,
           );
         }
         result.addEventListener('change', sync);

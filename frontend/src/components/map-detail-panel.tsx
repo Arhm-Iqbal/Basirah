@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { fetchEnrichment, type Enrichment, type NearbyMosque } from '@/lib/queries';
@@ -104,6 +105,8 @@ export function MapDetailPanel({
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const [entered, setEntered] = useState(false);
+  const pathname = usePathname();
+  const insideApp = pathname.startsWith('/app/');
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -129,9 +132,11 @@ export function MapDetailPanel({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className={`map-drawer absolute inset-x-0 bottom-0 z-20 flex max-h-[52%] w-full flex-col rounded-t-2xl bg-basirah-teal shadow-[0_-16px_36px_rgb(4_51_52_/_28%)] md:inset-x-auto md:inset-y-0 md:end-0 md:max-h-none md:w-[min(100%,22.5rem)] md:rounded-none md:shadow-[-24px_0_48px_rgb(4_51_52_/_45%)] ${
-        entered && open ? 'is-open' : ''
-      }`}
+      className={`map-drawer fixed inset-x-0 z-20 flex max-h-[52dvh] w-full flex-col rounded-t-2xl bg-basirah-teal shadow-[0_-16px_36px_rgb(4_51_52_/_28%)] md:absolute md:inset-x-auto md:inset-y-0 md:end-0 md:max-h-none md:w-[min(100%,22.5rem)] md:rounded-none md:shadow-[-24px_0_48px_rgb(4_51_52_/_45%)] ${
+        insideApp
+          ? 'bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-auto'
+          : 'bottom-0 md:bottom-auto'
+      } ${entered && open ? 'is-open' : ''}`}
     >
       <div
         className="absolute inset-x-0 top-0 h-1 bg-basirah-rust md:inset-y-0 md:start-0 md:end-auto md:h-auto md:w-1"

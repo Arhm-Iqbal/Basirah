@@ -14,7 +14,14 @@ export default function MapPage() {
         <h1 className="font-display text-2xl font-semibold tracking-tight text-basirah-teal">
           My community
         </h1>
-        <p className="mt-1 max-w-2xl text-base text-basirah-teal">Your mosques near you.</p>
+        <p className="mt-1 max-w-2xl text-base text-basirah-teal">
+          Mosques currently listed near you.
+        </p>
+        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-basirah-teal/65">
+          Listings come from OpenStreetMap and community submissions and may be incomplete. Verify
+          details before relying on them. Current coverage is strongest in Edmonton and the Greater
+          Toronto Area.
+        </p>
       </div>
 
       <MapAddMosque />

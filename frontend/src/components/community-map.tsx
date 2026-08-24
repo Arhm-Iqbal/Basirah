@@ -23,6 +23,21 @@ function metresBetween(a: { lat: number; lng: number }, b: { lat: number; lng: n
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+function fitSearchArea(map: MapRef, center: { lat: number; lng: number }, radiusM: number) {
+  const latDelta = radiusM / 111_320;
+  const longitudeScale = Math.max(Math.cos((center.lat * Math.PI) / 180), 0.2);
+  const lngDelta = radiusM / (111_320 * longitudeScale);
+  const compact = map.getContainer().clientWidth < 640;
+
+  map.fitBounds(
+    [
+      [center.lng - lngDelta, center.lat - latDelta],
+      [center.lng + lngDelta, center.lat + latDelta],
+    ],
+    { padding: compact ? 42 : 58, maxZoom: 13, duration: 800 },
+  );
+}
+
 type Selection = { kind: 'mosque'; item: NearbyMosque };
 
 const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
@@ -35,9 +50,9 @@ function panelPadding(map: MapRef, open: boolean) {
   const container = map.getContainer();
   if (container.clientWidth < 768) {
     return {
-      top: Math.min(160, Math.round(container.clientHeight * 0.24)),
+      top: Math.min(160, Math.round(window.innerHeight * 0.2)),
       right: 0,
-      bottom: Math.min(416, Math.round(container.clientHeight * 0.52)),
+      bottom: Math.min(416, Math.round(window.innerHeight * 0.52)),
       left: 0,
     };
   }
@@ -88,7 +103,7 @@ export function CommunityMap() {
     setSelected(null);
     setPanelOpen(false);
 
-    Promise.all([fetchNearbyMosques(lat, lng, radius), fetchMyMosques().catch(() => [])])
+    Promise.all([fetchNearbyMosques(lat, lng, radius, 100), fetchMyMosques().catch(() => [])])
       .then(([nextMosques, mine]) => {
         if (!active) return;
         const seen = new Set(nextMosques.map((m) => m.id));
@@ -126,9 +141,9 @@ export function CommunityMap() {
   }, [lat, lng, radius]);
 
   useEffect(() => {
-    if (!coords) return;
-    mapRef.current?.flyTo({ center: [coords.lng, coords.lat], zoom: 12, duration: 900 });
-  }, [coords]);
+    if (!coords || !mapRef.current) return;
+    fitSearchArea(mapRef.current, coords, radius);
+  }, [coords, radius]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -195,6 +210,9 @@ export function CommunityMap() {
         initialViewState={{ longitude: coords.lng, latitude: coords.lat, zoom: 12 }}
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
+        onLoad={() => {
+          if (mapRef.current) fitSearchArea(mapRef.current, coords, radius);
+        }}
         onClick={() => {
           if (ignoreMapClick.current) {
             ignoreMapClick.current = false;
@@ -209,36 +227,39 @@ export function CommunityMap() {
           </Marker>
         )}
 
-        {mosques.map((mosque) => (
-          <Marker
-            key={mosque.id}
-            longitude={mosque.lng}
-            latitude={mosque.lat}
-            anchor="bottom"
-            onClick={(event) => {
-              event.originalEvent.stopPropagation();
-              showSelection({ kind: 'mosque', item: mosque });
-            }}
-          >
-            <button
-              type="button"
-              aria-label={mosque.name}
-              className="block cursor-pointer transition-transform duration-150 hover:-translate-y-0.5 motion-reduce:transform-none"
+        {mosques
+          .slice()
+          .reverse()
+          .map((mosque) => (
+            <Marker
+              key={mosque.id}
+              longitude={mosque.lng}
+              latitude={mosque.lat}
+              anchor="bottom"
+              onClick={(event) => {
+                event.originalEvent.stopPropagation();
+                showSelection({ kind: 'mosque', item: mosque });
+              }}
             >
-              <img
-                src={
-                  selected?.item.id === mosque.id
-                    ? '/icons/masjid-pin-rust.png'
-                    : '/icons/masjid-pin.png'
-                }
-                alt=""
-                width={23}
-                height={29}
-                className="drop-shadow-sm"
-              />
-            </button>
-          </Marker>
-        ))}
+              <button
+                type="button"
+                aria-label={mosque.name}
+                className="block cursor-pointer transition-transform duration-150 hover:-translate-y-0.5 motion-reduce:transform-none"
+              >
+                <img
+                  src={
+                    selected?.item.id === mosque.id
+                      ? '/icons/masjid-pin-rust.png'
+                      : '/icons/masjid-pin.png'
+                  }
+                  alt=""
+                  width={23}
+                  height={29}
+                  className="drop-shadow-sm"
+                />
+              </button>
+            </Marker>
+          ))}
       </Map>
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
@@ -260,6 +281,12 @@ export function CommunityMap() {
               className="flex flex-wrap items-center gap-1"
             />
           </div>
+          {!isLoading && !error && mosques.length === 0 && (
+            <p className="max-w-[17rem] rounded-md border border-basirah-teal/20 bg-white px-3 py-2 text-sm leading-relaxed text-basirah-teal">
+              No listings are available in this area yet. This does not mean there are no mosques
+              nearby.
+            </p>
+          )}
           {error && (
             <p className="max-w-[16rem] rounded-md border border-basirah-rust/30 bg-white px-3 py-2 text-sm font-semibold text-basirah-rust">
               {error}
