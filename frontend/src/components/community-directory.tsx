@@ -5,11 +5,9 @@ import { useId, useMemo, useRef, useState } from 'react';
 
 import {
   BUSINESSES,
-  BUSINESS_NOTICE,
   DIRECTORY_COMPILED,
   HEALTH_PROFESSIONALS,
   LAWYERS,
-  PROFESSIONAL_NOTICE,
   type DirectoryBusiness,
   type DirectoryProfessional,
 } from '@/data/community-directory';
@@ -248,28 +246,17 @@ function Choices({ intro, options }: { intro: string; options: Choice[] }) {
   );
 }
 
-function Results({
-  notice,
-  total,
-  children,
-}: {
-  notice: string;
-  total: number;
-  children: React.ReactNode;
-}) {
+function Results({ total, children }: { total: number; children: React.ReactNode }) {
   return (
     <>
-      <p className="mt-4 rounded-lg border border-basirah-teal/20 bg-white p-4 text-sm leading-relaxed text-basirah-teal/80">
-        {notice}
-      </p>
-      <p className="mt-3 text-sm text-basirah-teal/70">
+      <p className="text-sm text-basirah-teal/70">
         {total} {total === 1 ? 'entry' : 'entries'}, compiled {DIRECTORY_COMPILED} from public
         sources.
       </p>
       {total === 0 ? (
-        <p className="mt-5 text-base text-basirah-teal/75">No listings in this type.</p>
+        <p className="text-base text-basirah-teal/75">No listings in this type.</p>
       ) : (
-        <ul className="mt-5 space-y-3">{children}</ul>
+        <ul className="space-y-3">{children}</ul>
       )}
     </>
   );
@@ -322,7 +309,6 @@ function SearchResults({
   lawyers: DirectoryProfessional[];
 }) {
   const total = businesses.length + health.length + lawyers.length;
-  const hasProfessionals = health.length + lawyers.length > 0;
 
   return (
     <div className="mt-8">
@@ -347,19 +333,6 @@ function SearchResults({
         </div>
       ) : (
         <>
-          <div className="mt-5 space-y-2">
-            {businesses.length > 0 ? (
-              <p className="rounded-lg border border-basirah-teal/20 bg-white p-4 text-sm leading-relaxed text-basirah-teal/80">
-                {BUSINESS_NOTICE}
-              </p>
-            ) : null}
-            {hasProfessionals ? (
-              <p className="rounded-lg border border-basirah-teal/20 bg-white p-4 text-sm leading-relaxed text-basirah-teal/80">
-                {PROFESSIONAL_NOTICE}
-              </p>
-            ) : null}
-          </div>
-
           <SearchGroup title="Businesses" total={businesses.length}>
             {businesses.map((business) => (
               <BusinessCard
@@ -509,6 +482,17 @@ export function CommunityDirectory() {
 
   return (
     <div>
+      {parent ? (
+        <button
+          type="button"
+          onClick={() => go(parent)}
+          className="-ms-2 mb-3 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-basirah-teal/70 transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          Back
+        </button>
+      ) : null}
+
       <SearchBox value={query} onChange={setQuery} />
 
       {normalisedQuery ? (
@@ -519,18 +503,7 @@ export function CommunityDirectory() {
           lawyers={searchedLawyers}
         />
       ) : (
-        <div className="mt-8">
-          {parent ? (
-            <button
-              type="button"
-              onClick={() => go(parent)}
-              className="-ms-2 mb-5 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-basirah-teal/70 transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none"
-            >
-              <ArrowLeft className="size-4" aria-hidden />
-              Back
-            </button>
-          ) : null}
-
+        <div className="mt-6">
           {view === 'root' ? (
             <Choices
               intro="What are you looking for?"
@@ -587,7 +560,7 @@ export function CommunityDirectory() {
                 value={subType}
                 onChange={setSubType}
               />
-              <Results notice={BUSINESS_NOTICE} total={businesses.length}>
+              <Results total={businesses.length}>
                 {businesses.map((business) => (
                   <BusinessCard
                     key={`${business.name}-${business.address ?? ''}`}
@@ -610,7 +583,7 @@ export function CommunityDirectory() {
                 value={subType}
                 onChange={setSubType}
               />
-              <Results notice={PROFESSIONAL_NOTICE} total={health.length}>
+              <Results total={health.length}>
                 {health.map((person) => (
                   <ProfessionalCard key={person.name} person={person} />
                 ))}
@@ -630,7 +603,7 @@ export function CommunityDirectory() {
                 value={subType}
                 onChange={setSubType}
               />
-              <Results notice={PROFESSIONAL_NOTICE} total={lawyers.length}>
+              <Results total={lawyers.length}>
                 {lawyers.map((person) => (
                   <ProfessionalCard key={person.name} person={person} />
                 ))}
