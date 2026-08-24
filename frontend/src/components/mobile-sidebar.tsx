@@ -98,13 +98,13 @@ export function MobileSidebar() {
               </Link>
             ))}
 
-        <Link
-          href="/report"
-          onClick={() => setIsOpen(false)}
-          className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md bg-basirah-rust px-5 py-3 text-center text-base font-semibold text-white hover:bg-basirah-rust/90"
-        >
-          Report an incident
-        </Link>
+            <Link
+              href="/report"
+              onClick={() => setIsOpen(false)}
+              className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md bg-basirah-rust px-5 py-3 text-center text-base font-semibold text-white hover:bg-basirah-rust/90"
+            >
+              Report an incident
+            </Link>
           </div>
         </>
       )}

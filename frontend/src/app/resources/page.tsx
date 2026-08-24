@@ -33,8 +33,13 @@ export default function ResourcesPage() {
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {RESOURCES.map((resource) => (
-          <div key={resource.title} className="rounded-lg border border-basirah-teal/20 bg-white p-4">
-            <h2 className="text-lg font-semibold tracking-tight text-basirah-teal">{resource.title}</h2>
+          <div
+            key={resource.title}
+            className="rounded-lg border border-basirah-teal/20 bg-white p-4"
+          >
+            <h2 className="text-lg font-semibold tracking-tight text-basirah-teal">
+              {resource.title}
+            </h2>
             <p className="mt-2 text-base text-basirah-teal">{resource.body}</p>
           </div>
         ))}

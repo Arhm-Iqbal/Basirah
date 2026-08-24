@@ -78,7 +78,11 @@ export function LocationGate({ status, onLocate, onManual }: Props) {
           </button>
         </form>
 
-        {error && <p role="alert" className="mt-3 text-sm font-medium text-basirah-rust">{error}</p>}
+        {error && (
+          <p role="alert" className="mt-3 text-sm font-medium text-basirah-rust">
+            {error}
+          </p>
+        )}
 
         {results.length > 0 && (
           <ul className="mt-3 space-y-1 text-start">

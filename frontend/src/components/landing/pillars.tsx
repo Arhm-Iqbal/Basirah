@@ -23,8 +23,7 @@ const PILLARS = [
   {
     icon: Building2,
     title: 'Mosques and Community',
-    description:
-      'Discover nearby mosques, events, services, programs, and community resources.',
+    description: 'Discover nearby mosques, events, services, programs, and community resources.',
     cta: 'Explore mosques',
     href: '/map',
   },

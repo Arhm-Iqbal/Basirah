@@ -28,10 +28,18 @@ export function Hero() {
           Community security for Canadian mosques.
         </h1>
         <div className="mt-12 flex w-full max-w-md flex-col gap-4 sm:max-w-lg sm:flex-row sm:justify-center">
-          <PrimaryButtonLink href="/signup" size="lg" className="w-full sm:w-auto sm:min-w-[10.5rem]">
+          <PrimaryButtonLink
+            href="/signup"
+            size="lg"
+            className="w-full sm:w-auto sm:min-w-[10.5rem]"
+          >
             Sign up
           </PrimaryButtonLink>
-          <SecondaryButtonLink href="/login" size="lg" className="w-full sm:w-auto sm:min-w-[10.5rem]">
+          <SecondaryButtonLink
+            href="/login"
+            size="lg"
+            className="w-full sm:w-auto sm:min-w-[10.5rem]"
+          >
             Sign in
           </SecondaryButtonLink>
         </div>

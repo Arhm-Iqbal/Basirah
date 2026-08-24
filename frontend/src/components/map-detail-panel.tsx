@@ -10,8 +10,7 @@ import {
 } from '@/lib/queries';
 
 export type MapSelection =
-  | { kind: 'mosque'; item: NearbyMosque }
-  | { kind: 'incident'; item: MapIncident };
+  { kind: 'mosque'; item: NearbyMosque } | { kind: 'incident'; item: MapIncident };
 
 function formatDistance(metres: number) {
   return metres < 1000 ? `${Math.round(metres)} m away` : `${(metres / 1000).toFixed(1)} km away`;
@@ -64,7 +63,9 @@ function MosqueBody({ mosque, titleId }: { mosque: NearbyMosque; titleId: string
 
   return (
     <>
-      <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-basirah-cyan uppercase">Mosque</p>
+      <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-basirah-cyan uppercase">
+        Mosque
+      </p>
       <h2
         id={titleId}
         className="mt-2 font-display text-2xl font-semibold tracking-tight text-balance text-basirah-cream"

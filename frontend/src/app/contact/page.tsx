@@ -29,8 +29,8 @@ export default function ContactPage() {
           .
         </p>
         <p className="text-base text-basirah-teal">
-          To report an incident, use the report form rather than email — it captures what is
-          needed for follow-up and keeps the record consistent.
+          To report an incident, use the report form rather than email — it captures what is needed
+          for follow-up and keeps the record consistent.
         </p>
       </div>
     </MarketingPage>

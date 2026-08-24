@@ -5,13 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 export type Coords = { lat: number; lng: number };
 
 export type GeoStatus =
-  | 'idle'
-  | 'prompting'
-  | 'locating'
-  | 'ready'
-  | 'denied'
-  | 'unavailable'
-  | 'manual';
+  'idle' | 'prompting' | 'locating' | 'ready' | 'denied' | 'unavailable' | 'manual';
 
 const STORAGE_KEY = 'basirah.coords';
 

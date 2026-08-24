@@ -125,7 +125,12 @@ me.post(
 
     if (joinError) {
       console.error(joinError);
-      return fail(c, 500, 'insert_failed', 'Saved the mosque but could not add it to your profile.');
+      return fail(
+        c,
+        500,
+        'insert_failed',
+        'Saved the mosque but could not add it to your profile.',
+      );
     }
 
     return c.json(mosque, 201);

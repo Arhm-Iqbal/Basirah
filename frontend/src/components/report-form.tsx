@@ -255,7 +255,8 @@ export function ReportForm() {
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="category" className={labelClass}>
-              What kind of incident? <span className="font-normal text-basirah-teal/50">(optional)</span>
+              What kind of incident?{' '}
+              <span className="font-normal text-basirah-teal/50">(optional)</span>
             </label>
             <select
               id="category"

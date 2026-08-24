@@ -54,7 +54,9 @@ tips.post(
 
 tips.post(
   '/status',
-  zValidator('json', tipStatusQuery, (r, c) => (r.success ? undefined : zodFail(c, r.error.issues))),
+  zValidator('json', tipStatusQuery, (r, c) =>
+    r.success ? undefined : zodFail(c, r.error.issues),
+  ),
   async (c) => {
     const { claim_code } = c.req.valid('json');
     const db = serviceClient(c.env);

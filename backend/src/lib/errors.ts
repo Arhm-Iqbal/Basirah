@@ -8,9 +8,18 @@ export function fail(
   message: string,
   details?: unknown,
 ) {
-  return c.json({ error: { code, message, ...(details === undefined ? {} : { details }) } }, status);
+  return c.json(
+    { error: { code, message, ...(details === undefined ? {} : { details }) } },
+    status,
+  );
 }
 
 export function zodFail(c: Context, issues: unknown) {
-  return fail(c, 422, 'validation_failed', 'The request body did not match the expected shape.', issues);
+  return fail(
+    c,
+    422,
+    'validation_failed',
+    'The request body did not match the expected shape.',
+    issues,
+  );
 }

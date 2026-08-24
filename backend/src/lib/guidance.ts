@@ -48,7 +48,10 @@ export type GuidanceContext = {
   facts: Record<string, unknown>;
 };
 
-export function buildContext(incident: Record<string, any>, province: string | null): GuidanceContext {
+export function buildContext(
+  incident: Record<string, any>,
+  province: string | null,
+): GuidanceContext {
   const details = (incident.details ?? {}) as Record<string, unknown>;
   const facts: Record<string, unknown> = {};
 
@@ -121,10 +124,7 @@ export type Guidance = {
   resources: SupportResource[];
 };
 
-export async function generateGuidance(
-  env: Bindings,
-  context: GuidanceContext,
-): Promise<Guidance> {
+export async function generateGuidance(env: Bindings, context: GuidanceContext): Promise<Guidance> {
   const resources = await findResources(serviceClient(env), context.province, context.category);
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });

@@ -16,8 +16,8 @@ export default function AboutPage() {
           comparable organisations already provide to other faith communities.
         </p>
         <p>
-          Reports are collected to help communities understand what is happening around them and
-          to support funding applications under the Security Infrastructure Program. Incident
+          Reports are collected to help communities understand what is happening around them and to
+          support funding applications under the Security Infrastructure Program. Incident
           categories follow Statistics Canada hate-crime classifications so the picture can be
           compared against the national baseline.
         </p>
@@ -35,8 +35,8 @@ export default function AboutPage() {
             religion, or clothing anywhere in the system.
           </li>
           <li>
-            No unverified report becomes a community-wide alert, which protects against both
-            panic and the use of this system to target individuals.
+            No unverified report becomes a community-wide alert, which protects against both panic
+            and the use of this system to target individuals.
           </li>
           <li>
             Anonymous reports carry no account, and the record has no field for identity or IP
