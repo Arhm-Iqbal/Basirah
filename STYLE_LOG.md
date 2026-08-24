@@ -6,6 +6,18 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-24 — White vector mark, directory in Resources
+
+What: The wordmark is an SVG mask (`currentColor`) so it can be rust on cream
+and white on teal. About and Contact left the nav and footer. Resources is
+Hassan's Edmonton directory on the page itself. The map no longer mentions
+or plots incidents.
+Why: The PNG mark went muddy when scaled, and rust-on-teal needed a cream
+halo. About/Contact were extra tabs. Resources should be the directory, not
+a second brochure.
+
+---
+
 ## 2026-08-23 — Report completion becomes an action screen
 
 What: Signed-in reports now finish on a dedicated next-steps screen. It uses the existing

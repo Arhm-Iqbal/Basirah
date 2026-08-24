@@ -2,27 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 
-import {
-  fetchEnrichment,
-  type Enrichment,
-  type MapIncident,
-  type NearbyMosque,
-} from '@/lib/queries';
+import { fetchEnrichment, type Enrichment, type NearbyMosque } from '@/lib/queries';
 
-export type MapSelection =
-  { kind: 'mosque'; item: NearbyMosque } | { kind: 'incident'; item: MapIncident };
+export type MapSelection = { kind: 'mosque'; item: NearbyMosque };
 
 function formatDistance(metres: number) {
   return metres < 1000 ? `${Math.round(metres)} m away` : `${(metres / 1000).toFixed(1)} km away`;
-}
-
-function formatLabel(value: string | null) {
-  if (!value) return 'Uncategorised';
-  return value.replace(/_/g, ' ').replace(/^./, (char) => char.toUpperCase());
-}
-
-function formatWhen(iso: string) {
-  return new Date(iso).toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 function ActionLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -107,28 +92,6 @@ function MosqueBody({ mosque, titleId }: { mosque: NearbyMosque; titleId: string
   );
 }
 
-function IncidentBody({ incident, titleId }: { incident: MapIncident; titleId: string }) {
-  return (
-    <>
-      <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-basirah-cyan uppercase">
-        Verified incident
-      </p>
-      <h2
-        id={titleId}
-        className="mt-2 font-display text-2xl font-semibold tracking-tight text-balance text-basirah-cream"
-      >
-        {formatLabel(incident.category)}
-      </h2>
-      <p className="mt-3 text-base text-pretty text-basirah-cream">
-        Reported via {formatLabel(incident.channel).toLowerCase()}
-      </p>
-      <p className="mt-2 text-base font-semibold tabular-nums text-basirah-cyan">
-        {formatWhen(incident.occurred_at ?? incident.created_at)}
-      </p>
-    </>
-  );
-}
-
 export function MapDetailPanel({
   selected,
   open,
@@ -190,11 +153,7 @@ export function MapDetailPanel({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 ps-7">
-        {selected.kind === 'mosque' ? (
-          <MosqueBody mosque={selected.item} titleId={titleId} />
-        ) : (
-          <IncidentBody incident={selected.item} titleId={titleId} />
-        )}
+        <MosqueBody mosque={selected.item} titleId={titleId} />
       </div>
     </aside>
   );

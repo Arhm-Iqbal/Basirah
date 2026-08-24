@@ -8,10 +8,8 @@ import { LocationGate } from '@/components/location-gate';
 import { MapDetailPanel } from '@/components/map-detail-panel';
 import { RadiusChips, useSearchRadius } from '@/components/radius-chips';
 import {
-  fetchMapIncidents,
   fetchMyMosques,
   fetchNearbyMosques,
-  type MapIncident,
   type NearbyMosque,
 } from '@/lib/queries';
 import { useGeolocation } from '@/lib/use-geolocation';
@@ -28,12 +26,7 @@ function metresBetween(a: { lat: number; lng: number }, b: { lat: number; lng: n
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-type Selection = { kind: 'mosque'; item: NearbyMosque } | { kind: 'incident'; item: MapIncident };
-
-function formatLabel(value: string | null) {
-  if (!value) return 'Uncategorised';
-  return value.replace(/_/g, ' ').replace(/^./, (char) => char.toUpperCase());
-}
+type Selection = { kind: 'mosque'; item: NearbyMosque };
 
 export function CommunityMap() {
   const { coords, status, locate, setManual } = useGeolocation();
@@ -50,7 +43,6 @@ export function CommunityMap() {
   } = useSearchRadius(15_000);
 
   const [mosques, setMosques] = useState<NearbyMosque[]>([]);
-  const [incidents, setIncidents] = useState<MapIncident[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Selection | null>(null);
@@ -73,12 +65,8 @@ export function CommunityMap() {
     setSelected(null);
     setPanelOpen(false);
 
-    Promise.all([
-      fetchNearbyMosques(lat, lng, radius),
-      fetchMapIncidents(lat, lng, radius),
-      fetchMyMosques().catch(() => []),
-    ])
-      .then(([nextMosques, nextIncidents, mine]) => {
+    Promise.all([fetchNearbyMosques(lat, lng, radius), fetchMyMosques().catch(() => [])])
+      .then(([nextMosques, mine]) => {
         if (!active) return;
         const seen = new Set(nextMosques.map((m) => m.id));
         const extras = mine.flatMap((m) =>
@@ -99,12 +87,10 @@ export function CommunityMap() {
               ],
         );
         setMosques([...nextMosques, ...extras].sort((a, b) => a.distance_m - b.distance_m));
-        setIncidents(nextIncidents);
       })
       .catch((err: unknown) => {
         if (!active) return;
         setMosques([]);
-        setIncidents([]);
         setError(err instanceof Error ? err.message : 'Could not load map data.');
       })
       .finally(() => {
@@ -150,13 +136,7 @@ export function CommunityMap() {
   const locationMessage = status === 'manual' ? 'Showing the area you entered.' : null;
 
   const mosqueCount = `${mosques.length} ${mosques.length === 1 ? 'mosque' : 'mosques'}`;
-  const incidentCount =
-    incidents.length === 0
-      ? 'no verified incidents'
-      : `${incidents.length} verified ${incidents.length === 1 ? 'incident' : 'incidents'}`;
-  const summary = isLoading
-    ? 'Loading nearby mosques and incidents…'
-    : `${mosqueCount} · ${incidentCount} nearby`;
+  const summary = isLoading ? 'Loading nearby mosques…' : `${mosqueCount} nearby`;
 
   if (!coords) {
     return <LocationGate status={status} onLocate={locate} onManual={setManual} />;
@@ -201,7 +181,7 @@ export function CommunityMap() {
             >
               <img
                 src={
-                  selected?.kind === 'mosque' && selected.item.id === mosque.id
+                  selected?.item.id === mosque.id
                     ? '/icons/masjid-pin-rust.png'
                     : '/icons/masjid-pin.png'
                 }
@@ -211,25 +191,6 @@ export function CommunityMap() {
                 className="drop-shadow-sm"
               />
             </button>
-          </Marker>
-        ))}
-
-        {incidents.map((incident) => (
-          <Marker
-            key={incident.id}
-            longitude={incident.lng}
-            latitude={incident.lat}
-            anchor="center"
-            onClick={(event) => {
-              event.originalEvent.stopPropagation();
-              showSelection({ kind: 'incident', item: incident });
-            }}
-          >
-            <button
-              type="button"
-              aria-label={`Verified incident: ${formatLabel(incident.category)}`}
-              className="block size-3 rotate-45 cursor-pointer border-2 border-white bg-basirah-rust shadow-sm transition-colors hover:bg-basirah-rust/70"
-            />
           </Marker>
         ))}
       </Map>
@@ -286,10 +247,6 @@ export function CommunityMap() {
         <li className="flex items-center gap-2">
           <img src="/icons/masjid-pin.png" alt="" width={11} height={14} className="shrink-0" />
           Mosque
-        </li>
-        <li className="flex items-center gap-2">
-          <span className="size-2.5 shrink-0 rotate-45 border border-white bg-basirah-rust" />
-          Verified incident
         </li>
         {coords && (
           <li className="flex items-center gap-2">

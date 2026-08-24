@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { Logo } from '@/components/logo';
 
 const FOOTER_LINKS = [
-  { href: '/about', label: 'About' },
+  { href: '/map', label: 'Community' },
+  { href: '/report', label: 'Report' },
   { href: '/resources', label: 'Resources' },
-  { href: '/contact', label: 'Contact' },
 ];
 
 export function SiteFooter() {

@@ -221,17 +221,28 @@ export async function fetchIncidentActions(incidentId: string): Promise<Incident
 // file; navigating there directly would render the PDF instead of downloading it.
 export async function downloadReport(incidentId: string) {
   const doc = await fetchReportDocument(incidentId);
+  const filename = `basirah-report-${incidentId.slice(0, 8)}.pdf`;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    const opened = window.open(doc.url, '_blank', 'noopener,noreferrer');
+    if (!opened) window.location.assign(doc.url);
+    return;
+  }
+
   const res = await fetch(doc.url);
   if (!res.ok) throw new Error('Could not fetch the document.');
   const blob = await res.blob();
-  const href = URL.createObjectURL(blob);
+  const file = new File([blob], filename, { type: 'application/pdf' });
+  const href = URL.createObjectURL(file);
   const a = document.createElement('a');
   a.href = href;
-  a.download = `basirah-report-${incidentId.slice(0, 8)}.pdf`;
+  a.download = filename;
+  a.rel = 'noopener';
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(href);
+  window.setTimeout(() => URL.revokeObjectURL(href), 60_000);
 }
 
 export async function deleteReport(incidentId: string): Promise<void> {

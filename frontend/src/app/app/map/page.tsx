@@ -14,9 +14,7 @@ export default function MapPage() {
         <h1 className="font-display text-2xl font-semibold tracking-tight text-basirah-teal">
           My community
         </h1>
-        <p className="mt-1 max-w-2xl text-base text-basirah-teal">
-          Your mosques and verified incidents near you. Incident locations are approximate.
-        </p>
+        <p className="mt-1 max-w-2xl text-base text-basirah-teal">Your mosques near you.</p>
       </div>
 
       <MapAddMosque />

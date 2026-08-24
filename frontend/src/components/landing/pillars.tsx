@@ -16,7 +16,7 @@ const PILLARS = [
     icon: LifeBuoy,
     title: 'Find Support',
     description:
-      'Connect with legal, healthcare, mental health, community, and safety professionals who can help.',
+      'Browse the Edmonton directory of Muslim-owned and halal businesses, health professionals, and lawyers.',
     cta: 'Find support',
     href: '/resources',
   },
