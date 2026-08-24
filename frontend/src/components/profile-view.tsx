@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/button-link';
@@ -22,26 +22,29 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
   const [hours, setHours] = useState<Enrichment | null>(null);
   const [loadedHours, setLoadedHours] = useState(false);
   const [events, setEvents] = useState<MosqueEvent[] | null>(null);
+  const requested = useRef<string | null>(null);
 
+  // Both requests shared one effect whose deps included loadedHours, so whichever finished
+  // first re-ran the effect, and the re-run's cleanup cancelled the other's result before it
+  // arrived. Enrichment is usually the slower of the two, but when it wins -- a cold events
+  // function, a slow query, plain jitter -- the events result was discarded and the panel
+  // stayed on "Loading..." with nothing left to retry it. Nothing is cancelled now, and the
+  // ref keeps this to one request per mosque rather than one per open.
   useEffect(() => {
-    if (!open || loadedHours) return;
-    let active = true;
+    if (!open || requested.current === mosque.id) return;
+    requested.current = mosque.id;
+
     void fetchMosqueEvents(mosque.id)
       .catch(() => [])
-      .then((data) => {
-        if (active) setEvents(data);
-      });
+      .then(setEvents);
+
     void fetchEnrichment(mosque.id)
       .catch(() => null)
       .then((data) => {
-        if (!active) return;
         setHours(data);
         setLoadedHours(true);
       });
-    return () => {
-      active = false;
-    };
-  }, [open, loadedHours, mosque.id]);
+  }, [open, mosque.id]);
 
   const phone = mosque.phone ?? hours?.phone ?? null;
   const website = mosque.website ?? hours?.website ?? null;
