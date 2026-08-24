@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { Bindings } from './env';
+import { findResources, type SupportResource } from './resources';
+import { serviceClient } from './supabase';
 
 // What the model is allowed to see.
 //
@@ -66,12 +68,21 @@ export function buildContext(incident: Record<string, any>, province: string | n
 
 const SYSTEM = `You advise people in Canada who have just reported an anti-Muslim hate incident to a community safety organisation.
 
-Give practical next steps for their situation. Ground everything in Canadian context: police non-emergency reporting, provincial victim services, the Canadian Human Rights Commission or the relevant provincial human rights tribunal, and community legal clinics.
+Give practical next steps for their situation, drawing on the resources supplied in the "resources" field of the user message.
+
+The supplied resources are the ONLY permitted source of organisation names, phone numbers, and URLs. This is absolute:
+- Never name an organisation that is not in the supplied list. Not one you know of, not one that probably exists, not one under a slightly different name.
+- Never state a phone number or URL that is not written in the supplied list, character for character. Do not complete, correct, reformat, or recall a contact from your own knowledge.
+- Where a supplied resource has a null phone or url, that is deliberate and means the contact could not be verified. Say what the resource's description says about reaching them. Never fill the gap with a number or address of your own.
+- When a step rests on a supplied resource, set that step's resource_id to that resource's id. Set resource_id to null for a step that names no organisation.
+- If the supplied list does not cover what someone in this situation needs, describe the type of service to look for and say how to find it locally. An honest gap is correct; an invented contact is not.
+
+The one exception: you may tell someone to call 911 in an emergency.
 
 Rules:
 - Address the reporter directly and plainly. No preamble, no restating what they told you.
 - Never speculate about who was responsible or their background. Reason about the situation, not the people.
-- Do not invent phone numbers, case numbers, URLs, or organisation names you are not certain exist in Canada. Describe the type of service instead.
+- Do not invent case numbers, reference numbers, deadlines, or filing time limits.
 - If the summary suggests ongoing danger, the first step is contacting emergency services.
 - You are not a lawyer and this is not legal advice. Do not claim otherwise.`;
 
@@ -88,8 +99,12 @@ const SCHEMA = {
         properties: {
           title: { type: 'string' },
           detail: { type: 'string' },
+          resource_id: {
+            type: ['string', 'null'],
+            description: 'id of the supplied resource this step draws on, or null.',
+          },
         },
-        required: ['title', 'detail'],
+        required: ['title', 'detail', 'resource_id'],
         additionalProperties: false,
       },
     },
@@ -101,14 +116,17 @@ const SCHEMA = {
 
 export type Guidance = {
   urgency: 'routine' | 'elevated' | 'urgent';
-  steps: { title: string; detail: string }[];
+  steps: { title: string; detail: string; resource_id: string | null }[];
   note: string;
+  resources: SupportResource[];
 };
 
 export async function generateGuidance(
   env: Bindings,
   context: GuidanceContext,
 ): Promise<Guidance> {
+  const resources = await findResources(serviceClient(env), context.province, context.category);
+
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
   const response = await client.messages.create({
@@ -116,10 +134,27 @@ export async function generateGuidance(
     max_tokens: 4000,
     system: SYSTEM,
     output_config: { format: { type: 'json_schema', schema: SCHEMA } },
-    messages: [{ role: 'user', content: JSON.stringify(context) }],
+    messages: [{ role: 'user', content: JSON.stringify({ ...context, resources }) }],
   });
 
   const block = response.content.find((b) => b.type === 'text');
   if (!block || block.type !== 'text') throw new Error('No guidance returned.');
-  return JSON.parse(block.text) as Guidance;
+
+  const parsed = JSON.parse(block.text) as Guidance;
+
+  // The prompt forbids inventing a citation, but a prompt is not an enforcement mechanism.
+  // An id that is not in the candidate set we just supplied gets dropped rather than
+  // rendered as a source the reporter can act on.
+  const supplied = new Set(resources.map((r) => r.id));
+
+  return {
+    urgency: parsed.urgency,
+    note: parsed.note,
+    steps: (parsed.steps ?? []).map((step) => ({
+      title: step.title,
+      detail: step.detail,
+      resource_id: step.resource_id && supplied.has(step.resource_id) ? step.resource_id : null,
+    })),
+    resources,
+  };
 }
