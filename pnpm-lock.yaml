@@ -51,6 +51,9 @@ importers:
 
   frontend:
     dependencies:
+      '@basirah/backend':
+        specifier: workspace:*
+        version: link:../backend
       '@basirah/shared':
         specifier: workspace:*
         version: link:../shared

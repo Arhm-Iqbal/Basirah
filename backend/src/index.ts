@@ -11,6 +11,8 @@ import { media } from './routes/media';
 import { events } from './routes/events';
 import { assist } from './routes/assist';
 
+export type { Bindings } from './lib/env';
+
 const app = new Hono<Env>();
 
 app.use('*', (c, next) => {

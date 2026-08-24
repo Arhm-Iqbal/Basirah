@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/supabase/server';
 import SignUpForm from './signup-form';
 
 export const metadata: Metadata = { title: 'Sign up · Basirah' };
+export const dynamic = 'force-dynamic';
 
 export default async function SignUpPage() {
   const user = await getCurrentUser();

@@ -7,6 +7,7 @@ import { safeAuthNextPath } from '@/lib/supabase/auth-path';
 import LoginForm from './login-form';
 
 export const metadata = { title: 'Log in · Basirah' };
+export const dynamic = 'force-dynamic';
 
 export default async function LoginPage({
   searchParams,
