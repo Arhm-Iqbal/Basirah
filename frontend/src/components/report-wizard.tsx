@@ -6,7 +6,7 @@ import type { IncidentActionPlan } from '@basirah/shared';
 
 import { ActionPlanView } from '@/components/action-plan-view';
 import { Button } from '@/components/button-link';
-import { createClient } from '@/lib/supabase/client';
+import { createOptionalClient } from '@/lib/supabase/client';
 import { TidyWriting } from '@/components/tidy-writing';
 import {
   EMPTY_REPORT,
@@ -472,8 +472,14 @@ export function ReportWizard() {
     setSubmitting(true);
     setError(null);
     try {
-      const { data } = await createClient().auth.getSession();
-      const token = data.session?.access_token;
+      const supabase = createOptionalClient();
+      const token = supabase
+        ? (await supabase.auth.getSession()).data.session?.access_token
+        : undefined;
+
+      if (!API_URL) {
+        throw new Error('Report submission is not configured for this deployment yet.');
+      }
 
       const payload: Record<string, unknown> = { ...toApiPayload(report) };
       if (!token) payload.turnstile_token = 'unconfigured';
