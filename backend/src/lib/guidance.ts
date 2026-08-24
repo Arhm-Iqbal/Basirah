@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { Bindings } from './env';
 import { findResources, type SupportResource } from './resources';
 import { serviceClient } from './supabase';
@@ -127,20 +126,36 @@ export type Guidance = {
 export async function generateGuidance(env: Bindings, context: GuidanceContext): Promise<Guidance> {
   const resources = await findResources(serviceClient(env), context.province, context.category);
 
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-
-  const response = await client.messages.create({
-    model: 'claude-opus-5',
-    max_tokens: 4000,
-    system: SYSTEM,
-    output_config: { format: { type: 'json_schema', schema: SCHEMA } },
-    messages: [{ role: 'user', content: JSON.stringify({ ...context, resources }) }],
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      temperature: 0.2,
+      messages: [
+        { role: 'system', content: SYSTEM },
+        { role: 'user', content: JSON.stringify({ ...context, resources }) },
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'incident_guidance', strict: true, schema: SCHEMA },
+      },
+    }),
   });
 
-  const block = response.content.find((b) => b.type === 'text');
-  if (!block || block.type !== 'text') throw new Error('No guidance returned.');
+  if (!res.ok) {
+    console.error('openai guidance failed', res.status, await res.text().catch(() => ''));
+    throw new Error('No guidance returned.');
+  }
 
-  const parsed = JSON.parse(block.text) as Guidance;
+  const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+  const content = body.choices?.[0]?.message?.content;
+  if (!content) throw new Error('No guidance returned.');
+
+  const parsed = JSON.parse(content) as Guidance;
 
   // The prompt forbids inventing a citation, but a prompt is not an enforcement mechanism.
   // An id that is not in the candidate set we just supplied gets dropped rather than

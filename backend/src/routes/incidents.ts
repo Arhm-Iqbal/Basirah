@@ -97,7 +97,7 @@ incidents.post('/:id/guidance', async (c) => {
   const cached = (incident.details as Record<string, any>)?.guidance;
   if (cached) return c.json(cached);
 
-  if (!c.env.ANTHROPIC_API_KEY) {
+  if (!c.env.OPENAI_API_KEY) {
     return fail(c, 503, 'guidance_unavailable', 'Guidance is not configured on this server.');
   }
 
