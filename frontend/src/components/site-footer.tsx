@@ -16,9 +16,9 @@ export function SiteFooter() {
           <Link
             href="/"
             aria-label="Basirah home"
-            className="inline-flex w-fit rounded-lg bg-white px-5 py-3"
+            className="inline-flex w-fit rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
           >
-            <Logo className="h-16 w-auto" />
+            <Logo className="h-16 w-auto" tone="white" />
           </Link>
 
           <nav aria-label="Footer">
