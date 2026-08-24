@@ -6,6 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import { LocationGate } from '@/components/location-gate';
 import { MapDetailPanel } from '@/components/map-detail-panel';
+import { MosqueSearch } from '@/components/mosque-search';
 import { RadiusChips, useSearchRadius } from '@/components/radius-chips';
 import { fetchMyMosques, fetchNearbyMosques, type NearbyMosque } from '@/lib/queries';
 import { useGeolocation } from '@/lib/use-geolocation';
@@ -23,6 +24,15 @@ function metresBetween(a: { lat: number; lng: number }, b: { lat: number; lng: n
 }
 
 type Selection = { kind: 'mosque'; item: NearbyMosque };
+
+const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
+
+// The detail panel overlays the end of the map, so the camera keeps its subject in the
+// strip that is still visible rather than behind the panel.
+function panelPadding(map: MapRef, open: boolean) {
+  const right = open ? Math.min(360, Math.round(map.getContainer().clientWidth * 0.92)) : 0;
+  return { top: 0, right, bottom: 0, left: 0 };
+}
 
 export function CommunityMap() {
   const { coords, status, locate, setManual } = useGeolocation();
@@ -44,6 +54,7 @@ export function CommunityMap() {
   const [selected, setSelected] = useState<Selection | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const ignoreMapClick = useRef(false);
+  const flyingToResult = useRef(false);
 
   useEffect(() => {
     if (status === 'idle') locate();
@@ -106,13 +117,13 @@ export function CommunityMap() {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    const width = map.getContainer().clientWidth;
-    const right = panelOpen ? Math.min(360, Math.round(width * 0.92)) : 0;
-    map.easeTo({
-      padding: { top: 0, right, bottom: 0, left: 0 },
-      duration: 420,
-      easing: (t) => 1 - (1 - t) * (1 - t),
-    });
+    // A search result opens the panel and flies in one motion, and that flight already
+    // carries the padding. Easing it again here would cancel the flight part-way.
+    if (flyingToResult.current) {
+      flyingToResult.current = false;
+      return;
+    }
+    map.easeTo({ padding: panelPadding(map, panelOpen), duration: 420, easing: easeOut });
   }, [panelOpen]);
 
   useEffect(() => {
@@ -128,6 +139,22 @@ export function CommunityMap() {
   };
 
   const requestClose = () => setPanelOpen(false);
+
+  // Zoom in past the radius view so the pin someone searched for is unambiguous, and open
+  // its details in the same gesture -- finding it by name and then having to hunt for the
+  // pin would be the same work twice.
+  const showOnMap = (mosque: NearbyMosque) => {
+    showSelection({ kind: 'mosque', item: mosque });
+    const map = mapRef.current;
+    if (!map) return;
+    flyingToResult.current = true;
+    map.flyTo({
+      center: [mosque.lng, mosque.lat],
+      zoom: 15,
+      duration: 900,
+      padding: panelPadding(map, true),
+    });
+  };
 
   const locationMessage = status === 'manual' ? 'Showing the area you entered.' : null;
 
@@ -193,6 +220,7 @@ export function CommunityMap() {
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
         <div className="pointer-events-auto flex flex-col items-start gap-2">
+          <MosqueSearch mosques={mosques} onSelect={showOnMap} />
           <span className="rounded-md border border-basirah-teal/20 bg-white px-2.5 py-1.5 text-sm font-semibold text-basirah-teal">
             {summary}
           </span>
