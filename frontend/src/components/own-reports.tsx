@@ -8,6 +8,7 @@ import { Button } from '@/components/button-link';
 import {
   appealReport,
   deleteReport,
+  editReport,
   downloadReport,
   fetchOwnIncidents,
   type OwnIncident,
@@ -59,8 +60,13 @@ function DownloadButton({ incidentId }: { incidentId: string }) {
   );
 }
 
+// Mirrors the EDITABLE list the API enforces; once a report is verified or alerted it
+// has been acted on and the server returns 409.
+const EDITABLE_STATUSES = ['submitted', 'triaged'];
+
 function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemoved: () => void }) {
-  const [mode, setMode] = useState<'idle' | 'confirmDelete' | 'appeal'>('idle');
+  const [mode, setMode] = useState<'idle' | 'confirmDelete' | 'appeal' | 'edit'>('idle');
+  const [draft, setDraft] = useState(incident.description ?? '');
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +90,56 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
       <p className="text-base text-basirah-teal/75">
         Appeal filed. Your community&apos;s verification team will review it.
       </p>
+    );
+  }
+
+  if (mode === 'edit') {
+    return (
+      <div className="w-full">
+        <label
+          htmlFor={`edit-${incident.id}`}
+          className="text-base font-semibold text-basirah-teal"
+        >
+          Correct what you wrote
+        </label>
+        <p className="mt-1 text-sm text-basirah-teal/70">Your saved PDF is regenerated to match.</p>
+        <textarea
+          id={`edit-${incident.id}`}
+          rows={5}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          className="mt-2 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none focus:border-basirah-teal"
+        />
+        {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            disabled={busy || draft.trim().length < 10}
+            onClick={() =>
+              void run(
+                () => editReport(incident.id, { description: draft.trim() }),
+                () => {
+                  incident.description = draft.trim();
+                  setMode('idle');
+                },
+              )
+            }
+          >
+            {busy ? 'Saving…' : 'Save changes'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={busy}
+            onClick={() => {
+              setDraft(incident.description ?? '');
+              setMode('idle');
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
     );
   }
 
@@ -155,6 +211,11 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
   return (
     <div className="flex flex-wrap items-center gap-2">
       <DownloadButton incidentId={incident.id} />
+      {EDITABLE_STATUSES.includes(incident.status) && (
+        <Button size="sm" variant="ghost" onClick={() => setMode('edit')}>
+          Edit
+        </Button>
+      )}
       <Button size="sm" variant="ghost" onClick={() => setMode('appeal')}>
         Appeal
       </Button>
@@ -274,7 +335,12 @@ export function OwnReports() {
                     >
                       View next steps
                     </Link>
-                    <DownloadButton incidentId={incident.id} />
+                    <ReportActions
+                      incident={incident}
+                      onRemoved={() =>
+                        setIncidents((rows) => rows.filter((r) => r.id !== incident.id))
+                      }
+                    />
                   </div>
                 </div>
               </li>

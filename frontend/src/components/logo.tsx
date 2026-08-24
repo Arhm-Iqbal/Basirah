@@ -9,10 +9,10 @@ export function Logo({
 }) {
   return (
     <Image
-      src="/logo.png"
+      src="/basirah-logo.png"
       alt="Basirah"
-      width={960}
-      height={400}
+      width={928}
+      height={380}
       priority={priority}
       className={`w-auto object-contain ${className}`}
     />

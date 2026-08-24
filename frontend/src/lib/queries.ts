@@ -249,3 +249,15 @@ export async function appealReport(incidentId: string, reason: string): Promise<
   });
   await unwrap(res);
 }
+
+export async function editReport(
+  incidentId: string,
+  patch: { description?: string; category?: string | null },
+): Promise<void> {
+  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}`, {
+    method: 'PATCH',
+    headers: await authHeaders(),
+    body: JSON.stringify(patch),
+  });
+  await unwrap(res);
+}
