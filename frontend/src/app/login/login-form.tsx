@@ -10,11 +10,10 @@ import { GoogleIcon } from '@/components/google-icon';
 import { Logo } from '@/components/logo';
 import { createClient } from '@/lib/supabase/client';
 import { safeAuthNextPath } from '@/lib/supabase/auth-path';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { signInWithGoogle } from '@/lib/supabase/oauth';
 
-const isSupabaseConfigured = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-);
+const hasSupabaseConfig = isSupabaseConfigured();
 
 export default function LoginForm() {
   const router = useRouter();
@@ -26,14 +25,19 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (searchParams.get('error') === 'auth_callback_failed') {
+    const reason = searchParams.get('error');
+    if (reason === 'auth_callback_failed') {
       setError('Sign-in could not be completed. Try again or use email and password.');
+    } else if (reason === 'auth_not_configured') {
+      setError('Sign-in is not configured for this deployment yet.');
+    } else if (reason === 'auth_unavailable') {
+      setError('Sign-in is temporarily unavailable. Please try again.');
     }
   }, [searchParams]);
 
   const handleGoogleLogin = async () => {
-    if (!isSupabaseConfigured) {
-      setError('Supabase isn’t configured yet — add the keys to frontend/.env.local.');
+    if (!hasSupabaseConfig) {
+      setError('Sign-in is not configured for this deployment yet.');
       return;
     }
 
@@ -51,8 +55,8 @@ export default function LoginForm() {
   const handleEmailLogin = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (!isSupabaseConfigured) {
-      setError('Supabase isn’t configured yet — add the keys to frontend/.env.local.');
+    if (!hasSupabaseConfig) {
+      setError('Sign-in is not configured for this deployment yet.');
       return;
     }
 
@@ -72,7 +76,7 @@ export default function LoginForm() {
       router.replace(nextPath);
       router.refresh();
     } catch {
-      setError('Could not reach Supabase. Check frontend/.env.local.');
+      setError('Could not reach the sign-in service. Please try again.');
       setIsLoading(false);
     }
   };
@@ -145,7 +149,7 @@ export default function LoginForm() {
         </p>
       )}
 
-      {!isSupabaseConfigured && !error && (
+      {!hasSupabaseConfig && !error && (
         <p className="mt-4 text-xs text-basirah-teal/80">
           Supabase isn&apos;t configured in this environment yet.
         </p>

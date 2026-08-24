@@ -8,11 +8,10 @@ import { AuthShell } from '@/components/auth-shell';
 import { GoogleIcon } from '@/components/google-icon';
 import { Logo } from '@/components/logo';
 import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { signInWithGoogle } from '@/lib/supabase/oauth';
 
-const isSupabaseConfigured = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-);
+const hasSupabaseConfig = isSupabaseConfigured();
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -22,8 +21,8 @@ export default function SignUpForm() {
   const [message, setMessage] = useState<string | null>(null);
 
   const handleGoogleSignUp = async () => {
-    if (!isSupabaseConfigured) {
-      setError('Supabase isn’t configured yet — add the keys to frontend/.env.local.');
+    if (!hasSupabaseConfig) {
+      setError('Sign-in is not configured for this deployment yet.');
       return;
     }
 
@@ -41,8 +40,8 @@ export default function SignUpForm() {
   const handleEmailSignUp = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (!isSupabaseConfigured) {
-      setError('Supabase isn’t configured yet — add the keys to frontend/.env.local.');
+    if (!hasSupabaseConfig) {
+      setError('Sign-in is not configured for this deployment yet.');
       return;
     }
 
@@ -67,7 +66,7 @@ export default function SignUpForm() {
         setMessage('Check your email to confirm your account.');
       }
     } catch {
-      setError('Could not reach Supabase. Check frontend/.env.local.');
+      setError('Could not reach the sign-in service. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -148,7 +147,7 @@ export default function SignUpForm() {
         </p>
       )}
 
-      {!isSupabaseConfigured && !error && (
+      {!hasSupabaseConfig && !error && (
         <p className="mt-4 text-xs text-basirah-teal/80">
           Supabase isn&apos;t configured in this environment yet.
         </p>

@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { safeAuthNextPath } from '@/lib/supabase/auth-path';
+import { getSupabasePublicConfig } from '@/lib/supabase/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +21,14 @@ export async function GET(request: NextRequest) {
 
   const redirectTo = `${origin}${next}`;
   let response = NextResponse.redirect(redirectTo);
+  const config = getSupabasePublicConfig();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  if (!config) {
+    return loginRedirect(origin, 'auth_not_configured');
+  }
+
+  try {
+    const supabase = createServerClient(config.url, config.anonKey, {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet: { name: string; value: string; options: CookieOptions }[]) => {
@@ -35,13 +39,22 @@ export async function GET(request: NextRequest) {
           });
         },
       },
-    },
-  );
+    });
 
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return response;
+    if (code) {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        return response;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        return NextResponse.redirect(redirectTo);
+      }
+
+      return loginRedirect(origin, 'auth_callback_failed');
     }
 
     const {
@@ -51,19 +64,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(redirectTo);
     }
 
+    if (oauthError || /state not found|expired/i.test(description)) {
+      return loginRedirect(origin, 'auth_callback_failed');
+    }
+
+    return loginRedirect(origin, 'auth_callback_failed');
+  } catch (error) {
+    console.error('Supabase auth callback failed.', error);
     return loginRedirect(origin, 'auth_callback_failed');
   }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user) {
-    return NextResponse.redirect(redirectTo);
-  }
-
-  if (oauthError || /state not found|expired/i.test(description)) {
-    return loginRedirect(origin, 'auth_callback_failed');
-  }
-
-  return loginRedirect(origin, 'auth_callback_failed');
 }

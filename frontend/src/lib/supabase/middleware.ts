@@ -1,14 +1,39 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { safeAuthNextPath } from '@/lib/supabase/auth-path';
+import { getSupabasePublicConfig } from '@/lib/supabase/config';
+
+function isProtectedPath(path: string) {
+  return path === '/app' || path.startsWith('/app/');
+}
+
+function redirectToLogin(
+  request: NextRequest,
+  response: NextResponse,
+  reason?: 'auth_not_configured' | 'auth_unavailable',
+) {
+  const loginUrl = new URL('/login', request.url);
+  loginUrl.searchParams.set('next', `${request.nextUrl.pathname}${request.nextUrl.search}`);
+  if (reason) loginUrl.searchParams.set('error', reason);
+
+  const redirect = NextResponse.redirect(loginUrl);
+  response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  return redirect;
+}
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const path = request.nextUrl.pathname;
+  const config = getSupabasePublicConfig();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  if (!config) {
+    return isProtectedPath(path)
+      ? redirectToLogin(request, response, 'auth_not_configured')
+      : response;
+  }
+
+  try {
+    const supabase = createServerClient(config.url, config.anonKey, {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet: { name: string; value: string; options: CookieOptions }[]) => {
@@ -19,30 +44,30 @@ export async function updateSession(request: NextRequest) {
           );
         },
       },
-    },
-  );
+    });
 
-  // Must stay getUser, not getSession: getSession trusts the cookie without revalidating.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    // Must stay getUser, not getSession: getSession trusts the cookie without revalidating.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-  if (!user && (path === '/app' || path.startsWith('/app/'))) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('next', `${path}${request.nextUrl.search}`);
-    const redirect = NextResponse.redirect(loginUrl);
-    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-    return redirect;
+    if (!user && isProtectedPath(path)) {
+      return redirectToLogin(request, response);
+    }
+
+    if (user && (path === '/' || path === '/login' || path === '/signup')) {
+      const destination =
+        path === '/' ? '/app' : safeAuthNextPath(request.nextUrl.searchParams.get('next'));
+      const redirect = NextResponse.redirect(new URL(destination, request.url));
+      response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+      return redirect;
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Supabase auth middleware failed.', error);
+    return isProtectedPath(path)
+      ? redirectToLogin(request, response, 'auth_unavailable')
+      : response;
   }
-
-  if (user && (path === '/' || path === '/login' || path === '/signup')) {
-    const destination =
-      path === '/' ? '/app' : safeAuthNextPath(request.nextUrl.searchParams.get('next'));
-    const redirect = NextResponse.redirect(new URL(destination, request.url));
-    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-    return redirect;
-  }
-
-  return response;
 }
