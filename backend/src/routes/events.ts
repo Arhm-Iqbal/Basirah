@@ -6,6 +6,7 @@ import { serviceClient } from '../lib/supabase';
 import { requireAuth } from '../lib/auth';
 import { fail, zodFail } from '../lib/errors';
 import { isUuid } from '../lib/params';
+import { ingestFromWebsiteDeep } from '../lib/events';
 
 export const events = new Hono<Env>();
 
@@ -81,3 +82,43 @@ events.post(
     return c.json(data, 201);
   },
 );
+
+// Pulling a mosque's own site on demand. Staff-gated because it costs a model call and
+// writes to a profile other people read.
+events.post('/:mosqueId/refresh', requireAuth, async (c) => {
+  const mosqueId = c.req.param('mosqueId');
+  if (!mosqueId || !isUuid(mosqueId)) {
+    return fail(c, 404, 'not_found', 'No mosque with that id.');
+  }
+
+  const db = serviceClient(c.env);
+
+  const { data: staff } = await db
+    .from('memberships')
+    .select('role')
+    .eq('profile_id', c.get('userId'))
+    .eq('mosque_id', mosqueId)
+    .in('role', ['mosque_admin', 'regional_coordinator'])
+    .maybeSingle();
+  if (!staff) {
+    return fail(c, 403, 'not_permitted', 'Only a mosque administrator can refresh events.');
+  }
+
+  const { data: mosque } = await db
+    .from('mosques')
+    .select('name, website')
+    .eq('id', mosqueId)
+    .maybeSingle();
+  if (!mosque) return fail(c, 404, 'not_found', 'No mosque with that id.');
+  if (!mosque.website) {
+    return fail(c, 422, 'no_website', 'This mosque has no website on file to read from.');
+  }
+
+  try {
+    const result = await ingestFromWebsiteDeep(db, c.env, mosqueId, mosque.name, mosque.website);
+    return c.json({ ...result, total: result.ics + result.scraped });
+  } catch (err) {
+    console.error(err);
+    return fail(c, 502, 'ingest_failed', 'Could not read events from that website.');
+  }
+});

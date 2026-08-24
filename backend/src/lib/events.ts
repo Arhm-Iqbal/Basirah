@@ -1,4 +1,6 @@
+import Anthropic from '@anthropic-ai/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Bindings } from './env';
 
 export type ParsedEvent = {
   title: string;
@@ -109,4 +111,140 @@ export async function ingestFromWebsite(db: SupabaseClient, mosqueId: string, we
     }
   }
   return 0;
+}
+
+const EVENT_PAGES = ['/events', '/events/', '/programs', '/calendar', '/whats-on', ''];
+
+// Scripts and styles first, then tags. Done in that order because stripping tags first
+// would leave the contents of <script> behind as text.
+function toText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 12_000);
+}
+
+const EVENT_SCHEMA = {
+  type: 'object',
+  properties: {
+    events: {
+      type: 'array',
+      maxItems: 15,
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          description: { type: ['string', 'null'] },
+          starts_at: { type: 'string' },
+          ends_at: { type: ['string', 'null'] },
+        },
+        required: ['title', 'starts_at', 'ends_at', 'description'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['events'],
+  additionalProperties: false,
+} as const;
+
+const SYSTEM = `You extract upcoming events from the text of a mosque's website.
+
+Rules:
+- Only include events with a date you can actually determine. If the page says "every Friday" with no date, skip it -- a recurring prayer time is not an event.
+- starts_at and ends_at must be ISO 8601 with an offset. Use the year given; if none is given, assume the next occurrence from today.
+- Do not invent events, times, or descriptions. An empty list is the correct answer for a page that has none.
+- Skip anything already past.`;
+
+// Returns [] rather than throwing when the key is unset, so ingestion degrades to the ICS
+// and admin tiers instead of failing.
+export async function extractEventsFromHtml(
+  env: Bindings,
+  html: string,
+  mosqueName: string,
+): Promise<ParsedEvent[]> {
+  if (!env.ANTHROPIC_API_KEY) return [];
+
+  const text = toText(html);
+  if (text.length < 200) return [];
+
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const response = await client.messages.create({
+    model: 'claude-opus-5',
+    max_tokens: 4000,
+    system: SYSTEM,
+    output_config: { format: { type: 'json_schema', schema: EVENT_SCHEMA } },
+    messages: [
+      {
+        role: 'user',
+        content: `Today is ${new Date().toISOString().slice(0, 10)}.\nMosque: ${mosqueName}\n\n${text}`,
+      },
+    ],
+  });
+
+  const block = response.content.find((b) => b.type === 'text');
+  if (!block || block.type !== 'text') return [];
+
+  const parsed = JSON.parse(block.text) as {
+    events: {
+      title: string;
+      description: string | null;
+      starts_at: string;
+      ends_at: string | null;
+    }[];
+  };
+
+  return parsed.events.flatMap((e) => {
+    const start = Date.parse(e.starts_at);
+    if (Number.isNaN(start)) return [];
+    return [
+      {
+        title: e.title.slice(0, 300),
+        description: e.description ? e.description.slice(0, 2000) : null,
+        starts_at: new Date(start).toISOString(),
+        ends_at:
+          e.ends_at && !Number.isNaN(Date.parse(e.ends_at))
+            ? new Date(e.ends_at).toISOString()
+            : null,
+        url: null,
+        source_ref: `scraped-${e.title}-${e.starts_at}`.slice(0, 200),
+      },
+    ];
+  });
+}
+
+export async function ingestFromWebsiteDeep(
+  db: SupabaseClient,
+  env: Bindings,
+  mosqueId: string,
+  mosqueName: string,
+  website: string,
+): Promise<{ ics: number; scraped: number }> {
+  const ics = await ingestFromWebsite(db, mosqueId, website);
+  if (ics > 0) return { ics, scraped: 0 };
+
+  const base = website.replace(/\/+$/, '');
+  for (const path of EVENT_PAGES) {
+    try {
+      const res = await fetch(base + path, {
+        headers: {
+          'User-Agent': 'basirah/0.1 (community mosque directory; contact@basirah.ca)',
+          Accept: 'text/html',
+        },
+      });
+      if (!res.ok) continue;
+      const html = await res.text();
+      const events = await extractEventsFromHtml(env, html, mosqueName);
+      if (events.length > 0)
+        return { ics: 0, scraped: await upsertEvents(db, mosqueId, events, 'scraped') };
+    } catch {
+      // A site being down, blocked, or JS-rendered is expected for a good share of these;
+      // it must not abort the batch.
+    }
+  }
+  return { ics: 0, scraped: 0 };
 }
