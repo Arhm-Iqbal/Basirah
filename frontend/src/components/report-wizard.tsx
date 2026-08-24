@@ -170,40 +170,80 @@ function Long({
 // Most of what this form asks has a small, known set of answers. Free text there costs the
 // reporter effort and makes the data unusable for the aggregate reporting the incidents
 // are collected for, so anything answerable from a list is answered from a list.
+// Native radio and checkbox inputs, visually hidden and redrawn. Keeping the real input
+// is what gives arrow-key navigation within the group, space/enter activation, and correct
+// screen-reader announcement -- none of which a styled button provides for free.
+const optionRow =
+  'flex cursor-pointer items-start gap-3 rounded-md border px-4 py-3 text-base transition-colors duration-150 motion-reduce:transition-none';
+
+function OptionMark({ checked, multi }: { checked: boolean; multi?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`mt-0.5 flex size-5 shrink-0 items-center justify-center border-2 transition-colors duration-150 motion-reduce:transition-none ${
+        multi ? 'rounded' : 'rounded-full'
+      } ${checked ? 'border-basirah-teal bg-basirah-teal' : 'border-basirah-teal/40 bg-white'}`}
+    >
+      {checked &&
+        (multi ? (
+          <svg viewBox="0 0 12 12" className="size-3 text-white" fill="none">
+            <path
+              d="M2.5 6.2 4.8 8.5 9.5 3.8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          <span className="size-2 rounded-full bg-white" />
+        ))}
+    </span>
+  );
+}
+
 function Choice({
   legend,
   hintText,
   value,
   onChange,
   options,
+  name,
 }: {
   legend: string;
   hintText?: string;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
+  name: string;
 }) {
   return (
     <fieldset>
       <legend className={labelClass}>{legend}</legend>
       {hintText && <p className={hintClass}>{hintText}</p>}
-      <div className="mt-2.5 flex flex-wrap gap-2">
+      <div className="mt-2.5 flex flex-col gap-2">
         {options.map((o) => {
-          const active = value === o.value;
+          const checked = value === o.value;
           return (
-            <button
+            <label
               key={o.value}
-              type="button"
-              aria-pressed={active}
-              onClick={() => onChange(active ? '' : o.value)}
-              className={`min-h-11 cursor-pointer rounded-full border px-4 text-base font-medium transition-colors duration-150 motion-reduce:transition-none ${
-                active
-                  ? 'border-basirah-teal bg-basirah-teal text-white'
-                  : 'border-basirah-teal/30 text-basirah-teal hover:border-basirah-teal/60 hover:bg-basirah-teal/5'
-              }`}
+              className={`${optionRow} ${
+                checked
+                  ? 'border-basirah-teal bg-basirah-teal/5'
+                  : 'border-basirah-teal/25 hover:border-basirah-teal/50 hover:bg-basirah-teal/[0.03]'
+              } has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-basirah-teal`}
             >
-              {o.label}
-            </button>
+              <input
+                type="radio"
+                name={name}
+                value={o.value}
+                checked={checked}
+                onChange={() => onChange(o.value)}
+                className="sr-only"
+              />
+              <OptionMark checked={checked} />
+              <span className="text-basirah-teal">{o.label}</span>
+            </label>
           );
         })}
       </div>
@@ -226,7 +266,12 @@ function MultiChoice({
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
 }) {
-  const selected = value ? value.split(',').map((v) => v.trim()) : [];
+  const selected = value
+    ? value
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean)
+    : [];
   const toggle = (v: string) => {
     const next = selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v];
     onChange(next.join(', '));
@@ -235,23 +280,27 @@ function MultiChoice({
     <fieldset>
       <legend className={labelClass}>{legend}</legend>
       {hintText && <p className={hintClass}>{hintText}</p>}
-      <div className="mt-2.5 flex flex-wrap gap-2">
+      <div className="mt-2.5 flex flex-col gap-2">
         {options.map((o) => {
-          const active = selected.includes(o.value);
+          const checked = selected.includes(o.value);
           return (
-            <button
+            <label
               key={o.value}
-              type="button"
-              aria-pressed={active}
-              onClick={() => toggle(o.value)}
-              className={`min-h-11 cursor-pointer rounded-full border px-4 text-base font-medium transition-colors duration-150 motion-reduce:transition-none ${
-                active
-                  ? 'border-basirah-teal bg-basirah-teal text-white'
-                  : 'border-basirah-teal/30 text-basirah-teal hover:border-basirah-teal/60 hover:bg-basirah-teal/5'
-              }`}
+              className={`${optionRow} ${
+                checked
+                  ? 'border-basirah-teal bg-basirah-teal/5'
+                  : 'border-basirah-teal/25 hover:border-basirah-teal/50 hover:bg-basirah-teal/[0.03]'
+              } has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-basirah-teal`}
             >
-              {o.label}
-            </button>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => toggle(o.value)}
+                className="sr-only"
+              />
+              <OptionMark checked={checked} multi />
+              <span className="text-basirah-teal">{o.label}</span>
+            </label>
           );
         })}
       </div>
@@ -587,6 +636,7 @@ export function ReportWizard() {
           <>
             <Choice
               legend="Where online did this happen?"
+              name="online_platform"
               value={report.online_platform}
               onChange={(v) => set('online_platform', v)}
               options={PLATFORMS}
@@ -613,6 +663,7 @@ export function ReportWizard() {
           <>
             <Choice
               legend="What kind of place was it?"
+              name="location_kind"
               value={report.location_kind}
               onChange={(v) => set('location_kind', v)}
               options={PLACE_KINDS}
@@ -670,24 +721,28 @@ export function ReportWizard() {
             </div>
             <Choice
               legend="Is this still happening?"
+              name="still_happening"
               value={report.still_happening}
               onChange={(v) => set('still_happening', v)}
               options={YES_NO}
             />
             <Choice
               legend="Were there witnesses?"
+              name="witnesses"
               value={report.witnesses}
               onChange={(v) => set('witnesses', v)}
               options={YES_NO}
             />
             <Choice
               legend="Were any threats made?"
+              name="threats"
               value={report.threats}
               onChange={(v) => set('threats', v)}
               options={YES_NO}
             />
             <Choice
               legend="Was a weapon involved?"
+              name="weapon"
               value={report.weapon}
               onChange={(v) => set('weapon', v)}
               options={YES_NO}
@@ -747,12 +802,14 @@ export function ReportWizard() {
             />
             <Choice
               legend="Who are you reporting for?"
+              name="reporting_for"
               value={report.reporting_for}
               onChange={(v) => set('reporting_for', v)}
               options={REPORTING_FOR}
             />
             <Choice
               legend="Have you reported this anywhere else?"
+              name="reported_elsewhere"
               value={report.reported_elsewhere}
               onChange={(v) => set('reported_elsewhere', v)}
               options={YES_NO}
