@@ -1,5 +1,20 @@
 import Image from 'next/image';
 
-export function Logo({ className = 'h-8 w-auto' }: { className?: string }) {
-  return <Image src="/logo.png" alt="Basirah" width={400} height={200} priority className={className} />;
+export function Logo({
+  className = 'h-12 w-auto',
+  priority = false,
+}: {
+  className?: string;
+  priority?: boolean;
+}) {
+  return (
+    <Image
+      src="/logo.png"
+      alt="Basirah"
+      width={960}
+      height={400}
+      priority={priority}
+      className={`w-auto object-contain ${className}`}
+    />
+  );
 }

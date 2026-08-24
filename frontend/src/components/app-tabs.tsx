@@ -88,7 +88,7 @@ export function AppTabs({ email }: { email: string | null }) {
               aria-label="Basirah app home"
               className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-basirah-teal"
             >
-              <Logo className="h-7 w-auto" />
+              <Logo className="h-10 w-auto sm:h-11" />
             </Link>
 
             <nav className="hidden items-center gap-1 md:flex">

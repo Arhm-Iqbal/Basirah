@@ -5,6 +5,7 @@ import type { Env } from '../lib/env';
 import { serviceClient } from '../lib/supabase';
 import { requireAuth } from '../lib/auth';
 import { fail, zodFail } from '../lib/errors';
+import { isUuid } from '../lib/params';
 
 export const me = new Hono<Env>();
 
@@ -59,13 +60,19 @@ me.post(
 );
 
 me.delete('/mosques/:id', async (c) => {
+  const id = c.req.param('id');
+  if (!isUuid(id)) return fail(c, 404, 'not_found', 'No mosque with that id.');
+
   const db = serviceClient(c.env);
   const { error } = await db
     .from('memberships')
     .delete()
     .eq('profile_id', c.get('userId'))
-    .eq('mosque_id', c.req.param('id'));
+    .eq('mosque_id', id);
 
-  if (error) return fail(c, 500, 'delete_failed', error.message);
+  if (error) {
+    console.error(error);
+    return fail(c, 500, 'delete_failed', 'Could not remove that mosque.');
+  }
   return c.body(null, 204);
 });

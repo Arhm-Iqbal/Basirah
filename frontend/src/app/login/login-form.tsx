@@ -78,7 +78,7 @@ export default function LoginForm() {
   return (
     <AuthShell>
         <Link href="/" aria-label="Basirah home">
-          <Logo className="h-10 w-auto" />
+          <Logo className="h-16 w-auto sm:h-20" priority />
         </Link>
 
         <h1 className="mt-6 text-2xl font-semibold text-basirah-teal">Log in</h1>

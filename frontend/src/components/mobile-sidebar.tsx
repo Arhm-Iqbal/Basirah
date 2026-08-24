@@ -53,7 +53,7 @@ export function MobileSidebar() {
 
           <div className="fixed inset-y-0 right-0 z-50 flex w-[min(100%,18rem)] flex-col gap-1 bg-white px-5 py-5 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              <Logo className="h-7 w-auto" />
+              <Logo className="h-10 w-auto" />
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}

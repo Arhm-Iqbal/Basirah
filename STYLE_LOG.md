@@ -24,6 +24,14 @@ What: Replaced the frosted glass login/signup panel with a solid cream card (`ma
 Why: The glass overlay washed out the type, the sheen read as a smear, and the
 `max-w-sm` card left unused margin on phones.
 
+## 2026-08-23 — New Basirah wordmark
+
+What: Replaced `logo.png` with the new Arabic wordmark (black keyed out, tightly
+cropped). Hero uses it large (`h-20`/`h-28`); login/signup `h-16`/`h-20`; nav and
+app chrome `h-10`/`h-12`. Deleted the spaced `basirah new logo.png` source file.
+Why: The old mark was small and outdated. The new file had a black field and
+wide empty margins that would have boxed badly on cream and glass.
+
 ## 2026-08-23 — Auth card: glass kept, gloss and contrast tuned
 
 What: Restored the frosted cream glass panel (`bg-basirah-cream/60`, `backdrop-blur-xl`)
