@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 
 import { AuthDivider } from '@/components/auth-divider';
+import { AuthShell } from '@/components/auth-shell';
 import { GoogleIcon } from '@/components/google-icon';
 import { Logo } from '@/components/logo';
 import { createClient } from '@/lib/supabase/client';
@@ -51,14 +52,17 @@ export default function SignUpForm() {
 
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/app` },
       });
 
       if (error) {
         setError(error.message);
+      } else if (data.session) {
+        window.location.replace('/app');
+        return;
       } else {
         setMessage('Check your email to confirm your account.');
       }
@@ -70,16 +74,13 @@ export default function SignUpForm() {
   };
 
   return (
-    <main className="flex min-h-[100dvh] items-center justify-center bg-basirah-teal px-4 py-10 sm:px-6 sm:py-16">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+    <AuthShell>
         <Link href="/" aria-label="Basirah home">
           <Logo className="h-10 w-auto" />
         </Link>
 
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-basirah-teal">
-          Create an account
-        </h1>
-        <p className="mt-2 text-sm text-basirah-teal/70">
+        <h1 className="mt-6 text-2xl font-semibold text-basirah-teal">Create an account</h1>
+        <p className="mt-2 text-sm text-basirah-teal/90">
           Set up access to your community&apos;s incident reports and alerts.
         </p>
 
@@ -87,7 +88,7 @@ export default function SignUpForm() {
           type="button"
           onClick={handleGoogleSignUp}
           disabled={isLoading}
-          className="mt-8 flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-basirah-teal/15 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-8 flex min-h-11 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-basirah-teal/20 bg-white/45 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <GoogleIcon />
           Continue with Google
@@ -97,7 +98,7 @@ export default function SignUpForm() {
 
         <form onSubmit={handleEmailSignUp} className="flex flex-col gap-4">
           <div>
-            <label htmlFor="email" className="text-xs font-medium text-basirah-teal/70">
+            <label htmlFor="email" className="text-xs font-medium text-basirah-teal">
               Email
             </label>
             <input
@@ -107,11 +108,11 @@ export default function SignUpForm() {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-basirah-teal/15 px-3.5 py-2.5 text-sm text-basirah-teal outline-none focus:border-basirah-rust"
+              className="mt-1.5 w-full rounded-lg border border-basirah-teal/20 bg-white/70 px-3.5 py-2.5 text-sm text-basirah-teal outline-none focus:border-basirah-rust"
             />
           </div>
           <div>
-            <label htmlFor="password" className="text-xs font-medium text-basirah-teal/70">
+            <label htmlFor="password" className="text-xs font-medium text-basirah-teal">
               Password
             </label>
             <input
@@ -122,15 +123,15 @@ export default function SignUpForm() {
               minLength={8}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-basirah-teal/15 px-3.5 py-2.5 text-sm text-basirah-teal outline-none focus:border-basirah-rust"
+              className="mt-1.5 w-full rounded-lg border border-basirah-teal/20 bg-white/70 px-3.5 py-2.5 text-sm text-basirah-teal outline-none focus:border-basirah-rust"
             />
-            <p className="mt-1.5 text-xs text-basirah-teal/50">At least 8 characters.</p>
+            <p className="mt-1.5 text-xs text-basirah-teal/80">At least 8 characters.</p>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-1 flex w-full cursor-pointer items-center justify-center rounded-full bg-basirah-rust px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-1 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-full bg-basirah-rust px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading ? 'Creating account…' : 'Sign up'}
           </button>
@@ -140,19 +141,19 @@ export default function SignUpForm() {
         {message && <p className="mt-4 text-sm text-basirah-teal">{message}</p>}
 
         {!isSupabaseConfigured && !error && (
-          <p className="mt-4 text-xs text-basirah-teal/50">
+          <p className="mt-4 text-xs text-basirah-teal/80">
             Supabase isn&apos;t configured in this environment yet.
           </p>
         )}
 
         <Link
           href="/report"
-          className="mt-6 block text-center text-sm font-medium text-basirah-teal/70 transition-colors hover:text-basirah-rust"
+          className="mt-6 block text-center text-sm font-medium text-basirah-teal transition-colors hover:text-basirah-rust"
         >
           Continue as guest →
         </Link>
 
-        <p className="mt-6 text-center text-sm text-basirah-teal/70">
+        <p className="mt-6 text-center text-sm text-basirah-teal">
           Already have an account?{' '}
           <Link
             href="/login"
@@ -161,7 +162,6 @@ export default function SignUpForm() {
             Log in
           </Link>
         </p>
-      </div>
-    </main>
+    </AuthShell>
   );
 }

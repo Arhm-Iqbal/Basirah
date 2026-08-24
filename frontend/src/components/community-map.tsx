@@ -10,7 +10,8 @@ import {
   type MapIncident,
   type NearbyMosque,
 } from '@/lib/queries';
-import { FALLBACK_CENTER, useGeolocation } from '@/lib/use-geolocation';
+import { useGeolocation } from '@/lib/use-geolocation';
+import { LocationGate } from '@/components/location-gate';
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 
@@ -30,7 +31,7 @@ function formatWhen(iso: string) {
 }
 
 export function CommunityMap() {
-  const { coords, status, locate } = useGeolocation();
+  const { coords, status, locate, setManual } = useGeolocation();
   const mapRef = useRef<MapRef | null>(null);
 
   const [mosques, setMosques] = useState<NearbyMosque[]>([]);
@@ -40,12 +41,15 @@ export function CommunityMap() {
   const [selected, setSelected] = useState<Selection | null>(null);
 
   useEffect(() => {
-    locate();
-  }, [locate]);
+    if (status === 'idle') locate();
+  }, [status, locate]);
 
-  const { lat, lng } = coords ?? FALLBACK_CENTER;
+  const lat = coords?.lat;
+  const lng = coords?.lng;
 
   useEffect(() => {
+    if (lat == null || lng == null) return;
+
     let active = true;
     setIsLoading(true);
     setError(null);
@@ -77,12 +81,7 @@ export function CommunityMap() {
     mapRef.current?.flyTo({ center: [coords.lng, coords.lat], zoom: 12, duration: 900 });
   }, [coords]);
 
-  const locationMessage =
-    status === 'denied'
-      ? 'Location is off, so the map is showing Toronto. Allow location in your browser settings to centre it on you.'
-      : status === 'unavailable'
-        ? 'Your browser could not return a location. The map is showing Toronto instead.'
-        : null;
+  const locationMessage = status === 'manual' ? 'Showing the area you entered.' : null;
 
   const mosqueCount = `${mosques.length} ${mosques.length === 1 ? 'mosque' : 'mosques'}`;
   const incidentCount =
@@ -93,15 +92,15 @@ export function CommunityMap() {
     ? 'Loading nearby mosques and incidents…'
     : `${mosqueCount} · ${incidentCount} nearby`;
 
+  if (!coords) {
+    return <LocationGate status={status} onLocate={locate} onManual={setManual} />;
+  }
+
   return (
     <div className="relative h-full w-full overflow-hidden rounded-2xl border border-basirah-teal/10 bg-white">
       <Map
         ref={mapRef}
-        initialViewState={{
-          longitude: FALLBACK_CENTER.lng,
-          latitude: FALLBACK_CENTER.lat,
-          zoom: 11,
-        }}
+        initialViewState={{ longitude: coords.lng, latitude: coords.lat, zoom: 12 }}
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
         onClick={() => setSelected(null)}

@@ -2,9 +2,6 @@
 
 import dynamic from 'next/dynamic';
 
-import { GetStarted } from '@/components/get-started';
-import { NavBar } from '@/components/nav-bar';
-
 const Hero = dynamic(() => import('@/components/hero').then((mod) => mod.Hero), {
   ssr: false,
   loading: () => (
@@ -18,12 +15,8 @@ const Hero = dynamic(() => import('@/components/hero').then((mod) => mod.Hero), 
 
 export function HomeContent() {
   return (
-    <>
-      <NavBar />
-      <main>
-        <Hero />
-        <GetStarted />
-      </main>
-    </>
+    <main>
+      <Hero />
+    </main>
   );
 }

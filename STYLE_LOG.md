@@ -16,7 +16,47 @@ Why: <why you made this choice>
 
 ---
 
-<!-- Add new entries below this line -->
+## 2026-08-23 — Auth card: less gloss, more size, more contrast
+
+What: Replaced the frosted glass login/signup panel with a solid cream card (`max-w-md` /
+`sm:max-w-lg`), dropped the diagonal white sheen, and raised body/label/link color from
+`teal/50–70` to full teal or `teal/80–90`. Inputs and Google sit on opaque white.
+Why: The glass overlay washed out the type, the sheen read as a smear, and the
+`max-w-sm` card left unused margin on phones.
+
+## 2026-08-23 — Auth card: glass kept, gloss and contrast tuned
+
+What: Restored the frosted cream glass panel (`bg-basirah-cream/60`, `backdrop-blur-xl`)
+at `max-w-md` / `lg`, with a faint highlight (`from-white/15`) instead of the heavy sheen
+or the later solid cream slab. Type stays full teal on that denser glass.
+Why: The opaque card lost the look they wanted. The original problem was only the
+white smear and washed-out copy, not the glass itself.
+
+## 2026-08-23 — Split title and body fonts
+
+What: Installed the provided Creato Display family (including italics) as `--font-display`
+for headings. Body, labels, and UI chrome use Noto Sans (`font-sans`) so long copy stays
+readable and does not sit in a display face.
+Why: One geometric display font on every string looked heavy and uneven. Titles need
+Creato; secondary text needs a proper text face.
+
+## 2026-08-23 — Auth goes to /app, not the marketing home
+
+What: Logged-in visits to `/`, `/login`, and `/signup` now redirect to `/app`. Email
+sign-up sends a live session straight there. The home page is only the teal hero
+(no nav, no three-step section). Fixed `/app` importing `AppTabs`/`email`.
+Why: After Google sign-up the callback sent people to `/app`, which 500'd on a
+corrupt `.next` cache, then they landed back on the marketing page they asked
+not to see. Routes were also broken by two Next servers sharing a deleted cache.
+
+## 2026-08-23 — Auth girih background
+
+What: Cropped the exported Islamic girih PNG (removed black export padding) and tiled it
+behind login/signup as a teal-screened, slowly shining field. The form sits on frosted
+cream glass (`backdrop-blur`, translucent fill, inner highlight) so the pattern reads
+through the card instead of hiding under a solid white panel.
+Why: The previous auth screens used a flat teal slab. The provided motif is the
+product's visual language and needed to fill the page without the leftover export junk.
 
 ## 2026-08-23 — Login page, real routes, and a connected step timeline
 

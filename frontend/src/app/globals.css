@@ -5,7 +5,8 @@
   --color-basirah-teal: #043334;
   --color-basirah-cyan: #d0fafb;
   --color-basirah-cream: #ece8d9;
-  --font-sans: var(--font-creato-display), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-creato-display), var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -18,6 +19,29 @@ body {
   color: var(--color-basirah-teal);
   overflow-x: hidden;
   min-height: 100dvh;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-weight: 700;
+}
+
+p,
+li,
+label {
+  text-wrap: pretty;
 }
 
 input,
@@ -44,5 +68,53 @@ input[type='datetime-local'] {
   input[type='url'],
   input[type='datetime-local'] {
     font-size: 0.875rem;
+  }
+}
+
+.auth-girih {
+  background-image: url('/basirah-girih.png');
+  background-repeat: repeat;
+  background-position: center;
+  background-size: min(78vmin, 560px);
+  filter: brightness(1.85) contrast(1.2);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+
+.auth-girih-vignette {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgb(208 250 251 / 10%), transparent 42%),
+    linear-gradient(180deg, rgb(4 51 52 / 35%) 0%, transparent 28%, transparent 68%, rgb(4 51 52 / 55%) 100%);
+}
+
+.auth-girih-shine {
+  background: linear-gradient(
+    115deg,
+    transparent 32%,
+    rgb(236 232 217 / 16%) 48%,
+    rgb(208 250 251 / 22%) 52%,
+    transparent 68%
+  );
+  background-size: 220% 220%;
+  mix-blend-mode: screen;
+  animation: auth-girih-shine 11s ease-in-out infinite;
+}
+
+@keyframes auth-girih-shine {
+  0%,
+  100% {
+    background-position: 0% 40%;
+    opacity: 0.35;
+  }
+  50% {
+    background-position: 100% 60%;
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-girih-shine {
+    animation: none;
+    opacity: 0.45;
   }
 }

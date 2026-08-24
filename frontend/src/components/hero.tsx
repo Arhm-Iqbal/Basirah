@@ -13,10 +13,10 @@ export function Hero() {
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-lg flex-col items-center px-4 py-16 text-center sm:px-6">
-        <p className="text-xs font-medium tracking-[0.28em] text-basirah-cyan/80 uppercase">
+        <p className="font-display text-xs font-medium tracking-[0.28em] text-basirah-cyan/80 uppercase">
           Basirah
         </p>
-        <h1 className="mt-5 max-w-sm text-balance text-2xl font-semibold leading-tight tracking-tight text-white sm:max-w-md sm:text-4xl">
+        <h1 className="mt-5 max-w-sm text-2xl leading-tight text-white sm:max-w-md sm:text-4xl">
           Community security for Canadian mosques.
         </h1>
         <div className="mt-10 flex w-full max-w-xs flex-col gap-3 sm:max-w-sm sm:flex-row sm:justify-center">

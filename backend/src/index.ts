@@ -4,6 +4,8 @@ import type { Env } from './lib/env';
 import { mosques } from './routes/mosques';
 import { incidents } from './routes/incidents';
 import { tips } from './routes/tips';
+import { me } from './routes/me';
+import { geocode } from './routes/geocode';
 
 const app = new Hono<Env>();
 
@@ -22,6 +24,8 @@ app.get('/health', (c) => c.json({ status: 'ok' }));
 app.route('/v1/mosques', mosques);
 app.route('/v1/incidents', incidents);
 app.route('/v1/tips', tips);
+app.route('/v1/me', me);
+app.route('/v1/geocode', geocode);
 
 app.notFound((c) =>
   c.json({ error: { code: 'not_found', message: 'No route matches this path.' } }, 404),

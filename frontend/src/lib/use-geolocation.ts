@@ -1,18 +1,48 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export type Coords = { lat: number; lng: number };
 
-// Toronto. Used only as an initial map view so the page is never blank; it is replaced
-// the moment the browser returns a real fix, and is never submitted as a report location.
-export const FALLBACK_CENTER: Coords = { lat: 43.6532, lng: -79.3832 };
+export type GeoStatus =
+  | 'idle'
+  | 'prompting'
+  | 'locating'
+  | 'ready'
+  | 'denied'
+  | 'unavailable'
+  | 'manual';
 
+const STORAGE_KEY = 'basirah.coords';
+
+// There is deliberately no fallback city. Silently centring on the wrong place is worse
+// than admitting we do not know yet: someone in Edmonton seeing Toronto mosques has no
+// way to tell the map is broken rather than empty.
 export function useGeolocation() {
   const [coords, setCoords] = useState<Coords | null>(null);
-  const [status, setStatus] = useState<'idle' | 'locating' | 'ready' | 'denied' | 'unavailable'>(
-    'idle',
-  );
+  const [status, setStatus] = useState<GeoStatus>('idle');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setCoords(JSON.parse(saved) as Coords);
+        setStatus('ready');
+      }
+    } catch {
+      // Private mode and blocked site data both throw here; a missing cache is not an error.
+    }
+  }, []);
+
+  const remember = useCallback((next: Coords, nextStatus: GeoStatus) => {
+    setCoords(next);
+    setStatus(nextStatus);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Not being able to cache the fix is survivable; the session still has it.
+    }
+  }, []);
 
   const locate = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -22,14 +52,28 @@ export function useGeolocation() {
 
     setStatus('locating');
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setStatus('ready');
-      },
+      (pos) => remember({ lat: pos.coords.latitude, lng: pos.coords.longitude }, 'ready'),
       (err) => setStatus(err.code === err.PERMISSION_DENIED ? 'denied' : 'unavailable'),
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 300_000 },
     );
+  }, [remember]);
+
+  const setManual = useCallback(
+    (next: Coords) => {
+      remember(next, 'manual');
+    },
+    [remember],
+  );
+
+  const clear = useCallback(() => {
+    setCoords(null);
+    setStatus('idle');
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // See above.
+    }
   }, []);
 
-  return { coords, status, locate };
+  return { coords, status, locate, setManual, clear };
 }

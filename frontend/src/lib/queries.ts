@@ -73,3 +73,82 @@ export async function fetchOwnIncidents(): Promise<OwnIncident[]> {
   if (error) throw new Error(error.message);
   return (data ?? []) as OwnIncident[];
 }
+
+export type GeocodeResult = { label: string; lat: number; lng: number };
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export async function geocodePlace(query: string): Promise<GeocodeResult[]> {
+  const res = await fetch(`${API_URL}/v1/geocode?q=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error('Geocoding failed.');
+  const body = (await res.json()) as { data: GeocodeResult[] };
+  return body.data;
+}
+
+export type MyMosque = {
+  id: string;
+  name: string;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  phone: string | null;
+  website: string | null;
+  source: string;
+  role: string;
+  added_at: string;
+};
+
+export type Enrichment = {
+  place_id: string;
+  name: string | null;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  opening_hours: string[] | null;
+  fetched_at: string;
+};
+
+async function authHeaders(): Promise<Record<string, string>> {
+  const {
+    data: { session },
+  } = await createClient().auth.getSession();
+  if (!session?.access_token) throw new Error('You are signed out. Sign in and try again.');
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` };
+}
+
+async function unwrap(res: Response) {
+  if (res.ok) return res.status === 204 ? null : res.json();
+  const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+  throw new Error(body?.error?.message ?? 'That did not work. Please try again.');
+}
+
+export async function fetchMyMosques(): Promise<MyMosque[]> {
+  const res = await fetch(`${API_URL}/v1/me/mosques`, { headers: await authHeaders() });
+  const body = (await unwrap(res)) as { data: MyMosque[] };
+  return body.data;
+}
+
+export async function addMosqueToProfile(mosqueId: string): Promise<void> {
+  const res = await fetch(`${API_URL}/v1/me/mosques`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ mosque_id: mosqueId }),
+  });
+  await unwrap(res);
+}
+
+export async function removeMosqueFromProfile(mosqueId: string): Promise<void> {
+  const res = await fetch(`${API_URL}/v1/me/mosques/${mosqueId}`, {
+    method: 'DELETE',
+    headers: await authHeaders(),
+  });
+  await unwrap(res);
+}
+
+// 502 here means Google simply had no match, which is common for smaller prayer spaces.
+// That is not an error worth surfacing -- the stored OSM profile still stands on its own.
+export async function fetchEnrichment(mosqueId: string): Promise<Enrichment | null> {
+  const res = await fetch(`${API_URL}/v1/mosques/${mosqueId}/enrichment`);
+  if (!res.ok) return null;
+  return (await res.json()) as Enrichment;
+}

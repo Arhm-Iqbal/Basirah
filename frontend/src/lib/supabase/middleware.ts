@@ -22,7 +22,16 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Must stay getUser, not getSession: getSession trusts the cookie without revalidating.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+  if (user && (path === '/' || path === '/login' || path === '/signup')) {
+    const redirect = NextResponse.redirect(new URL('/app', request.url));
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  }
 
   return response;
 }
