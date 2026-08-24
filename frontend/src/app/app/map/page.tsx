@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { CommunityMap } from '@/components/community-map';
+import { MapAddMosque } from '@/components/map-add-mosque';
 
 export const metadata: Metadata = {
   title: 'Map · Basirah',
@@ -17,6 +18,8 @@ export default function MapPage() {
           Verified incidents near you. Locations are approximate.
         </p>
       </div>
+
+      <MapAddMosque />
 
       <div className="h-[min(70dvh,560px)] min-h-[280px] sm:h-[calc(100dvh-13rem)] sm:min-h-[420px]">
         <CommunityMap />

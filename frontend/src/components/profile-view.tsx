@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/button-link';
 import { MosqueFinder } from '@/components/mosque-finder';
+import { OwnReports } from '@/components/own-reports';
 import {
   fetchEnrichment,
   fetchMosqueEvents,
@@ -157,6 +159,9 @@ export function ProfileView({ email }: { email: string | null }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [finding, setFinding] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const view = searchParams.get('view') === 'reports' ? 'reports' : 'mosques';
 
   useEffect(() => {
     let active = true;
@@ -230,7 +235,39 @@ export function ProfileView({ email }: { email: string | null }) {
 
       {error && <p className="mt-4 text-base text-basirah-rust">{error}</p>}
 
-      <section className="mt-6">
+      <div
+        role="tablist"
+        aria-label="Profile sections"
+        className="mt-8 flex gap-1 border-b border-basirah-teal/15"
+      >
+        {(
+          [
+            ['mosques', 'Your mosques'],
+            ['reports', 'Your reports'],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={view === key}
+            onClick={() =>
+              router.replace(key === 'mosques' ? '/app/profile' : '/app/profile?view=reports')
+            }
+            className={`-mb-px cursor-pointer border-b-2 px-4 py-2.5 text-base font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none ${
+              view === key
+                ? 'border-basirah-teal text-basirah-teal'
+                : 'border-transparent text-basirah-teal/55 hover:text-basirah-teal'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'reports' && <OwnReports />}
+
+      <section className={view === 'reports' ? 'hidden' : 'mt-6'}>
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-basirah-teal">
             Your mosques
@@ -275,7 +312,7 @@ export function ProfileView({ email }: { email: string | null }) {
         )}
       </section>
 
-      {finding && (
+      {view === 'mosques' && finding && (
         <section className="mt-6 border-t border-basirah-teal/15 pt-5">
           <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-basirah-teal">
             Near you

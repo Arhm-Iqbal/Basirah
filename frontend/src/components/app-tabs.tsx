@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 import { Logo } from '@/components/logo';
 import { createClient } from '@/lib/supabase/client';
@@ -9,17 +10,6 @@ import { createClient } from '@/lib/supabase/client';
 type Tab = { href: string; label: string; shortLabel: string; icon: React.ReactNode };
 
 const TABS: Tab[] = [
-  {
-    href: '/app/profile',
-    label: 'Profile',
-    shortLabel: 'Profile',
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden className="size-5 fill-basirah-teal">
-        <circle cx="12" cy="7.5" r="3.9" />
-        <path d="M12 13c-4.2 0-7.5 2.6-7.5 5.9 0 .9.7 1.6 1.6 1.6h11.8c.9 0 1.6-.7 1.6-1.6C19.5 15.6 16.2 13 12 13Z" />
-      </svg>
-    ),
-  },
   {
     href: '/app/map',
     label: 'Map',
@@ -32,18 +22,27 @@ const TABS: Tab[] = [
     shortLabel: 'Report',
     icon: <img src="/icons/report.png" alt="" width={18} height={20} className="h-5 w-auto" />,
   },
-  {
-    href: '/app/reports',
-    label: 'My Reports',
-    shortLabel: 'Reports',
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden className="size-5 fill-basirah-teal">
-        <rect x="3.5" y="5" width="17" height="2.6" rx="1.3" />
-        <rect x="3.5" y="10.7" width="17" height="2.6" rx="1.3" />
-        <rect x="3.5" y="16.4" width="11" height="2.6" rx="1.3" />
-      </svg>
-    ),
-  },
+];
+
+function ProfileIcon({ className = 'size-5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={`${className} fill-current`}>
+      <circle cx="12" cy="7.5" r="3.9" />
+      <path d="M12 13c-4.2 0-7.5 2.6-7.5 5.9 0 .9.7 1.6 1.6 1.6h11.8c.9 0 1.6-.7 1.6-1.6C19.5 15.6 16.2 13 12 13Z" />
+    </svg>
+  );
+}
+
+const MOBILE_PROFILE_TAB: Tab = {
+  href: '/app/profile',
+  label: 'Profile',
+  shortLabel: 'Profile',
+  icon: <ProfileIcon />,
+};
+
+const PROFILE_LINKS = [
+  { href: '/app/profile', label: 'Your profile' },
+  { href: '/app/profile?view=reports', label: 'Your reports' },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -51,8 +50,40 @@ function isActive(pathname: string, href: string) {
 }
 
 export function AppTabs() {
+  const [email, setEmail] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const profileActive = pathname.startsWith('/app/profile') || pathname.startsWith('/app/reports');
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onPointer = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    void createClient()
+      .auth.getUser()
+      .then(({ data }) => setEmail(data.user?.email ?? null))
+      .catch(() => setEmail(null));
+  }, []);
 
   const signOut = async () => {
     await createClient().auth.signOut();
@@ -93,13 +124,57 @@ export function AppTabs() {
               })}
             </nav>
 
-            <button
-              type="button"
-              onClick={signOut}
-              className="cursor-pointer rounded-md px-3 py-2 text-base font-semibold text-basirah-teal transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-rust focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal"
-            >
-              Sign out
-            </button>
+            <div ref={menuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-base font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none ${
+                  profileActive || menuOpen
+                    ? 'bg-basirah-teal text-white'
+                    : 'text-basirah-teal hover:bg-basirah-cream'
+                }`}
+              >
+                <ProfileIcon />
+                Profile
+                <svg viewBox="0 0 12 12" aria-hidden className="size-3 fill-none stroke-current">
+                  <path d="M2.5 4.5 6 8l3.5-3.5" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute end-0 z-50 mt-1.5 w-56 overflow-hidden rounded-md border border-basirah-teal/20 bg-white py-1 shadow-lg"
+                >
+                  {email && (
+                    <p className="truncate border-b border-basirah-teal/10 px-4 py-2 text-sm text-basirah-teal/60">
+                      {email}
+                    </p>
+                  )}
+                  {PROFILE_LINKS.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      role="menuitem"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-4 py-2.5 text-base text-basirah-teal transition-colors duration-150 hover:bg-basirah-cream motion-reduce:transition-none"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={signOut}
+                    className="block w-full cursor-pointer border-t border-basirah-teal/10 px-4 py-2.5 text-start text-base text-basirah-teal transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-rust motion-reduce:transition-none"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -112,7 +187,7 @@ export function AppTabs() {
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <ul className="mx-auto flex max-w-md items-stretch">
-          {TABS.map((tab) => {
+          {[...TABS, MOBILE_PROFILE_TAB].map((tab) => {
             const active = isActive(pathname, tab.href);
             return (
               <li key={tab.href} className="flex-1">
