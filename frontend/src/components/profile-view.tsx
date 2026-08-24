@@ -142,20 +142,11 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
                       event.title
                     )}
                   </p>
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-basirah-teal/60">
-                    <span className="tabular-nums">
-                      {new Date(event.starts_at).toLocaleString('en-CA', {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })}
-                    </span>
-                    {/* These sit on the profiles of real mosques, so an illustrative entry
-                        has to say so rather than read as a listing someone can turn up to. */}
-                    {event.source === 'seed' && (
-                      <span className="rounded-full bg-basirah-cream px-2 py-0.5 text-xs font-semibold text-basirah-teal/75">
-                        Sample
-                      </span>
-                    )}
+                  <p className="text-sm tabular-nums text-basirah-teal/60">
+                    {new Date(event.starts_at).toLocaleString('en-CA', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
                   </p>
                 </li>
               ))}
