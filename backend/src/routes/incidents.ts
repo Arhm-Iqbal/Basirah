@@ -58,7 +58,13 @@ incidents.post(
       .select('id, status, channel, created_at')
       .single();
 
-    if (error) return fail(c, 500, 'insert_failed', error.message);
+    if (error) {
+      console.error(error);
+      if (error.code === '23503') {
+        return fail(c, 422, 'invalid_mosque', 'The selected mosque could not be found.');
+      }
+      return fail(c, 500, 'insert_failed', 'Could not submit this report.');
+    }
     c.executionCtx.waitUntil(
       generateAndStore(db, data.id).catch((err: unknown) => {
         console.error('pdf generation failed', err);

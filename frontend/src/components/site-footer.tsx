@@ -6,6 +6,7 @@ const FOOTER_LINKS = [
   { href: '/map', label: 'Community' },
   { href: '/report', label: 'Report' },
   { href: '/resources', label: 'Resources' },
+  { href: '/privacy', label: 'Privacy' },
 ];
 
 export function SiteFooter() {

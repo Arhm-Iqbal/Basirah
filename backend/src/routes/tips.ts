@@ -55,7 +55,13 @@ tips.post(
       .select('id, status, created_at')
       .single();
 
-    if (error) return fail(c, 500, 'insert_failed', error.message);
+    if (error) {
+      console.error(error);
+      if (error.code === '23503') {
+        return fail(c, 422, 'invalid_mosque', 'The selected mosque could not be found.');
+      }
+      return fail(c, 500, 'insert_failed', 'Could not submit this report.');
+    }
 
     // The only time the plaintext code ever exists in a response.
     return c.json(
