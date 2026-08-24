@@ -153,13 +153,24 @@ const EVENT_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-const SYSTEM = `You extract upcoming events from the text of a mosque's website.
+const SYSTEM = `You extract upcoming one-off events from the text of a mosque's website.
 
-Rules:
-- Only include events with a date you can actually determine. If the page says "every Friday" with no date, skip it -- a recurring prayer time is not an event.
-- starts_at and ends_at must be ISO 8601 with an offset. Use the year given; if none is given, assume the next occurrence from today.
-- Do not invent events, times, or descriptions. An empty list is the correct answer for a page that has none.
-- Skip anything already past.`;
+Include: fundraisers, dinners, conventions, camps, Eid and Ramadan programmes, guest
+speakers, open houses, classes with a defined start date, community picnics.
+
+Exclude, always:
+- Daily and weekly prayer times. Jummah, Friday prayers, iqamah and salah schedules are not
+  events, even when a date is printed beside them.
+- Anything you would have to invent a date for. "Every Sunday" with no date is a schedule.
+- Office hours, opening times, and donation appeals.
+
+A recurring series appears at most once, as its next occurrence. Never expand a weekly
+programme into one entry per week.
+
+starts_at and ends_at must be ISO 8601 with an offset. Use the year given; if none is
+given, assume the next occurrence from today. Skip anything already past. Do not invent
+events, times, or descriptions -- an empty list is the correct answer for a page with
+none.`;
 
 // Raw fetch rather than the openai package: this is one call, it keeps the Workers bundle
 // small, and it avoids adding a dependency outside the approved list in CLAUDE.md.
