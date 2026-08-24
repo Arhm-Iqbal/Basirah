@@ -7,6 +7,7 @@ import {
   longitude,
   uuid,
 } from './common';
+import { incidentActionPlan } from './actions';
 
 // No race, ethnicity, religion, clothing, or physical-description field exists on any
 // report shape, and none may be added. Describe what a person did, never how they looked.
@@ -69,6 +70,7 @@ export const tipCreated = z.object({
   claim_code: z.string(),
   status: incidentStatus,
   created_at: isoTimestamp,
+  actions: incidentActionPlan,
 });
 export type TipCreated = z.infer<typeof tipCreated>;
 

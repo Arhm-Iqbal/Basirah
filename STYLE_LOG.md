@@ -6,6 +6,16 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-23 — Report completion becomes an action screen
+
+What: Signed-in reports now finish on a dedicated next-steps screen. It uses the existing
+cream surface, teal/rust urgency states, numbered white cards, and the same `rounded-md` /
+`rounded-lg` radius scale as the report wizard. Official external actions are full teal buttons.
+Why: A successful submission needs to lead directly into the platform or real-world response,
+without making the reporter hunt through a generic confirmation or a differently styled page.
+
+---
+
 ## 2026-08-23 — Product cards scale up and fade in
 
 What: Hero, the three cards, and the home footer fade in on scroll (opacity +
