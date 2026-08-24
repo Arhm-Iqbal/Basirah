@@ -31,7 +31,12 @@ export function MapAddMosque() {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-basirah-teal/20 bg-white px-4 py-3">
         <p className="text-base text-basirah-teal">Don&apos;t see a mosque that should be here?</p>
-        <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="w-full sm:w-auto"
+          onClick={() => setOpen(true)}
+        >
           Add a mosque
         </Button>
       </div>

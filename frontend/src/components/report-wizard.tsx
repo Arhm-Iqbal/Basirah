@@ -830,9 +830,9 @@ export function ReportWizard() {
               const value = report[key];
               if (typeof value !== 'string' || value.trim() === '') return [];
               return [
-                <div key={key} className="grid grid-cols-3 gap-4 py-2.5">
+                <div key={key} className="py-2.5 sm:grid sm:grid-cols-3 sm:gap-4">
                   <dt className="text-sm text-basirah-teal/70">{label}</dt>
-                  <dd className="col-span-2 text-base text-basirah-teal">
+                  <dd className="mt-0.5 text-base break-words text-basirah-teal sm:col-span-2 sm:mt-0">
                     {formatReviewValue(key, value)}
                   </dd>
                 </div>,

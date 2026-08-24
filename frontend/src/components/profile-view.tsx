@@ -238,7 +238,7 @@ export function ProfileView({ email }: { email: string | null }) {
       <div
         role="tablist"
         aria-label="Profile sections"
-        className="mt-8 flex gap-1 border-b border-basirah-teal/15"
+        className="mt-8 -mx-4 flex gap-1 overflow-x-auto border-b border-basirah-teal/15 px-4 sm:mx-0 sm:px-0"
       >
         {(
           [
