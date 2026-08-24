@@ -1,7 +1,7 @@
 'use client';
 
-import { ArrowLeft, Briefcase, Gavel, Stethoscope, Store } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ArrowLeft, Briefcase, Gavel, Search, Stethoscope, Store, X } from 'lucide-react';
+import { useId, useMemo, useRef, useState } from 'react';
 
 import {
   BUSINESSES,
@@ -57,6 +57,7 @@ const LAW_FACETS: Facet[] = [
   { label: 'Criminal', test: /criminal/i },
   { label: 'Employment & rights', test: /employment|human rights|labour/i },
   { label: 'Administrative', test: /administrative|regulatory|public law|aboriginal/i },
+  { label: 'Organizations', test: /organization/i },
 ];
 
 function facetsFor(person: DirectoryProfessional, facets: Facet[]) {
@@ -68,23 +69,12 @@ function matches(fields: Array<string | undefined>, query: string) {
   return fields.some((value) => value?.toLowerCase().includes(query));
 }
 
-function useFiltered<T>(
-  items: T[],
-  query: string,
-  subType: string,
-  searchFields: (item: T) => Array<string | undefined>,
-  typesOf: (item: T) => string[],
-) {
+function useSubtypeFilter<T>(items: T[], subType: string, typesOf: (item: T) => string[]) {
   return useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return items.filter(
-      (item) =>
-        (subType === ALL || typesOf(item).includes(subType)) &&
-        (!needle || matches(searchFields(item), needle)),
-    );
-    // searchFields/typesOf are defined inline at each call site and are stable in behaviour.
+    return items.filter((item) => subType === ALL || typesOf(item).includes(subType));
+    // typesOf is defined inline at each call site and is stable in behaviour.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, query, subType]);
+  }, [items, subType]);
 }
 
 function Chips({
@@ -127,26 +117,47 @@ function Chips({
   );
 }
 
-function SearchBox({
-  value,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  onChange: (next: string) => void;
-  placeholder: string;
-}) {
+function SearchBox({ value, onChange }: { value: string; onChange: (next: string) => void }) {
+  const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <label className="block">
-      <span className="text-sm font-semibold text-basirah-teal">Search this list</span>
-      <input
-        type="search"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        className="mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-basirah-teal/45 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] motion-reduce:transition-none"
-      />
-    </label>
+    <div>
+      <label htmlFor={inputId} className="text-sm font-semibold text-basirah-teal">
+        Search all resources
+      </label>
+      <div className="relative mt-1.5">
+        <Search
+          className="pointer-events-none absolute start-3.5 top-1/2 size-5 -translate-y-1/2 text-basirah-teal/45"
+          aria-hidden
+        />
+        <input
+          ref={inputRef}
+          id={inputId}
+          type="search"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="Name, service, specialty, or neighbourhood"
+          className="w-full rounded-full border border-basirah-teal/30 bg-white py-3 ps-11 pe-11 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-basirah-teal/45 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] motion-reduce:transition-none [&::-webkit-search-cancel-button]:hidden"
+        />
+        {value ? (
+          <button
+            type="button"
+            aria-label="Clear resource search"
+            onClick={() => {
+              onChange('');
+              inputRef.current?.focus();
+            }}
+            className="absolute end-2 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-basirah-teal/55 transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        ) : null}
+      </div>
+      <p className="mt-2 text-sm text-basirah-teal/60">
+        Search businesses, health professionals, and lawyers at once.
+      </p>
+    </div>
   );
 }
 
@@ -211,27 +222,35 @@ type Choice = {
   icon: typeof Store;
   label: string;
   description: string;
+  count: number;
   onSelect: () => void;
 };
 
 function Choices({ intro, options }: { intro: string; options: Choice[] }) {
   return (
     <div>
-      <p className="text-center font-display text-xl font-semibold tracking-tight text-basirah-teal sm:text-2xl">
+      <h2 className="text-center font-display text-xl font-semibold tracking-tight text-basirah-teal sm:text-2xl">
         {intro}
-      </p>
+      </h2>
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {options.map(({ icon: Icon, label, description, onSelect }) => (
+        {options.map(({ icon: Icon, label, description, count, onSelect }) => (
           <button
             key={label}
             type="button"
             onClick={onSelect}
-            className="flex cursor-pointer flex-col items-start rounded-2xl border-2 border-basirah-teal/15 bg-white p-5 text-start transition-colors duration-150 hover:border-basirah-teal/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none sm:p-6"
+            className="flex cursor-pointer items-center gap-4 rounded-[2rem] border-2 border-basirah-teal/15 bg-white px-5 py-4 text-start transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-basirah-teal/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transform-none motion-reduce:transition-none sm:px-6 sm:py-5"
           >
-            <Icon className="size-7 text-basirah-teal" aria-hidden />
-            <span className="mt-3 text-lg font-semibold text-basirah-teal">{label}</span>
-            <span className="mt-1.5 text-sm leading-relaxed text-basirah-teal/70">
-              {description}
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-basirah-cream">
+              <Icon className="size-6 text-basirah-teal" aria-hidden />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-lg font-semibold text-basirah-teal">{label}</span>
+              <span className="mt-1 block text-sm leading-relaxed text-basirah-teal/70">
+                {description}
+              </span>
+              <span className="mt-1.5 block text-xs font-semibold text-basirah-rust">
+                {count} {count === 1 ? 'listing' : 'listings'}
+              </span>
             </span>
           </button>
         ))}
@@ -259,9 +278,7 @@ function Results({
         sources.
       </p>
       {total === 0 ? (
-        <p className="mt-5 text-base text-basirah-teal/75">
-          Nothing matches that. Clear the search, or pick a different type.
-        </p>
+        <p className="mt-5 text-base text-basirah-teal/75">No listings in this type.</p>
       ) : (
         <ul className="mt-5 space-y-3">{children}</ul>
       )}
@@ -269,10 +286,122 @@ function Results({
   );
 }
 
+function SectionIntro({ title, description }: { title: string; description: string }) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl font-semibold tracking-tight text-basirah-teal">
+        {title}
+      </h2>
+      <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">{description}</p>
+    </div>
+  );
+}
+
+function SearchGroup({
+  title,
+  total,
+  children,
+}: {
+  title: string;
+  total: number;
+  children: React.ReactNode;
+}) {
+  if (total === 0) return null;
+
+  return (
+    <section className="mt-8">
+      <div className="flex items-center gap-3">
+        <h3 className="font-display text-xl font-semibold text-basirah-teal">{title}</h3>
+        <span className="rounded-full bg-basirah-cream px-2.5 py-1 text-xs font-semibold text-basirah-teal/70">
+          {total}
+        </span>
+      </div>
+      <ul className="mt-3 space-y-3">{children}</ul>
+    </section>
+  );
+}
+
+function SearchResults({
+  query,
+  businesses,
+  health,
+  lawyers,
+}: {
+  query: string;
+  businesses: DirectoryBusiness[];
+  health: DirectoryProfessional[];
+  lawyers: DirectoryProfessional[];
+}) {
+  const total = businesses.length + health.length + lawyers.length;
+  const hasProfessionals = health.length + lawyers.length > 0;
+
+  return (
+    <div className="mt-8">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-basirah-teal">
+          Search results
+        </h2>
+        <p aria-live="polite" className="text-sm font-semibold text-basirah-teal/65">
+          {total} {total === 1 ? 'match' : 'matches'}
+        </p>
+      </div>
+      <p className="mt-1 text-sm text-basirah-teal/70">
+        Across the full directory for “{query.trim()}”
+      </p>
+
+      {total === 0 ? (
+        <div className="mt-6 rounded-2xl border border-basirah-teal/20 bg-white p-5">
+          <p className="font-semibold text-basirah-teal">No resources match that search.</p>
+          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">
+            Try a broader service, profession, business type, or neighbourhood.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="mt-5 space-y-2">
+            {businesses.length > 0 ? (
+              <p className="rounded-lg border border-basirah-teal/20 bg-white p-4 text-sm leading-relaxed text-basirah-teal/80">
+                {BUSINESS_NOTICE}
+              </p>
+            ) : null}
+            {hasProfessionals ? (
+              <p className="rounded-lg border border-basirah-teal/20 bg-white p-4 text-sm leading-relaxed text-basirah-teal/80">
+                {PROFESSIONAL_NOTICE}
+              </p>
+            ) : null}
+          </div>
+
+          <SearchGroup title="Businesses" total={businesses.length}>
+            {businesses.map((business) => (
+              <BusinessCard
+                key={`${business.name}-${business.address ?? ''}`}
+                business={business}
+              />
+            ))}
+          </SearchGroup>
+
+          <SearchGroup title="Health professionals" total={health.length}>
+            {health.map((person) => (
+              <ProfessionalCard key={`health-${person.name}`} person={person} />
+            ))}
+          </SearchGroup>
+
+          <SearchGroup title="Lawyers" total={lawyers.length}>
+            {lawyers.map((person) => (
+              <ProfessionalCard key={`lawyer-${person.name}`} person={person} />
+            ))}
+          </SearchGroup>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function CommunityDirectory() {
   const [view, setView] = useState<View>('root');
   const [query, setQuery] = useState('');
   const [subType, setSubType] = useState(ALL);
+  const normalisedQuery = query.trim().toLowerCase();
 
   const go = (next: View) => {
     setView(next);
@@ -280,26 +409,74 @@ export function CommunityDirectory() {
     setSubType(ALL);
   };
 
-  const businesses = useFiltered(
-    BUSINESSES,
-    query,
-    subType,
-    (item) => [item.name, item.category, item.address, item.basis],
-    (item) => [businessType(item.category)],
+  const businesses = useSubtypeFilter(BUSINESSES, subType, (item) => [businessType(item.category)]);
+  const health = useSubtypeFilter(HEALTH_PROFESSIONALS, subType, (item) =>
+    facetsFor(item, HEALTH_FACETS),
   );
-  const health = useFiltered(
-    HEALTH_PROFESSIONALS,
-    query,
-    subType,
-    (item) => [item.name, item.role, item.specialty, item.organization, item.basis],
-    (item) => facetsFor(item, HEALTH_FACETS),
+  const lawyers = useSubtypeFilter(LAWYERS, subType, (item) => facetsFor(item, LAW_FACETS));
+
+  const searchedBusinesses = useMemo(
+    () =>
+      normalisedQuery
+        ? BUSINESSES.filter((item) =>
+            matches(
+              [
+                item.name,
+                item.category,
+                item.address,
+                item.website,
+                item.basis,
+                'business businesses',
+              ],
+              normalisedQuery,
+            ),
+          )
+        : [],
+    [normalisedQuery],
   );
-  const lawyers = useFiltered(
-    LAWYERS,
-    query,
-    subType,
-    (item) => [item.name, item.role, item.specialty, item.organization, item.basis],
-    (item) => facetsFor(item, LAW_FACETS),
+  const searchedHealth = useMemo(
+    () =>
+      normalisedQuery
+        ? HEALTH_PROFESSIONALS.filter((item) =>
+            matches(
+              [
+                item.name,
+                item.role,
+                item.specialty,
+                item.organization,
+                item.website,
+                item.email,
+                item.basis,
+                facetsFor(item, HEALTH_FACETS).join(' '),
+                'health healthcare professional professionals',
+              ],
+              normalisedQuery,
+            ),
+          )
+        : [],
+    [normalisedQuery],
+  );
+  const searchedLawyers = useMemo(
+    () =>
+      normalisedQuery
+        ? LAWYERS.filter((item) =>
+            matches(
+              [
+                item.name,
+                item.role,
+                item.specialty,
+                item.organization,
+                item.website,
+                item.email,
+                item.basis,
+                facetsFor(item, LAW_FACETS).join(' '),
+                'lawyer lawyers legal professional professionals',
+              ],
+              normalisedQuery,
+            ),
+          )
+        : [],
+    [normalisedQuery],
   );
 
   // Counts come from the whole set rather than the current filter, so a chip always says how
@@ -343,110 +520,136 @@ export function CommunityDirectory() {
 
   return (
     <div>
-      {parent ? (
-        <button
-          type="button"
-          onClick={() => go(parent)}
-          className="-ms-2 mb-5 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-basirah-teal/70 transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          Back
-        </button>
-      ) : null}
+      <SearchBox value={query} onChange={setQuery} />
 
-      {view === 'root' ? (
-        <Choices
-          intro="What are you looking for?"
-          options={[
-            {
-              icon: Store,
-              label: 'Businesses',
-              description: 'Muslim-owned and halal businesses across Edmonton.',
-              onSelect: () => go('businesses'),
-            },
-            {
-              icon: Briefcase,
-              label: 'Professionals',
-              description: 'Health professionals and lawyers serving the community.',
-              onSelect: () => go('professionals'),
-            },
-          ]}
+      {normalisedQuery ? (
+        <SearchResults
+          query={query}
+          businesses={searchedBusinesses}
+          health={searchedHealth}
+          lawyers={searchedLawyers}
         />
-      ) : null}
+      ) : (
+        <div className="mt-8">
+          {parent ? (
+            <button
+              type="button"
+              onClick={() => go(parent)}
+              className="-ms-2 mb-5 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-basirah-teal/70 transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none"
+            >
+              <ArrowLeft className="size-4" aria-hidden />
+              Back
+            </button>
+          ) : null}
 
-      {view === 'professionals' ? (
-        <Choices
-          intro="Which kind of professional?"
-          options={[
-            {
-              icon: Stethoscope,
-              label: 'Health professionals',
-              description: 'Counsellors, psychologists, dentists, and other practitioners.',
-              onSelect: () => go('health'),
-            },
-            {
-              icon: Gavel,
-              label: 'Lawyers',
-              description: 'Practice areas from family and immigration to Islamic wills.',
-              onSelect: () => go('lawyers'),
-            },
-          ]}
-        />
-      ) : null}
+          {view === 'root' ? (
+            <Choices
+              intro="What are you looking for?"
+              options={[
+                {
+                  icon: Store,
+                  label: 'Businesses',
+                  description: 'Muslim-owned and halal businesses across Edmonton.',
+                  count: BUSINESSES.length,
+                  onSelect: () => go('businesses'),
+                },
+                {
+                  icon: Briefcase,
+                  label: 'Professionals',
+                  description: 'Health professionals and lawyers serving the community.',
+                  count: HEALTH_PROFESSIONALS.length + LAWYERS.length,
+                  onSelect: () => go('professionals'),
+                },
+              ]}
+            />
+          ) : null}
 
-      {view === 'businesses' ? (
-        <div className="space-y-4">
-          <Chips
-            options={businessChips}
-            value={subType}
-            onChange={setSubType}
-            label="Filter businesses by type"
-          />
-          <SearchBox value={query} onChange={setQuery} placeholder="Name, or neighbourhood" />
-          <Results notice={BUSINESS_NOTICE} total={businesses.length}>
-            {businesses.map((business) => (
-              <BusinessCard
-                key={`${business.name}-${business.address ?? ''}`}
-                business={business}
+          {view === 'professionals' ? (
+            <Choices
+              intro="Which kind of professional?"
+              options={[
+                {
+                  icon: Stethoscope,
+                  label: 'Health professionals',
+                  description: 'Counsellors, psychologists, dentists, and other practitioners.',
+                  count: HEALTH_PROFESSIONALS.length,
+                  onSelect: () => go('health'),
+                },
+                {
+                  icon: Gavel,
+                  label: 'Lawyers',
+                  description: 'Practice areas from family and immigration to Islamic wills.',
+                  count: LAWYERS.length,
+                  onSelect: () => go('lawyers'),
+                },
+              ]}
+            />
+          ) : null}
+
+          {view === 'businesses' ? (
+            <div className="space-y-4">
+              <SectionIntro
+                title="Businesses"
+                description="Choose a business type below, or browse every listing."
               />
-            ))}
-          </Results>
-        </div>
-      ) : null}
+              <Chips
+                options={businessChips}
+                value={subType}
+                onChange={setSubType}
+                label="Filter businesses by type"
+              />
+              <Results notice={BUSINESS_NOTICE} total={businesses.length}>
+                {businesses.map((business) => (
+                  <BusinessCard
+                    key={`${business.name}-${business.address ?? ''}`}
+                    business={business}
+                  />
+                ))}
+              </Results>
+            </div>
+          ) : null}
 
-      {view === 'health' ? (
-        <div className="space-y-4">
-          <Chips
-            options={healthChips}
-            value={subType}
-            onChange={setSubType}
-            label="Filter health professionals by discipline"
-          />
-          <SearchBox value={query} onChange={setQuery} placeholder="Name, or specialty" />
-          <Results notice={PROFESSIONAL_NOTICE} total={health.length}>
-            {health.map((person) => (
-              <ProfessionalCard key={person.name} person={person} />
-            ))}
-          </Results>
-        </div>
-      ) : null}
+          {view === 'health' ? (
+            <div className="space-y-4">
+              <SectionIntro
+                title="Health professionals"
+                description="Choose a discipline below, or browse every health listing."
+              />
+              <Chips
+                options={healthChips}
+                value={subType}
+                onChange={setSubType}
+                label="Filter health professionals by discipline"
+              />
+              <Results notice={PROFESSIONAL_NOTICE} total={health.length}>
+                {health.map((person) => (
+                  <ProfessionalCard key={person.name} person={person} />
+                ))}
+              </Results>
+            </div>
+          ) : null}
 
-      {view === 'lawyers' ? (
-        <div className="space-y-4">
-          <Chips
-            options={lawyerChips}
-            value={subType}
-            onChange={setSubType}
-            label="Filter lawyers by practice area"
-          />
-          <SearchBox value={query} onChange={setQuery} placeholder="Name, or practice area" />
-          <Results notice={PROFESSIONAL_NOTICE} total={lawyers.length}>
-            {lawyers.map((person) => (
-              <ProfessionalCard key={person.name} person={person} />
-            ))}
-          </Results>
+          {view === 'lawyers' ? (
+            <div className="space-y-4">
+              <SectionIntro
+                title="Lawyers"
+                description="Choose a practice area below, or browse every legal listing."
+              />
+              <Chips
+                options={lawyerChips}
+                value={subType}
+                onChange={setSubType}
+                label="Filter lawyers by practice area"
+              />
+              <Results notice={PROFESSIONAL_NOTICE} total={lawyers.length}>
+                {lawyers.map((person) => (
+                  <ProfessionalCard key={person.name} person={person} />
+                ))}
+              </Results>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
