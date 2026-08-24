@@ -11,8 +11,8 @@ import type { Coords } from '@/lib/use-geolocation';
 const PROVINCES = ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'];
 
 const field =
-  'mt-1.5 w-full rounded-xl border border-basirah-teal/15 bg-white px-3.5 py-2.5 text-basirah-teal outline-none transition-colors placeholder:text-basirah-teal/35 focus:border-basirah-teal/40';
-const label = 'block text-sm font-medium text-basirah-teal';
+  'mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-colors placeholder:text-basirah-teal/45 focus:border-basirah-teal';
+const label = 'block text-base font-semibold text-basirah-teal';
 
 export function AddMosqueForm({
   nearby,
@@ -66,7 +66,7 @@ export function AddMosqueForm({
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (name.trim().length < 2) {
-      setError('Please give the mosque a name.');
+      setError('The mosque needs a name.');
       return;
     }
     setSaving(true);
@@ -149,16 +149,16 @@ export function AddMosqueForm({
         </div>
       </div>
 
-      <div className="rounded-xl border border-basirah-teal/12 bg-basirah-cream/50 p-4">
-        <p className="text-sm font-medium text-basirah-teal">Where is it on the map?</p>
-        <p className="mt-1 text-xs leading-relaxed text-basirah-teal/55">
+      <div className="rounded-lg border border-basirah-teal/20 bg-white p-4">
+        <p className="text-base font-semibold text-basirah-teal">Where is it on the map?</p>
+        <p className="mt-1 text-sm leading-relaxed text-basirah-teal">
           {pinned
             ? `Pinned to ${pinned}. Tap the map to move it.`
             : 'Tap the map to drop a pin, or look it up from the address below.'}
         </p>
 
         {coords && (
-          <div className="mt-3 h-52 overflow-hidden rounded-lg border border-basirah-teal/10">
+          <div className="mt-3 h-52 overflow-hidden rounded-md border border-basirah-teal/20">
             <Map
               initialViewState={{ longitude: coords.lng, latitude: coords.lat, zoom: 14 }}
               mapStyle="https://tiles.openfreemap.org/styles/liberty"
@@ -190,7 +190,7 @@ export function AddMosqueForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="m-phone" className={label}>
-            Phone <span className="font-normal text-basirah-teal/40">(optional)</span>
+            Phone <span className="font-normal text-basirah-teal/70">(optional)</span>
           </label>
           <input
             id="m-phone"
@@ -202,7 +202,7 @@ export function AddMosqueForm({
         </div>
         <div>
           <label htmlFor="m-website" className={label}>
-            Website <span className="font-normal text-basirah-teal/40">(optional)</span>
+            Website <span className="font-normal text-basirah-teal/70">(optional)</span>
           </label>
           <input
             id="m-website"
@@ -217,7 +217,7 @@ export function AddMosqueForm({
 
       <div>
         <label htmlFor="m-notes" className={label}>
-          Anything else <span className="font-normal text-basirah-teal/40">(optional)</span>
+          Anything else <span className="font-normal text-basirah-teal/70">(optional)</span>
         </label>
         <textarea
           id="m-notes"
@@ -228,9 +228,9 @@ export function AddMosqueForm({
         />
       </div>
 
-      {error && <p className="text-sm text-basirah-rust">{error}</p>}
+      {error && <p className="text-base text-basirah-rust">{error}</p>}
 
-      <p className="text-xs leading-relaxed text-basirah-teal/45">
+      <p className="text-sm leading-relaxed text-basirah-teal">
         It is added to your profile right away. It joins the public directory once someone has
         confirmed the details.
       </p>

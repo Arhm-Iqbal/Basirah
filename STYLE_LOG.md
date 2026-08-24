@@ -16,6 +16,21 @@ Why: <why you made this choice>
 
 ---
 
+## 2026-08-23 — Mosque panel opens more quietly
+
+What: Slowed the drawer and map padding to 420ms and swapped the snap ease-out
+for a milder curve (`cubic-bezier(0.33, 0.08, 0.25, 1)` / ease-out quad).
+Why: The previous ease started too fast and hit the stop like a bounce.
+
+## 2026-08-23 — Mosque panel is teal and slides
+
+What: The map detail drawer is now solid `basirah-teal` with cream type, cyan
+actions, and a rust spine. It slides in from the trailing edge over a faint teal
+scrim, and slides out before unmounting.
+Why: Cream on the light map had no edge. Teal is the palette colour that can sit
+on the tiles without disappearing. The slide tells you the details belong to the
+pin you just touched.
+
 ## 2026-08-23 — Mosque details open in a side panel
 
 What: Clicking a mosque pin (or a verified incident) now opens a cream side panel

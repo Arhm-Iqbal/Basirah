@@ -9,10 +9,10 @@ export default function ContactPage() {
         Contact
       </h1>
 
-      <div className="mt-8 space-y-6 text-basirah-teal/80">
-        <div className="rounded-2xl border border-basirah-rust/20 bg-basirah-rust/5 p-6">
+      <div className="mt-6 space-y-5 text-base text-basirah-teal">
+        <div className="rounded-lg border border-basirah-rust/30 bg-basirah-rust/8 p-4">
           <h2 className="font-semibold text-basirah-rust">In an emergency, call 911</h2>
-          <p className="mt-2 text-sm text-basirah-teal/70">
+          <p className="mt-2 text-base text-basirah-teal">
             Basirah is not monitored around the clock and does not dispatch an emergency response.
           </p>
         </div>
@@ -28,7 +28,7 @@ export default function ContactPage() {
           </a>
           .
         </p>
-        <p className="text-sm text-basirah-teal/60">
+        <p className="text-base text-basirah-teal">
           To report an incident, use the report form rather than email — it captures what is
           needed for follow-up and keeps the record consistent.
         </p>

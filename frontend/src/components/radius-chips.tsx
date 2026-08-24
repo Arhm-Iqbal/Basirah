@@ -72,8 +72,8 @@ export function useSearchRadius(initialM = 15_000) {
 }
 
 function chipClass(active: boolean) {
-  return `min-h-9 cursor-pointer rounded-full px-3.5 text-[0.8125rem] font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
-    active ? 'bg-basirah-teal text-white' : 'text-basirah-teal/60 hover:bg-basirah-teal/5'
+  return `min-h-9 cursor-pointer rounded-md px-3 text-sm font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
+    active ? 'bg-basirah-teal text-white' : 'text-basirah-teal hover:bg-basirah-cream'
   }`;
 }
 
@@ -120,7 +120,7 @@ export function RadiusChips({
         Custom
       </button>
       {customMode && (
-        <label className="flex min-h-9 items-center gap-1 rounded-full border border-basirah-teal/15 bg-white ps-3 pe-3.5">
+        <label className="flex min-h-9 items-center gap-1 rounded-md border border-basirah-teal/30 bg-white ps-3 pe-3.5">
           <input
             ref={customInputRef}
             type="text"
@@ -136,9 +136,9 @@ export function RadiusChips({
               }
             }}
             aria-label="Custom range in kilometres, from 0.1 to 200"
-            className="w-[3.25rem] bg-transparent text-center text-[0.8125rem] tabular-nums text-basirah-teal outline-none"
+            className="w-[3.25rem] bg-transparent text-center text-sm tabular-nums text-basirah-teal outline-none"
           />
-          <span className="text-[0.8125rem] font-medium text-basirah-teal/55">km</span>
+          <span className="text-sm font-semibold text-basirah-teal">km</span>
         </label>
       )}
     </div>

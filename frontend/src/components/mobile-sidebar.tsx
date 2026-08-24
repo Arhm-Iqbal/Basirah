@@ -81,7 +81,7 @@ export function MobileSidebar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="rounded-md px-2 py-3 text-sm font-medium text-basirah-teal/80 hover:bg-basirah-cream hover:text-basirah-rust"
+                className="rounded-md px-2 py-3 text-base font-semibold text-basirah-teal hover:bg-basirah-cream hover:text-basirah-rust"
               >
                 {link.label}
               </Link>
@@ -92,7 +92,7 @@ export function MobileSidebar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="rounded-md px-2 py-3 text-sm font-medium text-basirah-teal/80 hover:bg-basirah-cream hover:text-basirah-rust"
+                className="rounded-md px-2 py-3 text-base font-semibold text-basirah-teal hover:bg-basirah-cream hover:text-basirah-rust"
               >
                 {link.label}
               </Link>
@@ -101,7 +101,7 @@ export function MobileSidebar() {
         <Link
           href="/report"
           onClick={() => setIsOpen(false)}
-          className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-basirah-rust px-5 py-3 text-center text-sm font-semibold text-white hover:bg-basirah-rust/90"
+          className="mt-3 inline-flex min-h-11 items-center justify-center rounded-md bg-basirah-rust px-5 py-3 text-center text-base font-semibold text-white hover:bg-basirah-rust/90"
         >
           Report an incident
         </Link>

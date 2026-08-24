@@ -5,9 +5,9 @@ type Size = 'sm' | 'md' | 'lg';
 type Variant = 'primary' | 'secondary' | 'teal' | 'ghost';
 
 const SIZES: Record<Size, string> = {
-  sm: 'min-h-9 gap-1.5 px-4 text-[0.8125rem]',
-  md: 'min-h-11 gap-2 px-6 text-sm sm:px-7',
-  lg: 'min-h-12 gap-2 px-8 text-base sm:min-h-14 sm:px-10',
+  sm: 'min-h-10 gap-1.5 px-3.5 text-sm',
+  md: 'min-h-11 gap-2 px-5 text-base',
+  lg: 'min-h-12 gap-2 px-7 text-base',
 };
 
 const VARIANTS: Record<Variant, string> = {
@@ -15,13 +15,13 @@ const VARIANTS: Record<Variant, string> = {
     'bg-basirah-rust text-white hover:bg-[#a82a0b] active:bg-[#7d1b05] focus-visible:outline-basirah-rust',
   teal: 'bg-basirah-teal text-white hover:bg-[#0a4749] active:bg-[#032526] focus-visible:outline-basirah-teal',
   secondary:
-    'border border-white/25 bg-white/5 text-white hover:border-white/40 hover:bg-white/10 active:bg-white/[0.03] focus-visible:outline-white',
+    'border border-white/40 bg-white/10 text-white hover:border-white/60 hover:bg-white/15 active:bg-white/[0.06] focus-visible:outline-white',
   ghost:
-    'border border-basirah-teal/15 text-basirah-teal hover:border-basirah-teal/30 hover:bg-basirah-teal/5 active:bg-basirah-teal/10 focus-visible:outline-basirah-teal',
+    'border border-basirah-teal/30 bg-white text-basirah-teal hover:border-basirah-teal hover:bg-basirah-cream active:bg-basirah-cream focus-visible:outline-basirah-teal',
 };
 
 const base =
-  'inline-flex select-none items-center justify-center rounded-full font-medium tracking-[-0.01em] ' +
+  'inline-flex select-none items-center justify-center rounded-md font-semibold tracking-[-0.01em] ' +
   'transition-[background-color,border-color,transform,opacity] duration-150 ease-out ' +
   'active:scale-[0.98] ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 ' +

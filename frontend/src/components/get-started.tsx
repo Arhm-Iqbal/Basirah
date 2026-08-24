@@ -8,16 +8,16 @@ import { TealButtonLink } from '@/components/button-link';
 
 const STEPS = [
   {
-    title: 'Report',
-    description: 'Submit an incident in minutes. No identity questions, only what happened.',
+    title: 'You write it',
+    description: 'Describe the behaviour. There are no fields for how someone looked.',
   },
   {
-    title: 'Verify',
-    description: 'A security officer in your community reviews and confirms the report.',
+    title: 'Someone checks it',
+    description: 'A security officer in your community reads it before it goes any further.',
   },
   {
-    title: 'Alert',
-    description: 'Verified incidents reach the community instantly, with no false alarms.',
+    title: 'Neighbours are told',
+    description: 'If it checks out, nearby mosques get the alert. Unverified reports stay quiet.',
   },
 ];
 
@@ -65,12 +65,13 @@ export function GetStarted() {
   return (
     <section id="get-started" className="hidden bg-basirah-cream md:block">
       <div ref={sectionRef} className="mx-auto max-w-5xl px-6 py-24">
-        <div className="text-center">
+        <div className="max-w-xl">
           <h2 className="text-3xl font-semibold tracking-tight text-basirah-teal sm:text-4xl">
-            Get started in three steps
+            How a report moves
           </h2>
-          <p className="mt-4 text-base text-basirah-teal/70">
-            Basirah is built to be simple for the people who need it most.
+          <p className="mt-4 text-base leading-relaxed text-basirah-teal">
+            You write what happened. A person in your mosque checks it. Only then does an alert go
+            out.
           </p>
         </div>
 
@@ -79,30 +80,32 @@ export function GetStarted() {
             <div ref={lineFillXRef} className="h-full origin-left bg-basirah-rust" />
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-3">
+          <ol className="grid gap-8 sm:grid-cols-3">
             {STEPS.map((step, index) => (
-              <div
-                key={step.title}
-                data-card
-                className="flex h-full flex-col items-center text-center"
-              >
-                <span className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-basirah-rust text-sm font-semibold text-white">
+              <li key={step.title} data-card className="flex h-full flex-col">
+                <span className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-basirah-rust text-sm font-semibold text-white">
                   {index + 1}
                 </span>
-                <div className="mt-5 flex w-full flex-1 flex-col justify-center rounded-2xl bg-white p-8 shadow-sm ring-1 ring-basirah-teal/5">
+                <div
+                  className={
+                    index === 0
+                      ? 'mt-5 flex w-full flex-1 flex-col rounded-lg border border-basirah-rust/25 bg-basirah-rust/5 p-5'
+                      : 'mt-5 flex w-full flex-1 flex-col pt-1'
+                  }
+                >
                   <h3 className="text-lg font-semibold text-basirah-teal">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-basirah-teal/70">
+                  <p className="mt-2 text-base leading-relaxed text-basirah-teal">
                     {step.description}
                   </p>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
 
-        <div className="mt-14 flex justify-center">
+        <div className="mt-14">
           <TealButtonLink href="/signup" className="w-auto min-w-[12rem]">
-            Get started
+            Create an account
           </TealButtonLink>
         </div>
       </div>

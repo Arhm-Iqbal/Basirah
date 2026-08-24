@@ -37,12 +37,12 @@ export function LocationGate({ status, onLocate, onManual }: Props) {
   };
 
   return (
-    <div className="flex h-full w-full items-center justify-center rounded-2xl border border-basirah-teal/10 bg-white p-6">
+    <div className="flex h-full w-full items-center justify-center rounded-lg border border-basirah-teal/20 bg-white p-5">
       <div className="w-full max-w-sm text-center">
-        <h2 className="text-lg font-semibold tracking-tight text-basirah-teal">
+        <h2 className="text-xl font-semibold tracking-tight text-basirah-teal">
           {blocked ? 'Where are you?' : 'Find mosques near you'}
         </h2>
-        <p className="mt-2 text-sm text-basirah-teal/60">
+        <p className="mt-2 text-base text-basirah-teal/80">
           {status === 'denied'
             ? 'Location is blocked for this site. Allow it in your browser settings, or enter your city below.'
             : status === 'unavailable'
@@ -55,24 +55,24 @@ export function LocationGate({ status, onLocate, onManual }: Props) {
             type="button"
             onClick={onLocate}
             disabled={status === 'locating'}
-            className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-basirah-teal px-6 text-sm font-semibold text-white transition-colors hover:bg-basirah-teal/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal disabled:opacity-60"
+            className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-basirah-teal px-5 text-base font-semibold text-white transition-colors hover:bg-basirah-teal/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal disabled:opacity-60"
           >
             {status === 'locating' ? 'Locating…' : 'Use my location'}
           </button>
         )}
 
-        <form onSubmit={search} className="mt-4 flex gap-2">
+        <form onSubmit={search} className="mt-3 flex gap-2">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="City or postal code"
             aria-label="City or postal code"
-            className="min-h-11 w-full rounded-full border border-basirah-teal/15 bg-white px-4 text-sm text-basirah-teal outline-none transition-colors placeholder:text-basirah-teal/40 focus:border-basirah-teal/40"
+            className="min-h-11 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 text-base text-basirah-teal outline-none transition-colors placeholder:text-basirah-teal/45 focus:border-basirah-teal"
           />
           <button
             type="submit"
             disabled={isSearching || query.trim().length < 2}
-            className="min-h-11 shrink-0 rounded-full border border-basirah-teal/15 px-5 text-sm font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream disabled:opacity-40"
+            className="min-h-11 shrink-0 rounded-md border border-basirah-teal/30 px-4 text-base font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream disabled:opacity-40"
           >
             {isSearching ? '…' : 'Go'}
           </button>
@@ -87,7 +87,7 @@ export function LocationGate({ status, onLocate, onManual }: Props) {
                 <button
                   type="button"
                   onClick={() => onManual({ lat: r.lat, lng: r.lng })}
-                  className="w-full rounded-xl px-3 py-2 text-start text-xs text-basirah-teal/80 transition-colors hover:bg-basirah-cream"
+                  className="w-full rounded-md px-3 py-2 text-start text-sm text-basirah-teal transition-colors hover:bg-basirah-cream"
                 >
                   {r.label}
                 </button>

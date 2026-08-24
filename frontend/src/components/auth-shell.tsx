@@ -12,7 +12,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
         <img src="/basirah-lanterns.png" alt="" className="auth-lantern auth-lantern-right" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-[1.75rem] border border-white/25 bg-basirah-cream/60 p-7 shadow-[0_24px_64px_rgb(0_0_0_/_40%)] backdrop-blur-xl sm:max-w-lg sm:p-10">
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-xl border border-white/30 bg-basirah-cream/80 p-6 shadow-[0_24px_64px_rgb(0_0_0_/_40%)] backdrop-blur-xl sm:max-w-lg sm:p-8">
         <div className="relative">{children}</div>
       </div>
     </main>

@@ -27,15 +27,15 @@ export default function ResourcesPage() {
       <h1 className="text-2xl font-semibold tracking-tight text-basirah-teal sm:text-3xl md:text-4xl">
         Resources
       </h1>
-      <p className="mt-4 text-basirah-teal/70">
+      <p className="mt-3 text-base text-basirah-teal">
         Practical starting points for communities and mosque administrators.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {RESOURCES.map((resource) => (
-          <div key={resource.title} className="rounded-2xl bg-white p-6">
-            <h2 className="font-semibold tracking-tight text-basirah-teal">{resource.title}</h2>
-            <p className="mt-2 text-sm text-basirah-teal/70">{resource.body}</p>
+          <div key={resource.title} className="rounded-lg border border-basirah-teal/20 bg-white p-4">
+            <h2 className="text-lg font-semibold tracking-tight text-basirah-teal">{resource.title}</h2>
+            <p className="mt-2 text-base text-basirah-teal">{resource.body}</p>
           </div>
         ))}
       </div>

@@ -10,13 +10,15 @@ export default function PublicMapPage() {
   return (
     <>
       <NavBar />
-      <main className="mx-auto w-full max-w-6xl px-6 py-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-basirah-teal">Community map</h1>
-        <p className="mt-2 text-sm text-basirah-teal/70">
+      <main className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6">
+        <h1 className="font-display text-[1.75rem] font-semibold tracking-tight text-basirah-teal sm:text-[2rem]">
+          Community map
+        </h1>
+        <p className="mt-1.5 text-base text-basirah-teal">
           Mosques near you, and incidents that a person has verified. Unverified reports never
           appear here.
         </p>
-        <div className="mt-6 h-[calc(100dvh-16rem)] min-h-[440px]">
+        <div className="mt-4 h-[calc(100dvh-14rem)] min-h-[440px]">
           <CommunityMap />
         </div>
       </main>

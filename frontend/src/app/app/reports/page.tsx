@@ -50,43 +50,45 @@ export default function ReportsPage() {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-14">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-basirah-teal">My reports</h1>
-          <p className="mt-3 text-sm text-basirah-teal/70">
+          <h1 className="font-display text-[1.75rem] font-semibold tracking-tight text-basirah-teal sm:text-[2rem]">
+            My reports
+          </h1>
+          <p className="mt-1.5 text-base text-basirah-teal">
             Every incident you have submitted, newest first.
           </p>
         </div>
         <Link
           href="/app/report"
-          className="rounded-full bg-basirah-rust px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90"
+          className="rounded-md bg-basirah-rust px-5 py-2.5 text-base font-semibold text-white transition-colors hover:bg-basirah-rust/90"
         >
           New report
         </Link>
       </div>
 
-      <div className="mt-8">
-        {isLoading && <p className="text-sm text-basirah-teal/50">Loading your reports…</p>}
+      <div className="mt-5">
+        {isLoading && <p className="text-base text-basirah-teal/70">Loading your reports…</p>}
 
         {!isLoading && error && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-basirah-teal/5">
-            <p className="text-sm text-basirah-rust">{error}</p>
+          <div className="rounded-lg border border-basirah-teal/20 bg-white p-4">
+            <p className="text-base text-basirah-rust">{error}</p>
           </div>
         )}
 
         {!isLoading && !error && incidents.length === 0 && (
-          <div className="rounded-2xl bg-white p-10 text-center shadow-sm ring-1 ring-basirah-teal/5">
-            <h2 className="text-lg font-semibold tracking-tight text-basirah-teal">
+          <div className="rounded-lg border border-basirah-teal/20 bg-white p-6 text-center">
+            <h2 className="text-xl font-semibold tracking-tight text-basirah-teal">
               No reports yet
             </h2>
-            <p className="mx-auto mt-2 max-w-sm text-sm text-basirah-teal/70">
+            <p className="mx-auto mt-2 max-w-sm text-base text-basirah-teal">
               When you report an incident it appears here, along with where it is in the
               verification process.
             </p>
             <Link
               href="/app/report"
-              className="mt-6 inline-block rounded-full bg-basirah-teal px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-basirah-teal/90"
+              className="mt-4 inline-block rounded-md bg-basirah-teal px-5 py-2.5 text-base font-semibold text-white transition-colors hover:bg-basirah-teal/90"
             >
               Report an incident
             </Link>
@@ -94,31 +96,31 @@ export default function ReportsPage() {
         )}
 
         {!isLoading && !error && incidents.length > 0 && (
-          <ul className="space-y-3">
+          <ul className="space-y-2.5">
             {incidents.map((incident) => (
               <li
                 key={incident.id}
-                className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-basirah-teal/5"
+                className="rounded-lg border border-basirah-teal/20 bg-white p-4"
               >
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                   <StatusBadge status={incident.status} />
-                  <span className="text-xs text-basirah-teal/60">
+                  <span className="text-sm font-medium text-basirah-teal">
                     {CHANNEL_LABELS[incident.channel] ?? label(incident.channel)}
                   </span>
                   {incident.category && (
                     <>
-                      <span className="text-xs text-basirah-teal/25">·</span>
-                      <span className="text-xs text-basirah-teal/60 capitalize">
+                      <span className="text-sm text-basirah-teal/40">·</span>
+                      <span className="text-sm font-medium text-basirah-teal capitalize">
                         {label(incident.category)}
                       </span>
                     </>
                   )}
-                  <span className="ms-auto text-xs text-basirah-teal/50">
+                  <span className="ms-auto text-sm font-medium tabular-nums text-basirah-teal">
                     {formatDate(incident.occurred_at ?? incident.created_at)}
                   </span>
                 </div>
 
-                <p className="mt-3 line-clamp-2 text-sm text-basirah-teal/80">
+                <p className="mt-2.5 line-clamp-2 text-base text-basirah-teal">
                   {incident.description ?? 'No description recorded.'}
                 </p>
               </li>

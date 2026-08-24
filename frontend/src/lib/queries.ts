@@ -121,7 +121,7 @@ async function authHeaders(): Promise<Record<string, string>> {
 async function unwrap(res: Response) {
   if (res.ok) return res.status === 204 ? null : res.json();
   const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-  throw new Error(body?.error?.message ?? 'That did not work. Please try again.');
+  throw new Error(body?.error?.message ?? 'That did not work. Try again.');
 }
 
 export async function fetchMyMosques(): Promise<MyMosque[]> {

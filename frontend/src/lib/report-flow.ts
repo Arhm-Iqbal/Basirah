@@ -104,17 +104,17 @@ export function validateStep(stepId: StepId, report: IncidentReport): ReportErro
   const errors: ReportErrors = {};
 
   if (stepId === 'online_details' && report.online_platform.trim() === '') {
-    errors.online_platform = 'Please tell us roughly where online this happened.';
+    errors.online_platform = 'Which site or app was this on?';
   }
   if (
     stepId === 'in_person_location' &&
     report.location_kind.trim() === '' &&
     report.location_address.trim() === ''
   ) {
-    errors.location_kind = 'Please give us some idea of where this happened.';
+    errors.location_kind = 'A neighbourhood, street, or building is enough.';
   }
   if (stepId === 'what_happened' && report.description.trim().length < 10) {
-    errors.description = 'Please describe what happened, even briefly.';
+    errors.description = 'Write what you saw or heard, even a few sentences.';
   }
 
   return errors;

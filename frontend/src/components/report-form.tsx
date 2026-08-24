@@ -34,8 +34,8 @@ const CATEGORIES: { value: string; label: string }[] = [
 ];
 
 const fieldClass =
-  'w-full rounded-xl border border-basirah-teal/15 bg-white px-4 py-3 text-sm text-basirah-teal outline-none transition-colors focus:border-basirah-teal/40';
-const labelClass = 'block text-sm font-medium text-basirah-teal';
+  'w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-colors focus:border-basirah-teal';
+const labelClass = 'block text-base font-semibold text-basirah-teal';
 
 function trimmed(value: string) {
   const next = value.trim();
@@ -151,7 +151,7 @@ export function ReportForm() {
 
   if (created) {
     return (
-      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-basirah-teal/5 sm:p-8">
+      <div className="rounded-lg border border-basirah-teal/20 bg-white p-5">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-xl font-semibold tracking-tight text-basirah-teal">
             Report received
@@ -159,14 +159,14 @@ export function ReportForm() {
           <StatusBadge status={created.status} />
         </div>
 
-        <p className="mt-3 text-sm text-basirah-teal/70">
+        <p className="mt-3 text-base text-basirah-teal">
           Your report is with your community&apos;s verification team. Nothing is sent as a
           community-wide alert until a person has verified it.
         </p>
         {created.claim_code ? (
-          <div className="mt-5 rounded-xl border border-basirah-rust/25 bg-basirah-rust/5 p-4">
-            <p className="text-sm font-semibold text-basirah-rust">Save this code</p>
-            <p className="mt-1 text-xs text-basirah-teal/70">
+          <div className="mt-4 rounded-lg border border-basirah-rust/30 bg-basirah-rust/8 p-4">
+            <p className="text-base font-semibold text-basirah-rust">Save this code</p>
+            <p className="mt-1 text-sm text-basirah-teal">
               This is the only way to check on your report later.
             </p>
             <p className="mt-3 break-all font-mono text-lg tracking-widest text-basirah-teal sm:text-xl">
@@ -174,14 +174,14 @@ export function ReportForm() {
             </p>
           </div>
         ) : (
-          <p className="mt-2 text-xs text-basirah-teal/50">Reference {created.id}</p>
+          <p className="mt-2 text-sm text-basirah-teal/70">Reference {created.id}</p>
         )}
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           {!created.claim_code && (
             <Link
               href="/app/reports"
-              className="rounded-full bg-basirah-teal px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-basirah-teal/90"
+              className="rounded-md bg-basirah-teal px-5 py-2.5 text-base font-semibold text-white transition-colors hover:bg-basirah-teal/90"
             >
               View my reports
             </Link>
@@ -189,7 +189,7 @@ export function ReportForm() {
           <button
             type="button"
             onClick={reset}
-            className="cursor-pointer rounded-full border border-basirah-teal/15 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream"
+            className="cursor-pointer rounded-md border border-basirah-teal/30 bg-white px-5 py-2.5 text-base font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream"
           >
             Submit another report
           </button>
@@ -201,7 +201,7 @@ export function ReportForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {signedIn === false && (
-        <p className="text-sm text-basirah-teal/70">
+        <p className="text-base text-basirah-teal">
           No account needed. You&apos;ll get a claim code after submitting.{' '}
           <Link href="/login" className="font-medium text-basirah-rust hover:text-basirah-rust/80">
             Log in
@@ -212,17 +212,17 @@ export function ReportForm() {
 
       <fieldset>
         <legend className={labelClass}>Where did this happen?</legend>
-        <div className="mt-3 flex w-full rounded-full border border-basirah-teal/15 bg-white p-1 sm:inline-flex sm:w-auto">
+        <div className="mt-3 flex w-full rounded-md border border-basirah-teal/30 bg-white p-0.5 sm:inline-flex sm:w-auto">
           {CHANNELS.map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => setChannel(option.value)}
               aria-pressed={channel === option.value}
-              className={`flex-1 cursor-pointer rounded-full px-4 py-2.5 text-sm font-medium transition-colors sm:flex-none sm:px-5 sm:py-2 ${
+              className={`flex-1 cursor-pointer rounded-md px-4 py-2.5 text-base font-semibold transition-colors sm:flex-none sm:px-5 ${
                 channel === option.value
                   ? 'bg-basirah-teal text-white'
-                  : 'text-basirah-teal/70 hover:bg-basirah-teal/5 hover:text-basirah-teal'
+                  : 'text-basirah-teal hover:bg-basirah-cream'
               }`}
             >
               {option.label}
@@ -231,7 +231,7 @@ export function ReportForm() {
         </div>
       </fieldset>
 
-      <div className="space-y-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-basirah-teal/5 sm:p-8">
+      <div className="space-y-4 rounded-lg border border-basirah-teal/20 bg-white p-4 sm:p-5">
         <div>
           <label htmlFor="description" className={labelClass}>
             What happened?
@@ -329,13 +329,13 @@ export function ReportForm() {
                     locate();
                   }}
                   disabled={geoStatus === 'locating'}
-                  className="cursor-pointer rounded-full border border-basirah-teal/15 px-5 py-2.5 text-sm font-medium text-basirah-teal transition-colors hover:bg-basirah-cream disabled:cursor-not-allowed disabled:opacity-60"
+                  className="cursor-pointer rounded-md border border-basirah-teal/30 bg-white px-4 py-2.5 text-base font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {geoStatus === 'locating' ? 'Locating…' : 'Use my location'}
                 </button>
 
                 {activeCoords && (
-                  <span className="inline-flex items-center gap-3 rounded-full bg-basirah-teal/5 px-4 py-2 text-xs text-basirah-teal/70">
+                  <span className="inline-flex items-center gap-3 rounded-md border border-basirah-teal/20 bg-basirah-cream px-3 py-2 text-sm font-semibold text-basirah-teal">
                     Location added
                     <button
                       type="button"
@@ -385,7 +385,7 @@ export function ReportForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full cursor-pointer rounded-full bg-basirah-rust px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="w-full cursor-pointer rounded-md bg-basirah-rust px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-basirah-rust/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {isSubmitting ? 'Submitting…' : 'Submit report'}
         </button>

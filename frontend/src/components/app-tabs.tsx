@@ -62,15 +62,15 @@ export function AppTabs() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-basirah-teal/10 bg-white/85 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-basirah-teal/15 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-2.5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <Link
               href="/app"
               aria-label="Basirah app home"
-              className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-basirah-teal"
+              className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-basirah-teal"
             >
-              <Logo className="h-10 w-auto sm:h-11" />
+              <Logo className="h-9 w-auto sm:h-10" />
             </Link>
 
             <nav className="hidden items-center gap-1 md:flex">
@@ -81,10 +81,10 @@ export function AppTabs() {
                     key={tab.href}
                     href={tab.href}
                     aria-current={active ? 'page' : undefined}
-                    className={`rounded-full px-4 py-2 text-sm font-medium tracking-[-0.01em] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
+                    className={`rounded-md px-3.5 py-2 text-base font-semibold tracking-[-0.01em] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
                       active
                         ? 'bg-basirah-teal text-white'
-                        : 'text-basirah-teal/65 hover:bg-basirah-teal/5 hover:text-basirah-teal'
+                        : 'text-basirah-teal hover:bg-basirah-cream'
                     }`}
                   >
                     {tab.label}
@@ -96,7 +96,7 @@ export function AppTabs() {
             <button
               type="button"
               onClick={signOut}
-              className="cursor-pointer rounded-full px-2 py-1 text-sm font-medium text-basirah-teal/65 transition-colors duration-150 hover:text-basirah-rust focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal"
+              className="cursor-pointer rounded-md px-3 py-2 text-base font-semibold text-basirah-teal transition-colors duration-150 hover:bg-basirah-cream hover:text-basirah-rust focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal"
             >
               Sign out
             </button>
@@ -108,7 +108,7 @@ export function AppTabs() {
           bottom padding. That lives on the shell, not here. */}
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-basirah-teal/10 bg-white/95 backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-basirah-teal/15 bg-white md:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <ul className="mx-auto flex max-w-md items-stretch">
@@ -119,11 +119,11 @@ export function AppTabs() {
                 <Link
                   href={tab.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex min-h-14 flex-col items-center justify-center gap-1 text-[0.6875rem] font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-basirah-teal ${
-                    active ? 'text-basirah-teal' : 'text-basirah-teal/45'
+                  className={`flex min-h-14 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-basirah-teal ${
+                    active ? 'text-basirah-teal' : 'text-basirah-teal/55'
                   }`}
                 >
-                  <span className={active ? 'opacity-100' : 'opacity-45'}>{tab.icon}</span>
+                  <span className={active ? 'opacity-100' : 'opacity-60'}>{tab.icon}</span>
                   {tab.shortLabel}
                 </Link>
               </li>

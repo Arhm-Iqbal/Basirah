@@ -35,19 +35,19 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
   const website = mosque.website ?? hours?.website ?? null;
 
   return (
-    <li className="rounded-2xl border border-basirah-teal/10 bg-white/80 p-5 backdrop-blur-sm transition-colors duration-150 hover:border-basirah-teal/20">
-      <div className="flex items-start gap-4">
+    <li className="rounded-lg border border-basirah-teal/20 bg-white p-4">
+      <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="font-display text-base font-medium tracking-[-0.015em] text-basirah-teal">
+          <h3 className="font-display text-lg font-semibold tracking-[-0.015em] text-basirah-teal">
             {mosque.name}
           </h3>
           {(mosque.address || mosque.city) && (
-            <p className="mt-1 text-sm text-basirah-teal/55">
+            <p className="mt-1 text-base text-basirah-teal/75">
               {[mosque.address, mosque.city, mosque.province].filter(Boolean).join(', ')}
             </p>
           )}
 
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-base">
             {phone && (
               <a
                 href={`tel:${phone}`}
@@ -70,7 +70,7 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
-              className="cursor-pointer text-basirah-teal/50 transition-colors hover:text-basirah-teal"
+              className="cursor-pointer font-semibold text-basirah-teal transition-colors hover:text-basirah-rust"
             >
               {open ? 'Less' : 'Details'}
             </button>
@@ -89,17 +89,17 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
       </div>
 
       {open && (
-        <div className="mt-4 border-t border-basirah-teal/8 pt-4">
-          {!loadedHours && <p className="text-sm text-basirah-teal/45">Loading…</p>}
+        <div className="mt-3 border-t border-basirah-teal/15 pt-3">
+          {!loadedHours && <p className="text-base text-basirah-teal/70">Loading…</p>}
           {loadedHours && hours?.opening_hours?.length ? (
-            <ul className="space-y-1 text-sm text-basirah-teal/65">
+            <ul className="space-y-1 text-base text-basirah-teal">
               {hours.opening_hours.map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>
           ) : (
             loadedHours && (
-              <p className="text-sm text-basirah-teal/45">
+              <p className="text-base text-basirah-teal/70">
                 No published hours for this location yet.
               </p>
             )
@@ -175,25 +175,25 @@ export function ProfileView({ email }: { email: string | null }) {
   const addedIds = new Set(mosques.map((m) => m.id));
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-10 sm:px-6 sm:py-14">
-      <header className="border-b border-basirah-teal/10 pb-7">
-        <p className="text-xs font-medium tracking-[0.14em] text-basirah-teal/40 uppercase">
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
+      <header className="border-b border-basirah-teal/15 pb-4">
+        <p className="text-sm font-semibold tracking-[0.12em] text-basirah-teal/70 uppercase">
           Basirah
         </p>
-        <h1 className="mt-2.5 font-display text-[2rem] leading-[1.1] font-semibold tracking-[-0.03em] text-basirah-teal sm:text-[2.5rem]">
+        <h1 className="mt-1.5 font-display text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.03em] text-basirah-teal sm:text-[2rem]">
           Your profile
         </h1>
-        {email && <p className="mt-2 text-sm text-basirah-teal/45">{email}</p>}
+        {email && <p className="mt-1.5 text-base text-basirah-teal/75">{email}</p>}
       </header>
 
-      {error && <p className="mt-6 text-sm text-basirah-rust">{error}</p>}
+      {error && <p className="mt-4 text-base text-basirah-rust">{error}</p>}
 
-      <section className="mt-10">
+      <section className="mt-6">
         <div className="flex items-baseline justify-between gap-4">
-          <h2 className="font-display text-lg font-medium tracking-[-0.015em] text-basirah-teal">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-basirah-teal">
             Your mosques
             {mosques.length > 0 && (
-              <span className="ms-2 text-sm font-normal text-basirah-teal/35">
+              <span className="ms-2 text-base font-semibold text-basirah-teal/70">
                 {mosques.length}
               </span>
             )}
@@ -202,7 +202,7 @@ export function ProfileView({ email }: { email: string | null }) {
             <button
               type="button"
               onClick={() => setFinding((v) => !v)}
-              className="cursor-pointer text-sm font-medium text-basirah-teal/55 transition-colors hover:text-basirah-teal"
+              className="cursor-pointer text-base font-semibold text-basirah-teal transition-colors hover:text-basirah-rust"
             >
               {finding ? 'Done' : 'Add another'}
             </button>
@@ -210,22 +210,22 @@ export function ProfileView({ email }: { email: string | null }) {
         </div>
 
         {isLoading ? (
-          <p className="mt-6 text-sm text-basirah-teal/45">Loading…</p>
+          <p className="mt-4 text-base text-basirah-teal/70">Loading…</p>
         ) : mosques.length === 0 ? (
-          <div className="mt-5 rounded-2xl border border-basirah-teal/10 bg-white/70 px-6 py-10 text-center backdrop-blur-sm">
+          <div className="mt-4 rounded-lg border border-basirah-teal/20 bg-white px-5 py-6 text-center">
             <img
               src="/icons/masjid-pin.png"
               alt=""
               width={30}
               height={38}
-              className="mx-auto h-9 w-auto opacity-25"
+              className="mx-auto h-8 w-auto"
             />
-            <p className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-basirah-teal/55">
+            <p className="mx-auto mt-3 max-w-xs text-base leading-relaxed text-basirah-teal">
               Add the mosques you attend. Their details, alerts, and reports all follow from this.
             </p>
           </div>
         ) : (
-          <ul className="mt-4 space-y-3">
+          <ul className="mt-3 space-y-2.5">
             {mosques.map((m) => (
               <MosqueCard key={m.id} mosque={m} onRemove={(id) => void remove(id)} />
             ))}
@@ -234,11 +234,11 @@ export function ProfileView({ email }: { email: string | null }) {
       </section>
 
       {finding && (
-        <section className="mt-10 border-t border-basirah-teal/10 pt-8">
-          <h2 className="font-display text-lg font-medium tracking-[-0.015em] text-basirah-teal">
+        <section className="mt-6 border-t border-basirah-teal/15 pt-5">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-basirah-teal">
             Near you
           </h2>
-          <div className="mt-4">
+          <div className="mt-3">
             <MosqueFinder
               addedIds={addedIds}
               onAdded={onAdded}
