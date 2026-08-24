@@ -188,7 +188,8 @@ export function AppTabs() {
       >
         <ul className="mx-auto flex max-w-md items-stretch">
           {[...TABS, MOBILE_PROFILE_TAB].map((tab) => {
-            const active = isActive(pathname, tab.href);
+            const active =
+              tab.href === '/app/profile' ? profileActive : isActive(pathname, tab.href);
             return (
               <li key={tab.href} className="flex-1">
                 <Link

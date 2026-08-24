@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { ProfileView } from '@/components/profile-view';
 import { createClient } from '@/lib/supabase/server';
 
@@ -9,5 +11,9 @@ export default async function ProfilePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return <ProfileView email={user?.email ?? null} />;
+  return (
+    <Suspense>
+      <ProfileView email={user?.email ?? null} />
+    </Suspense>
+  );
 }

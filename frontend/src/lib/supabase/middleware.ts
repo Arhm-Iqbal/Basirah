@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { safeAuthNextPath } from '@/lib/supabase/auth-path';
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -27,8 +28,18 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+  if (!user && (path === '/app' || path.startsWith('/app/'))) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('next', `${path}${request.nextUrl.search}`);
+    const redirect = NextResponse.redirect(loginUrl);
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  }
+
   if (user && (path === '/' || path === '/login' || path === '/signup')) {
-    const redirect = NextResponse.redirect(new URL('/app', request.url));
+    const destination =
+      path === '/' ? '/app' : safeAuthNextPath(request.nextUrl.searchParams.get('next'));
+    const redirect = NextResponse.redirect(new URL(destination, request.url));
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
     return redirect;
   }

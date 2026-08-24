@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import type { IncidentActionPlan } from '@basirah/shared';
 
 export type NearbyMosque = {
   id: string;
@@ -208,6 +209,13 @@ export async function fetchReportDocument(incidentId: string): Promise<ReportDoc
   return (await unwrap(res)) as ReportDocument;
 }
 
+export async function fetchIncidentActions(incidentId: string): Promise<IncidentActionPlan> {
+  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}/actions`, {
+    headers: await authHeaders(),
+  });
+  return (await unwrap(res)) as IncidentActionPlan;
+}
+
 // The signed URL points at Supabase Storage, so the anchor is what actually saves the
 // file; navigating there directly would render the PDF instead of downloading it.
 export async function downloadReport(incidentId: string) {
@@ -223,4 +231,21 @@ export async function downloadReport(incidentId: string) {
   a.click();
   a.remove();
   URL.revokeObjectURL(href);
+}
+
+export async function deleteReport(incidentId: string): Promise<void> {
+  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}`, {
+    method: 'DELETE',
+    headers: await authHeaders(),
+  });
+  await unwrap(res);
+}
+
+export async function appealReport(incidentId: string, reason: string): Promise<void> {
+  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}/appeal`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ reason }),
+  });
+  await unwrap(res);
 }

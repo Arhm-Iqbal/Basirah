@@ -9,6 +9,7 @@ import { AuthShell } from '@/components/auth-shell';
 import { GoogleIcon } from '@/components/google-icon';
 import { Logo } from '@/components/logo';
 import { createClient } from '@/lib/supabase/client';
+import { safeAuthNextPath } from '@/lib/supabase/auth-path';
 import { signInWithGoogle } from '@/lib/supabase/oauth';
 
 const isSupabaseConfigured = Boolean(
@@ -18,6 +19,7 @@ const isSupabaseConfigured = Boolean(
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const nextPath = safeAuthNextPath(searchParams.get('next'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +41,7 @@ export default function LoginForm() {
     setError(null);
 
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(nextPath);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not start Google sign-in.');
       setIsLoading(false);
@@ -67,7 +69,7 @@ export default function LoginForm() {
         return;
       }
 
-      router.push('/app');
+      router.replace(nextPath);
       router.refresh();
     } catch {
       setError('Could not reach Supabase. Check frontend/.env.local.');

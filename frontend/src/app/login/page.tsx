@@ -2,19 +2,25 @@ import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { createClient } from '@/lib/supabase/server';
+import { safeAuthNextPath } from '@/lib/supabase/auth-path';
 
 import LoginForm from './login-form';
 
 export const metadata = { title: 'Log in · Basirah' };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect('/app');
+    redirect(safeAuthNextPath(next ?? null));
   }
 
   return (

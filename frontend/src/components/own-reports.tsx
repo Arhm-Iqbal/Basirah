@@ -5,7 +5,13 @@ import { useEffect, useState } from 'react';
 
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/button-link';
-import { downloadReport, fetchOwnIncidents, type OwnIncident } from '@/lib/queries';
+import {
+  appealReport,
+  deleteReport,
+  downloadReport,
+  fetchOwnIncidents,
+  type OwnIncident,
+} from '@/lib/queries';
 
 const CHANNEL_LABELS: Record<string, string> = {
   in_person: 'In person',
@@ -50,6 +56,112 @@ function DownloadButton({ incidentId }: { incidentId: string }) {
       </Button>
       {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
     </>
+  );
+}
+
+function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemoved: () => void }) {
+  const [mode, setMode] = useState<'idle' | 'confirmDelete' | 'appeal'>('idle');
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [appealed, setAppealed] = useState(false);
+
+  const run = async (fn: () => Promise<void>, after: () => void) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+      after();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'That did not work.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (appealed) {
+    return (
+      <p className="text-base text-basirah-teal/75">
+        Appeal filed. Your community&apos;s verification team will review it.
+      </p>
+    );
+  }
+
+  if (mode === 'confirmDelete') {
+    return (
+      <div>
+        <p className="text-base text-basirah-teal">
+          Delete this report permanently? Its PDF goes too, and this cannot be undone.
+        </p>
+        {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="primary"
+            disabled={busy}
+            onClick={() => void run(() => deleteReport(incident.id), onRemoved)}
+          >
+            {busy ? 'Deleting…' : 'Yes, delete it'}
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setMode('idle')}>
+            Keep it
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'appeal') {
+    return (
+      <div>
+        <label
+          htmlFor={`appeal-${incident.id}`}
+          className="text-base font-semibold text-basirah-teal"
+        >
+          What was wrong with this report?
+        </label>
+        <p className="mt-1 text-sm text-basirah-teal/70">
+          A person reviews every appeal. Upholding one takes the report off the community map.
+        </p>
+        <textarea
+          id={`appeal-${incident.id}`}
+          rows={3}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          className="mt-2 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none focus:border-basirah-teal"
+        />
+        {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            disabled={busy || reason.trim().length < 10}
+            onClick={() =>
+              void run(
+                () => appealReport(incident.id, reason.trim()),
+                () => setAppealed(true),
+              )
+            }
+          >
+            {busy ? 'Filing…' : 'File appeal'}
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setMode('idle')}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <DownloadButton incidentId={incident.id} />
+      <Button size="sm" variant="ghost" onClick={() => setMode('appeal')}>
+        Appeal
+      </Button>
+      <Button size="sm" variant="ghost" onClick={() => setMode('confirmDelete')}>
+        Delete
+      </Button>
+    </div>
   );
 }
 
@@ -155,7 +267,15 @@ export function OwnReports() {
                 </p>
 
                 <div className="mt-3.5 border-t border-basirah-teal/10 pt-3.5">
-                  <DownloadButton incidentId={incident.id} />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`/app/reports/${incident.id}/next-steps`}
+                      className="inline-flex min-h-9 items-center rounded-md bg-basirah-teal px-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#0a4749]"
+                    >
+                      View next steps
+                    </Link>
+                    <DownloadButton incidentId={incident.id} />
+                  </div>
                 </div>
               </li>
             ))}

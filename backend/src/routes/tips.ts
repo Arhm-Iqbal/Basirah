@@ -6,6 +6,7 @@ import { serviceClient } from '../lib/supabase';
 import { generateClaimCode, hashClaimCode } from '../lib/claim';
 import { verifyTurnstile } from '../lib/turnstile';
 import { fail, zodFail } from '../lib/errors';
+import { buildActionPlan } from '../lib/action-plan';
 
 export const tips = new Hono<Env>();
 
@@ -23,6 +24,15 @@ tips.post(
 
     const claimCode = generateClaimCode();
     const { turnstile_token, ...report } = body;
+    const { guidance: _guidance, ...submittedDetails } = report.details;
+    const details: Record<string, unknown> = { ...submittedDetails };
+
+    if (report.channel === 'online') {
+      if (report.platform) details.online_platform = report.platform;
+      if (report.url) details.online_url = report.url;
+    } else if (report.location_description) {
+      details.location_address = report.location_description;
+    }
 
     const row: Record<string, unknown> = {
       mosque_id: report.mosque_id ?? null,
@@ -30,7 +40,7 @@ tips.post(
       category: report.category ?? null,
       occurred_at: report.occurred_at ?? null,
       description: report.description,
-      details: report.details,
+      details,
       claim_code_hash: await hashClaimCode(claimCode),
     };
 
@@ -48,7 +58,18 @@ tips.post(
     if (error) return fail(c, 500, 'insert_failed', error.message);
 
     // The only time the plaintext code ever exists in a response.
-    return c.json({ ...data, claim_code: claimCode }, 201);
+    return c.json(
+      {
+        ...data,
+        claim_code: claimCode,
+        actions: buildActionPlan({
+          channel: report.channel,
+          category: report.category ?? null,
+          details,
+        }),
+      },
+      201,
+    );
   },
 );
 

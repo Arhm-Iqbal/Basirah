@@ -10,6 +10,7 @@ const WIDTH = PAGE.w - MARGIN * 2;
 
 const LABELS: Record<string, string> = {
   online_platform: 'Platform',
+  online_harm: 'Type of online harm',
   online_account: 'Account or handle',
   location_kind: 'Kind of place',
   location_name: 'Place name',

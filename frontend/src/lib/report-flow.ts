@@ -32,6 +32,7 @@ export function stepsForRoute(route: IncidentRoute): StepDefinition[] {
 export type IncidentReport = {
   route: IncidentRoute | null;
   online_platform: string;
+  online_harm: string;
   online_url: string;
   online_account: string;
   location_kind: string;
@@ -64,9 +65,22 @@ export type IncidentReport = {
 
 export type ReportErrors = Partial<Record<keyof IncidentReport, string>>;
 
+export function normalizeOnlineUrl(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (trimmed === '') return undefined;
+
+  try {
+    const url = new URL(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`);
+    return ['http:', 'https:'].includes(url.protocol) && url.hostname ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export const EMPTY_REPORT: IncidentReport = {
   route: null,
   online_platform: '',
+  online_harm: '',
   online_url: '',
   online_account: '',
   location_kind: '',
@@ -106,6 +120,16 @@ export function validateStep(stepId: StepId, report: IncidentReport): ReportErro
   if (stepId === 'online_details' && report.online_platform.trim() === '') {
     errors.online_platform = 'Which site or app was this on?';
   }
+  if (stepId === 'online_details' && report.online_harm.trim() === '') {
+    errors.online_harm = 'Choose what happened, or select “I am not sure”.';
+  }
+  if (
+    stepId === 'online_details' &&
+    report.online_url.trim() !== '' &&
+    !normalizeOnlineUrl(report.online_url)
+  ) {
+    errors.online_url = 'Enter a valid link, such as x.com/account/status/123.';
+  }
   if (
     stepId === 'in_person_location' &&
     report.location_kind.trim() === '' &&
@@ -134,6 +158,7 @@ export function toApiPayload(report: IncidentReport) {
 
   const details: Record<string, string> = {};
   const detailKeys: (keyof IncidentReport)[] = [
+    'online_harm',
     'online_account',
     'location_kind',
     'location_name',
@@ -171,7 +196,7 @@ export function toApiPayload(report: IncidentReport) {
     ? {
         ...base,
         platform: report.online_platform.trim() || undefined,
-        url: report.online_url.trim() || undefined,
+        url: normalizeOnlineUrl(report.online_url),
       }
     : { ...base, location_description: report.location_address.trim() || undefined };
 }

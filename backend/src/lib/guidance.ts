@@ -12,6 +12,7 @@ import { serviceClient } from './supabase';
 // location_address, online_account, online_url, existing_reference. Those identify the
 // reporter, the exact place they were, or the account they were targeted from.
 const ALLOWED_DETAIL_KEYS = [
+  'online_harm',
   'still_happening',
   'threats',
   'weapon',

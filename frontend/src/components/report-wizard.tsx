@@ -1,11 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import type { IncidentActionPlan } from '@basirah/shared';
 
+import { ActionPlanView } from '@/components/action-plan-view';
 import { Button } from '@/components/button-link';
-import { EvidenceUploader } from '@/components/evidence-uploader';
 import { createClient } from '@/lib/supabase/client';
-import { downloadReport } from '@/lib/queries';
 import {
   EMPTY_REPORT,
   stepsForRoute,
@@ -21,12 +22,6 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-type Guidance = {
-  urgency: 'routine' | 'elevated' | 'urgent';
-  steps: { title: string; detail: string }[];
-  note: string;
-};
-
 const field =
   'mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-basirah-teal/45 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] aria-invalid:border-basirah-rust aria-invalid:shadow-[0_0_0_3px_rgb(148_33_6_/_18%)] motion-reduce:transition-none';
 const labelClass = 'block text-base font-semibold text-basirah-teal';
@@ -35,6 +30,7 @@ const hintClass = 'mt-1 text-sm leading-relaxed text-basirah-teal/75';
 const REVIEW_ROWS: { key: keyof IncidentReport; label: string }[] = [
   { key: 'route', label: 'Where it happened' },
   { key: 'online_platform', label: 'Site or app' },
+  { key: 'online_harm', label: 'What happened online' },
   { key: 'online_url', label: 'Link' },
   { key: 'online_account', label: 'Account or handle' },
   { key: 'location_kind', label: 'Kind of place' },
@@ -60,6 +56,20 @@ const REVIEW_ROWS: { key: keyof IncidentReport; label: string }[] = [
 
 function formatReviewValue(key: keyof IncidentReport, value: string) {
   if (key === 'route') return value === 'online' ? 'Online' : 'In person';
+  if (key === 'online_platform') {
+    return PLATFORMS.find((option) => option.value === value)?.label ?? value;
+  }
+  if (key === 'online_harm') {
+    return value
+      .split(',')
+      .map(
+        (part) => ONLINE_HARMS.find((option) => option.value === part.trim())?.label ?? part.trim(),
+      )
+      .join(', ');
+  }
+  if (key === 'location_kind') {
+    return PLACE_KINDS.find((option) => option.value === value)?.label ?? value;
+  }
   return value;
 }
 
@@ -209,6 +219,7 @@ function Choice({
   onChange,
   options,
   name,
+  error,
 }: {
   legend: string;
   hintText?: string;
@@ -216,11 +227,26 @@ function Choice({
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
   name: string;
+  error?: string;
 }) {
+  const hintId = hintText ? `${name}-hint` : undefined;
+  const errorId = error ? `${name}-error` : undefined;
+  const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
+
   return (
-    <fieldset>
+    <fieldset
+      id={name}
+      tabIndex={-1}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={describedBy}
+      className="rounded-md outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal"
+    >
       <legend className={labelClass}>{legend}</legend>
-      {hintText && <p className={hintClass}>{hintText}</p>}
+      {hintText && (
+        <p id={hintId} className={hintClass}>
+          {hintText}
+        </p>
+      )}
       <div className="mt-2.5 flex flex-col gap-2">
         {options.map((o) => {
           const checked = value === o.value;
@@ -247,6 +273,11 @@ function Choice({
           );
         })}
       </div>
+      {error && (
+        <p id={errorId} role="alert" className="mt-1.5 text-sm font-medium text-basirah-rust">
+          {error}
+        </p>
+      )}
     </fieldset>
   );
 }
@@ -259,13 +290,20 @@ function MultiChoice({
   value,
   onChange,
   options,
+  name,
+  error,
 }: {
   legend: string;
   hintText?: string;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
+  name: string;
+  error?: string;
 }) {
+  const hintId = hintText ? `${name}-hint` : undefined;
+  const errorId = error ? `${name}-error` : undefined;
+  const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
   const selected = value
     ? value
         .split(',')
@@ -277,9 +315,19 @@ function MultiChoice({
     onChange(next.join(', '));
   };
   return (
-    <fieldset>
+    <fieldset
+      id={name}
+      tabIndex={-1}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={describedBy}
+      className="rounded-md outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal"
+    >
       <legend className={labelClass}>{legend}</legend>
-      {hintText && <p className={hintClass}>{hintText}</p>}
+      {hintText && (
+        <p id={hintId} className={hintClass}>
+          {hintText}
+        </p>
+      )}
       <div className="mt-2.5 flex flex-col gap-2">
         {options.map((o) => {
           const checked = selected.includes(o.value);
@@ -294,6 +342,7 @@ function MultiChoice({
             >
               <input
                 type="checkbox"
+                name={name}
                 checked={checked}
                 onChange={() => toggle(o.value)}
                 className="sr-only"
@@ -304,6 +353,11 @@ function MultiChoice({
           );
         })}
       </div>
+      {error && (
+        <p id={errorId} role="alert" className="mt-1.5 text-sm font-medium text-basirah-rust">
+          {error}
+        </p>
+      )}
     </fieldset>
   );
 }
@@ -341,12 +395,30 @@ const SUPPORT = [
   { value: 'none', label: 'Nothing right now' },
 ];
 
+const ONLINE_HARMS = [
+  { value: 'hateful_content', label: 'Hate speech or anti-Muslim content' },
+  { value: 'harassment', label: 'Harassment or repeated targeting' },
+  { value: 'threats', label: 'A threat of harm' },
+  { value: 'doxxing', label: 'Private information was exposed' },
+  { value: 'impersonation', label: 'Impersonation or a fake account' },
+  { value: 'coordinated_abuse', label: 'Several accounts were involved' },
+  { value: 'unsure', label: 'I am not sure how to classify it' },
+];
+
 const PLATFORMS = [
   { value: 'facebook', label: 'Facebook' },
   { value: 'instagram', label: 'Instagram' },
+  { value: 'threads', label: 'Threads' },
   { value: 'x', label: 'X / Twitter' },
   { value: 'tiktok', label: 'TikTok' },
   { value: 'youtube', label: 'YouTube' },
+  { value: 'reddit', label: 'Reddit' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'snapchat', label: 'Snapchat' },
+  { value: 'discord', label: 'Discord' },
+  { value: 'telegram', label: 'Telegram' },
+  { value: 'twitch', label: 'Twitch' },
+  { value: 'bluesky', label: 'Bluesky' },
   { value: 'whatsapp', label: 'WhatsApp' },
   { value: 'email', label: 'Email' },
   { value: 'website', label: 'A website or forum' },
@@ -354,9 +426,8 @@ const PLATFORMS = [
 ];
 
 export function ReportWizard() {
+  const router = useRouter();
   const [report, setReport] = useState<IncidentReport>(EMPTY_REPORT);
-  const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [claimCode, setClaimCode] = useState<string | null>(null);
   const [errors, setErrors] = useState<ReportErrors>({});
   const [index, setIndex] = useState(0);
@@ -364,8 +435,7 @@ export function ReportWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
-  const [guidance, setGuidance] = useState<Guidance | null>(null);
-  const [guidanceState, setGuidanceState] = useState<'idle' | 'loading' | 'failed'>('idle');
+  const [actionPlan, setActionPlan] = useState<IncidentActionPlan | null>(null);
 
   useEffect(() => {
     const saved = loadContactLocally();
@@ -423,30 +493,25 @@ export function ReportWizard() {
         );
       }
 
-      const created = body as { id: string; claim_code?: string };
+      const created = body as {
+        id: string;
+        claim_code?: string;
+        actions?: IncidentActionPlan;
+      };
       saveContactLocally(report);
+
+      if (token) {
+        router.push(`/app/reports/${created.id}/next-steps`);
+        return;
+      }
+
       setClaimCode(created.claim_code ?? null);
+      setActionPlan(created.actions ?? null);
       setCreatedId(created.id);
-      if (token) void loadGuidance(created.id, token);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Your report could not be submitted.');
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const loadGuidance = async (id: string, token: string) => {
-    setGuidanceState('loading');
-    try {
-      const res = await fetch(`${API_URL}/v1/incidents/${id}/guidance`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('no guidance');
-      setGuidance((await res.json()) as Guidance);
-      setGuidanceState('idle');
-    } catch {
-      setGuidanceState('failed');
     }
   };
 
@@ -473,76 +538,13 @@ export function ReportWizard() {
           </div>
         )}
 
-        {!claimCode && (
-          <div className="mt-5 rounded-lg border border-basirah-teal/20 bg-white p-4">
-            <p className="text-sm font-semibold text-basirah-teal">A copy of this report</p>
-            <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">
-              A PDF recording everything you submitted is saved to your profile. Your name, email
-              and phone are not in it and were never sent to us — they stay on this device.
-            </p>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="mt-3"
-              disabled={downloading}
-              onClick={async () => {
-                setDownloading(true);
-                setDownloadError(null);
-                try {
-                  await downloadReport(createdId);
-                } catch (err) {
-                  setDownloadError(
-                    err instanceof Error ? err.message : 'Could not download the PDF.',
-                  );
-                } finally {
-                  setDownloading(false);
-                }
-              }}
-            >
-              {downloading ? 'Preparing…' : 'Download PDF'}
-            </Button>
-            {downloadError && <p className="mt-2 text-sm text-basirah-rust">{downloadError}</p>}
-          </div>
-        )}
-
-        {/* Evidence needs the incident id, so it attaches here rather than as a form step. */}
         <div className="mt-6 border-t border-basirah-teal/15 pt-5">
-          <EvidenceUploader incidentId={createdId} />
-        </div>
-
-        <div className="mt-6 border-t border-basirah-teal/15 pt-5">
-          <h3 className="font-display text-lg font-semibold tracking-[-0.015em] text-basirah-teal">
-            What you can do next
-          </h3>
-
-          {guidanceState === 'loading' && (
-            <p className="mt-3 text-base text-basirah-teal/70">Looking up what you can do next…</p>
-          )}
-          {guidanceState === 'failed' && (
-            <p className="mt-3 text-base text-basirah-teal/70">
+          {actionPlan ? (
+            <ActionPlanView plan={actionPlan} />
+          ) : (
+            <p className="text-base text-basirah-teal/70">
               Next-step suggestions are unavailable right now. Your report is saved.
             </p>
-          )}
-
-          {guidance && (
-            <>
-              <ol className="mt-4 space-y-3">
-                {guidance.steps.map((s, i) => (
-                  <li key={s.title} className="flex gap-3">
-                    <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-basirah-teal text-sm font-semibold text-white">
-                      {i + 1}
-                    </span>
-                    <div>
-                      <p className="text-base font-semibold text-basirah-teal">{s.title}</p>
-                      <p className="mt-0.5 text-base leading-relaxed text-basirah-teal/80">
-                        {s.detail}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <p className="mt-4 text-sm leading-relaxed text-basirah-teal/75">{guidance.note}</p>
-            </>
           )}
         </div>
       </div>
@@ -640,15 +642,23 @@ export function ReportWizard() {
               value={report.online_platform}
               onChange={(v) => set('online_platform', v)}
               options={PLATFORMS}
+              error={errors.online_platform}
             />
-            {errors.online_platform && (
-              <p className="text-sm text-basirah-rust">{errors.online_platform}</p>
-            )}
+            <MultiChoice
+              legend="What kind of online harm was it?"
+              hintText="Choose every option that fits. You can pick ‘not sure’."
+              value={report.online_harm}
+              onChange={(v) => set('online_harm', v)}
+              options={ONLINE_HARMS}
+              name="online_harm"
+              error={errors.online_harm}
+            />
             <Text
               id="online_url"
               labelText="Link to the post or message (optional)"
               value={report.online_url}
               onChange={(v) => set('online_url', v)}
+              error={errors.online_url}
             />
             <Text
               id="online_account"
@@ -667,10 +677,8 @@ export function ReportWizard() {
               value={report.location_kind}
               onChange={(v) => set('location_kind', v)}
               options={PLACE_KINDS}
+              error={errors.location_kind}
             />
-            {errors.location_kind && (
-              <p className="text-sm text-basirah-rust">{errors.location_kind}</p>
-            )}
             <Text
               id="location_name"
               labelText="Name of the place (optional)"
@@ -820,6 +828,7 @@ export function ReportWizard() {
               value={report.support_needed}
               onChange={(v) => set('support_needed', v)}
               options={SUPPORT}
+              name="support_needed"
             />
           </>
         )}

@@ -14,6 +14,7 @@ import {
   removeDocuments,
   signDocument,
 } from '../lib/report-store';
+import { buildActionPlan } from '../lib/action-plan';
 
 export const incidents = new Hono<Env>();
 
@@ -26,6 +27,15 @@ incidents.post(
   ),
   async (c) => {
     const report = c.req.valid('json');
+    const { guidance: _guidance, ...submittedDetails } = report.details;
+    const details: Record<string, unknown> = { ...submittedDetails };
+
+    if (report.channel === 'online') {
+      if (report.platform) details.online_platform = report.platform;
+      if (report.url) details.online_url = report.url;
+    } else if (report.location_description) {
+      details.location_address = report.location_description;
+    }
 
     const row: Record<string, unknown> = {
       reporter_id: c.get('userId'),
@@ -34,7 +44,7 @@ incidents.post(
       category: report.category ?? null,
       occurred_at: report.occurred_at ?? null,
       description: report.description,
-      details: report.details,
+      details,
     };
 
     if (report.channel === 'in_person' && report.lat != null && report.lng != null) {
@@ -55,7 +65,17 @@ incidents.post(
       }),
     );
 
-    return c.json(data, 201);
+    return c.json(
+      {
+        ...data,
+        actions: buildActionPlan({
+          channel: report.channel,
+          category: report.category ?? null,
+          details,
+        }),
+      },
+      201,
+    );
   },
 );
 
@@ -72,6 +92,33 @@ incidents.get('/', async (c) => {
 
   if (error) return fail(c, 500, 'query_failed', error.message);
   return c.json({ data: data ?? [], next_cursor: null });
+});
+
+incidents.get('/:id/actions', async (c) => {
+  const id = c.req.param('id');
+  if (!isUuid(id)) return fail(c, 404, 'not_found', 'No report with that id.');
+
+  const db = serviceClient(c.env);
+  const { data: incident, error } = await db
+    .from('incidents')
+    .select('channel, category, details')
+    .eq('id', id)
+    .eq('reporter_id', c.get('userId'))
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return fail(c, 500, 'query_failed', 'Could not load next steps for that report.');
+  }
+  if (!incident) return fail(c, 404, 'not_found', 'No report with that id.');
+
+  return c.json(
+    buildActionPlan({
+      channel: incident.channel,
+      category: incident.category,
+      details: (incident.details ?? {}) as Record<string, unknown>,
+    }),
+  );
 });
 
 // Guidance is generated on demand rather than at submit time so a slow or failing model
@@ -250,4 +297,70 @@ incidents.get('/:id/document', async (c) => {
     byte_size: doc.byte_size,
     created_at: doc.created_at,
   });
+});
+
+const appealCreate = z.object({ reason: z.string().min(10).max(2000) });
+
+// Anyone signed in may appeal, and the incident id is enough -- the public map hands it
+// out. What stops abuse is one appeal per person per report, enforced by a unique
+// constraint rather than by a check that could race.
+incidents.post(
+  '/:id/appeal',
+  zValidator('json', appealCreate, (r, c) => (r.success ? undefined : zodFail(c, r.error.issues))),
+  async (c) => {
+    const id = c.req.param('id');
+    if (!isUuid(id)) return fail(c, 404, 'not_found', 'No report with that id.');
+
+    const db = serviceClient(c.env);
+    const { data: incident, error: lookupError } = await db
+      .from('incidents')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (lookupError) {
+      console.error(lookupError);
+      return fail(c, 500, 'query_failed', 'Could not load that report.');
+    }
+    if (!incident) return fail(c, 404, 'not_found', 'No report with that id.');
+
+    const { data, error } = await db
+      .from('incident_appeals')
+      .insert({
+        incident_id: id,
+        submitted_by: c.get('userId'),
+        reason: c.req.valid('json').reason.trim(),
+      })
+      .select('id, status, created_at')
+      .single();
+
+    if (error) {
+      if (error.code === '23505') {
+        return fail(c, 409, 'already_appealed', 'You have already appealed this report.');
+      }
+      console.error(error);
+      return fail(c, 500, 'insert_failed', 'Could not file that appeal.');
+    }
+
+    return c.json(data, 201);
+  },
+);
+
+incidents.get('/:id/appeals', async (c) => {
+  const id = c.req.param('id');
+  if (!isUuid(id)) return fail(c, 404, 'not_found', 'No report with that id.');
+
+  const db = serviceClient(c.env);
+  const { data, error } = await db
+    .from('incident_appeals')
+    .select('id, reason, status, resolution, created_at, resolved_at')
+    .eq('incident_id', id)
+    .eq('submitted_by', c.get('userId'))
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return fail(c, 500, 'query_failed', 'Could not load appeals.');
+  }
+  return c.json({ data: data ?? [], next_cursor: null });
 });

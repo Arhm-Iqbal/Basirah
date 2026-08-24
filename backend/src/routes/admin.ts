@@ -130,3 +130,94 @@ admin.post(
     return c.json(data);
   },
 );
+
+admin.get('/appeals', async (c) => {
+  const scoped = callerClient(c);
+  const { data, error } = await scoped.rpc('pending_appeals');
+
+  if (error) {
+    console.error(error);
+    return fail(c, 500, 'query_failed', 'Could not load appeals.');
+  }
+  return c.json({ data: data ?? [], next_cursor: null });
+});
+
+const appealResolve = z.object({
+  outcome: z.enum(['upheld', 'rejected']),
+  resolution: z.string().max(1000).optional(),
+});
+
+// Upholding an appeal marks the report a false alarm, which is what takes it off the
+// public map -- the map only returns verified, alerted and resolved. The report is not
+// deleted: a removed report and a report that never existed should not look the same to
+// whoever audits this later.
+admin.post(
+  '/appeals/:id/resolve',
+  zValidator('json', appealResolve, (r, c) => (r.success ? undefined : zodFail(c, r.error.issues))),
+  async (c) => {
+    const id = c.req.param('id');
+    if (!id || !isUuid(id)) return fail(c, 404, 'not_found', 'No appeal with that id.');
+
+    const db = serviceClient(c.env);
+    const { data: appeal, error: lookupError } = await db
+      .from('incident_appeals')
+      .select('id, incident_id, status, incidents(mosque_id)')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (lookupError) {
+      console.error(lookupError);
+      return fail(c, 500, 'query_failed', 'Could not load that appeal.');
+    }
+    if (!appeal) return fail(c, 404, 'not_found', 'No appeal with that id.');
+    if (appeal.status !== 'open') {
+      return fail(c, 409, 'already_resolved', 'This appeal has already been resolved.');
+    }
+
+    const embedded = appeal.incidents as unknown as
+      { mosque_id: string | null } | { mosque_id: string | null }[] | null;
+    const mosqueId =
+      (Array.isArray(embedded) ? embedded[0]?.mosque_id : embedded?.mosque_id) ?? null;
+    if (!mosqueId) return fail(c, 403, 'not_permitted', 'This report has no mosque to staff.');
+
+    // Re-checked at write time rather than trusted from the queue response.
+    const { data: staff } = await db
+      .from('memberships')
+      .select('role')
+      .eq('profile_id', c.get('userId'))
+      .eq('mosque_id', mosqueId)
+      .in('role', STAFF_ROLES)
+      .maybeSingle();
+    if (!staff) return fail(c, 403, 'not_permitted', 'You do not staff this mosque.');
+
+    const { outcome, resolution } = c.req.valid('json');
+
+    const { error: appealError } = await db
+      .from('incident_appeals')
+      .update({
+        status: outcome,
+        resolution: resolution?.trim() ?? null,
+        resolved_by: c.get('userId'),
+        resolved_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+
+    if (appealError) {
+      console.error(appealError);
+      return fail(c, 500, 'update_failed', 'Could not resolve that appeal.');
+    }
+
+    if (outcome === 'upheld') {
+      const { error: incidentError } = await db
+        .from('incidents')
+        .update({ status: 'false_alarm' })
+        .eq('id', appeal.incident_id);
+      if (incidentError) {
+        console.error(incidentError);
+        return fail(c, 500, 'update_failed', 'Appeal was recorded but the report was not updated.');
+      }
+    }
+
+    return c.json({ id, status: outcome });
+  },
+);
