@@ -32,7 +32,7 @@ function ActionLink({ href, children }: { href: string; children: React.ReactNod
       href={href}
       target={href.startsWith('tel:') ? undefined : '_blank'}
       rel={href.startsWith('tel:') ? undefined : 'noreferrer'}
-      className="flex min-h-11 items-center border-b border-basirah-cyan/15 text-sm font-medium text-basirah-cyan transition-colors duration-150 hover:text-basirah-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-cyan"
+      className="flex min-h-11 items-center border-b border-basirah-cyan/15 text-base font-semibold text-basirah-cyan transition-colors duration-150 hover:text-basirah-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-cyan"
     >
       {children}
     </a>
@@ -67,12 +67,12 @@ function MosqueBody({ mosque, titleId }: { mosque: NearbyMosque; titleId: string
       <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-basirah-cyan uppercase">Mosque</p>
       <h2
         id={titleId}
-        className="mt-2 font-display text-2xl font-semibold tracking-tight text-wrap-balance text-basirah-cream"
+        className="mt-2 font-display text-2xl font-semibold tracking-tight text-balance text-basirah-cream"
       >
         {mosque.name}
       </h2>
-      {address ? <p className="mt-2 text-sm text-pretty text-basirah-cream/70">{address}</p> : null}
-      <p className="mt-3 text-sm font-medium tabular-nums text-basirah-cyan">
+      {address ? <p className="mt-2 text-base text-pretty text-basirah-cream">{address}</p> : null}
+      <p className="mt-3 text-base font-semibold tabular-nums text-basirah-cyan">
         {formatDistance(mosque.distance_m)}
       </p>
 
@@ -87,15 +87,15 @@ function MosqueBody({ mosque, titleId }: { mosque: NearbyMosque; titleId: string
           Hours
         </h3>
         {!loadedHours ? (
-          <p className="mt-2 text-sm text-basirah-cream/50">Loading…</p>
+          <p className="mt-2 text-base text-basirah-cream/80">Loading…</p>
         ) : hours?.opening_hours?.length ? (
-          <ul className="mt-3 space-y-1.5 text-sm tabular-nums text-basirah-cream/80">
+          <ul className="mt-3 space-y-1.5 text-base tabular-nums text-basirah-cream">
             {hours.opening_hours.map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-pretty text-basirah-cream/50">
+          <p className="mt-2 text-base text-pretty text-basirah-cream/80">
             No published hours for this location yet.
           </p>
         )}
@@ -112,14 +112,14 @@ function IncidentBody({ incident, titleId }: { incident: MapIncident; titleId: s
       </p>
       <h2
         id={titleId}
-        className="mt-2 font-display text-2xl font-semibold tracking-tight text-wrap-balance text-basirah-cream"
+        className="mt-2 font-display text-2xl font-semibold tracking-tight text-balance text-basirah-cream"
       >
         {formatLabel(incident.category)}
       </h2>
-      <p className="mt-3 text-sm text-pretty text-basirah-cream/70">
+      <p className="mt-3 text-base text-pretty text-basirah-cream">
         Reported via {formatLabel(incident.channel).toLowerCase()}
       </p>
-      <p className="mt-2 text-sm tabular-nums text-basirah-cyan">
+      <p className="mt-2 text-base font-semibold tabular-nums text-basirah-cyan">
         {formatWhen(incident.occurred_at ?? incident.created_at)}
       </p>
     </>
@@ -174,7 +174,7 @@ export function MapDetailPanel({
           ref={closeRef}
           type="button"
           onClick={onClose}
-          className="flex size-11 cursor-pointer items-center justify-center rounded-full text-basirah-cream/70 transition-[color,background-color,transform] duration-150 hover:bg-white/10 hover:text-basirah-cream active:scale-96 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-cyan motion-reduce:active:scale-100"
+          className="flex size-11 cursor-pointer items-center justify-center rounded-md text-basirah-cream transition-[color,background-color,transform] duration-150 hover:bg-white/10 hover:text-white active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-cyan motion-reduce:active:scale-100"
           aria-label="Close details"
         >
           <svg viewBox="0 0 24 24" className="size-5" aria-hidden>

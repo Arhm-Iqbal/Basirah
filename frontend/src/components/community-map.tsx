@@ -55,6 +55,7 @@ export function CommunityMap() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Selection | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const ignoreMapClick = useRef(false);
 
   useEffect(() => {
     if (status === 'idle') locate();
@@ -125,16 +126,21 @@ export function CommunityMap() {
     if (!map) return;
     const width = map.getContainer().clientWidth;
     const right = panelOpen ? Math.min(360, Math.round(width * 0.92)) : 0;
-    map.easeTo({ padding: { top: 0, right, bottom: 0, left: 0 }, duration: 350 });
+    map.easeTo({
+      padding: { top: 0, right, bottom: 0, left: 0 },
+      duration: 420,
+      easing: (t) => 1 - (1 - t) * (1 - t),
+    });
   }, [panelOpen]);
 
   useEffect(() => {
     if (panelOpen || !selected) return;
-    const id = window.setTimeout(() => setSelected(null), 320);
+    const id = window.setTimeout(() => setSelected(null), 420);
     return () => window.clearTimeout(id);
   }, [panelOpen, selected]);
 
   const showSelection = (next: Selection) => {
+    ignoreMapClick.current = true;
     setSelected(next);
     setPanelOpen(true);
   };
@@ -157,13 +163,19 @@ export function CommunityMap() {
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-basirah-teal/10 bg-white">
+    <div className="relative h-full w-full overflow-hidden rounded-lg border border-basirah-teal/20 bg-white">
       <Map
         ref={mapRef}
         initialViewState={{ longitude: coords.lng, latitude: coords.lat, zoom: 12 }}
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
-        onClick={() => setSelected(null)}
+        onClick={() => {
+          if (ignoreMapClick.current) {
+            ignoreMapClick.current = false;
+            return;
+          }
+          requestClose();
+        }}
       >
         {coords && (
           <Marker longitude={coords.lng} latitude={coords.lat} anchor="center">
@@ -179,7 +191,7 @@ export function CommunityMap() {
             anchor="bottom"
             onClick={(event) => {
               event.originalEvent.stopPropagation();
-              setSelected({ kind: 'mosque', item: mosque });
+              showSelection({ kind: 'mosque', item: mosque });
             }}
           >
             <button
@@ -210,7 +222,7 @@ export function CommunityMap() {
             anchor="center"
             onClick={(event) => {
               event.originalEvent.stopPropagation();
-              setSelected({ kind: 'incident', item: incident });
+              showSelection({ kind: 'incident', item: incident });
             }}
           >
             <button
@@ -224,10 +236,10 @@ export function CommunityMap() {
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
         <div className="pointer-events-auto flex flex-col items-start gap-2">
-          <span className="rounded-full border border-basirah-teal/10 bg-white/90 px-3 py-1.5 text-xs font-medium text-basirah-teal/70 backdrop-blur">
+          <span className="rounded-md border border-basirah-teal/20 bg-white px-2.5 py-1.5 text-sm font-semibold text-basirah-teal">
             {summary}
           </span>
-          <div className="rounded-2xl border border-basirah-teal/10 bg-white/90 p-1 backdrop-blur">
+          <div className="rounded-lg border border-basirah-teal/20 bg-white p-0.5">
             <RadiusChips
               radius={radius}
               customMode={customMode}
@@ -241,7 +253,7 @@ export function CommunityMap() {
             />
           </div>
           {error && (
-            <p className="max-w-[16rem] rounded-2xl border border-basirah-rust/20 bg-white/90 px-3 py-2 text-xs font-medium text-basirah-rust backdrop-blur">
+            <p className="max-w-[16rem] rounded-md border border-basirah-rust/30 bg-white px-3 py-2 text-sm font-semibold text-basirah-rust">
               {error}
             </p>
           )}
@@ -254,12 +266,12 @@ export function CommunityMap() {
             type="button"
             onClick={locate}
             disabled={status === 'locating'}
-            className="cursor-pointer rounded-full border border-basirah-teal/10 bg-white/90 px-4 py-2 text-xs font-semibold text-basirah-teal backdrop-blur transition-colors hover:bg-basirah-cream disabled:cursor-not-allowed disabled:opacity-60"
+            className="cursor-pointer rounded-md border border-basirah-teal/25 bg-white px-3.5 py-2 text-sm font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream disabled:cursor-not-allowed disabled:opacity-60"
           >
             {status === 'locating' ? 'Locating…' : 'Use my location'}
           </button>
           {locationMessage && (
-            <p className="max-w-[16rem] rounded-2xl border border-basirah-teal/10 bg-white/90 px-3 py-2 text-end text-xs text-basirah-teal/70 backdrop-blur">
+            <p className="max-w-[16rem] rounded-md border border-basirah-teal/20 bg-white px-3 py-2 text-end text-sm text-basirah-teal">
               {locationMessage}
             </p>
           )}
@@ -267,7 +279,7 @@ export function CommunityMap() {
       </div>
 
       <ul
-        className={`absolute bottom-3 start-3 space-y-1.5 rounded-2xl border border-basirah-teal/10 bg-white/90 px-3 py-2.5 text-xs text-basirah-teal/80 backdrop-blur ${
+        className={`absolute bottom-3 start-3 space-y-1.5 rounded-lg border border-basirah-teal/20 bg-white px-3 py-2.5 text-sm text-basirah-teal ${
           selected ? 'max-sm:hidden' : ''
         }`}
       >
@@ -287,7 +299,17 @@ export function CommunityMap() {
         )}
       </ul>
 
-      {selected && <MapDetailPanel selected={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <>
+          <div
+            aria-hidden
+            className={`pointer-events-none absolute inset-0 z-10 bg-basirah-teal/25 transition-opacity duration-300 motion-reduce:transition-none ${
+              panelOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          <MapDetailPanel selected={selected} open={panelOpen} onClose={requestClose} />
+        </>
+      )}
     </div>
   );
 }
