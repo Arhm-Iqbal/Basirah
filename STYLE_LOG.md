@@ -24,6 +24,14 @@ What: Replaced the frosted glass login/signup panel with a solid cream card (`ma
 Why: The glass overlay washed out the type, the sheen read as a smear, and the
 `max-w-sm` card left unused margin on phones.
 
+## 2026-08-23 — Home flower field, larger type
+
+What: Removed the Three.js rosette. The home screen now uses the cropped
+`basirah-flower.png` as a centered, oversized, screened motif on teal. Logo, headline,
+and CTAs are larger. Login/signup wordmarks sit centered in the card.
+Why: The coded flower fought the real mark. The supplied PNG was almost-black and
+faint; cream ink + cover + opacity keeps it present without shouting.
+
 ## 2026-08-23 — New Basirah wordmark
 
 What: Replaced `logo.png` with the new Arabic wordmark (black keyed out, tightly

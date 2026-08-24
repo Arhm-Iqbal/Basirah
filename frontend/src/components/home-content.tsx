@@ -1,17 +1,4 @@
-'use client';
-
-import dynamic from 'next/dynamic';
-
-const Hero = dynamic(() => import('@/components/hero').then((mod) => mod.Hero), {
-  ssr: false,
-  loading: () => (
-    <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-basirah-teal px-4">
-      <p className="relative z-10 text-xs font-medium tracking-[0.2em] text-basirah-cyan/80 uppercase">
-        Basirah
-      </p>
-    </section>
-  ),
-});
+import { Hero } from '@/components/hero';
 
 export function HomeContent() {
   return (

@@ -1,14 +1,13 @@
 import Link from 'next/link';
 import type { ComponentProps } from 'react';
 
-type Size = 'sm' | 'md';
+type Size = 'sm' | 'md' | 'lg';
 type Variant = 'primary' | 'secondary' | 'teal' | 'ghost';
 
-// min-h on the tap sizes rather than padding alone: padding collapses when a button holds
-// only an icon, and these have to stay thumb-sized on mobile.
 const SIZES: Record<Size, string> = {
   sm: 'min-h-9 gap-1.5 px-4 text-[0.8125rem]',
   md: 'min-h-11 gap-2 px-6 text-sm sm:px-7',
+  lg: 'min-h-12 gap-2 px-8 text-base sm:min-h-14 sm:px-10',
 };
 
 const VARIANTS: Record<Variant, string> = {
