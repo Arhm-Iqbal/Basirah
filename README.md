@@ -24,10 +24,6 @@ Reviewers can also select **Explore the demo profile** on the login page. It use
 
 Basirah does not submit reports to a platform, police service, or support organization on a user's behalf. If anyone is in immediate danger, call 911.
 
-## Current map coverage
-
-The location search accepts any Canadian city or device location. The production mosque dataset currently contains OpenStreetMap records for Edmonton and Sherwood Park, plus the Greater Toronto Area. Other Canadian locations can still be searched, but they may show no stored listings until the directory is expanded. An empty result does not mean there are no mosques nearby.
-
 ## How it was built
 
 1. Shared Zod schemas define the report, mosque, resource, and API data shapes used by both the frontend and backend.
@@ -44,7 +40,7 @@ The location search accepts any Canadian city or device location. The production
 | --------------------- | ----------------------------------------------------------------------- |
 | Web app               | Next.js 15, React 19, TypeScript, Tailwind CSS 4                        |
 | API                   | Hono, Zod, Next.js route handler, Wrangler for local Worker development |
-| Data and auth         | Supabase Postgres, PostGIS, Auth, Storage, Row Level Security           |
+| Data and auth         | Supabase Postgres in Canada Central, PostGIS, Auth, Storage, RLS        |
 | Maps                  | MapLibre GL, OpenFreeMap, OpenStreetMap, Nominatim                      |
 | Documents             | pdf-lib                                                                 |
 | Optional integrations | OpenAI, Google Places, Cloudflare Turnstile                             |
@@ -52,6 +48,7 @@ The location search accepts any Canadian city or device location. The production
 
 ## Privacy choices
 
+- The production Postgres database is hosted in the Canada Central (`ca-central-1`) region, not in a United States database region.
 - Anonymous tips use a separate table and route with no account, contact, IP, or user-agent columns.
 - Optional name, email, and phone fields in the signed-in report form stay in that browser for prefilling and are not sent with the report.
 - A map location requested by the browser is used to find nearby mosques and is not added to the database. A location typed into a report is saved as part of that report.
