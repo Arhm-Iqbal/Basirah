@@ -50,16 +50,16 @@ export function LocationGate({ status, onLocate, onManual }: Props) {
               : 'We use your location once, to show what is nearby. It is not stored on our servers.'}
         </p>
 
-        {!blocked && (
-          <button
-            type="button"
-            onClick={onLocate}
-            disabled={status === 'locating'}
-            className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-basirah-teal px-5 text-base font-semibold text-white transition-colors hover:bg-basirah-teal/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal disabled:opacity-60"
-          >
-            {status === 'locating' ? 'Locating…' : 'Use my location'}
-          </button>
-        )}
+        {/* Offered even when blocked: the permission is changed in browser settings, so
+            someone who has just allowed it needs a way back that is not a page reload. */}
+        <button
+          type="button"
+          onClick={onLocate}
+          disabled={status === 'locating'}
+          className="mt-5 inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-md bg-basirah-teal px-5 text-base font-semibold text-white transition-colors hover:bg-basirah-teal/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {status === 'locating' ? 'Locating…' : blocked ? 'Try again' : 'Use my location'}
+        </button>
 
         <form onSubmit={search} className="mt-3 flex gap-2">
           <input

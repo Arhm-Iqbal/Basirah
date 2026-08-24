@@ -45,12 +45,71 @@ export function useGeolocation() {
     }
 
     setStatus('locating');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => remember({ lat: pos.coords.latitude, lng: pos.coords.longitude }, 'ready'),
-      (err) => setStatus(err.code === err.PERMISSION_DENIED ? 'denied' : 'unavailable'),
-      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 300_000 },
-    );
+
+    const options = { enableHighAccuracy: true, timeout: 15_000, maximumAge: 300_000 };
+    const onFix = (pos: GeolocationPosition) =>
+      remember({ lat: pos.coords.latitude, lng: pos.coords.longitude }, 'ready');
+    const onGiveUp = (err: GeolocationPositionError) =>
+      setStatus(err.code === err.PERMISSION_DENIED ? 'denied' : 'unavailable');
+
+    const onFirstFailure = (err: GeolocationPositionError) => {
+      if (err.code === err.PERMISSION_DENIED) {
+        setStatus('denied');
+        return;
+      }
+      // A provider that has only just been unblocked reports POSITION_UNAVAILABLE for a
+      // moment before it can produce a fix, which is exactly the moment the permission
+      // watcher below asks. One retry turns that into a location instead of a dead end.
+      window.setTimeout(() => {
+        navigator.geolocation.getCurrentPosition(onFix, onGiveUp, options);
+      }, 1200);
+    };
+
+    navigator.geolocation.getCurrentPosition(onFix, onFirstFailure, options);
   }, [remember]);
+
+  // Location permission is granted and revoked in browser settings, outside this page.
+  // Without watching for it, someone who unblocks the site sits on the manual gate until
+  // they happen to reload, which reads as the map simply not working.
+  useEffect(() => {
+    const permissions = typeof navigator === 'undefined' ? undefined : navigator.permissions;
+    if (!permissions?.query) return;
+
+    let live = true;
+    let handle: PermissionStatus | null = null;
+
+    const sync = () => {
+      if (!live || !handle) return;
+      if (handle.state === 'granted') locate();
+      else if (handle.state === 'denied') setStatus('denied');
+    };
+
+    permissions
+      .query({ name: 'geolocation' as PermissionName })
+      .then((result) => {
+        if (!live) {
+          return;
+        }
+        handle = result;
+        // Only correct a status that is still waiting on a fix. A coordinate already
+        // restored from cache or typed in by hand stays valid whatever the permission says.
+        if (result.state === 'denied') {
+          setStatus((current) =>
+            current === 'idle' || current === 'locating' ? 'denied' : current,
+          );
+        }
+        result.addEventListener('change', sync);
+      })
+      .catch(() => {
+        // Older Safari has no geolocation entry in the permissions registry. Requesting
+        // still works there, so this is a missing optimisation rather than a failure.
+      });
+
+    return () => {
+      live = false;
+      handle?.removeEventListener('change', sync);
+    };
+  }, [locate]);
 
   const setManual = useCallback(
     (next: Coords) => {
