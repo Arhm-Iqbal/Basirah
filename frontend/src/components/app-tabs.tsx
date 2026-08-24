@@ -1,5 +1,6 @@
 'use client';
 
+import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -21,6 +22,12 @@ const TABS: Tab[] = [
     label: 'Report',
     shortLabel: 'Report',
     icon: <img src="/icons/report.png" alt="" width={18} height={20} className="h-5 w-auto" />,
+  },
+  {
+    href: '/app/resources',
+    label: 'Resources',
+    shortLabel: 'Resources',
+    icon: <BookOpen className="size-5" aria-hidden />,
   },
 ];
 
