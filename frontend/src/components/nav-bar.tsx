@@ -12,7 +12,7 @@ export function NavBar() {
           <Logo className="h-9 w-auto sm:h-11" />
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-6 whitespace-nowrap lg:flex">
           {MARKETING_NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -24,7 +24,7 @@ export function NavBar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-5 md:flex">
+        <div className="hidden items-center gap-5 whitespace-nowrap lg:flex">
           <Link
             href="/login"
             className="text-base font-semibold text-basirah-teal transition-colors hover:text-basirah-rust"
