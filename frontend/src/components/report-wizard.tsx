@@ -10,6 +10,7 @@ import { Button } from '@/components/button-link';
 import { apiFetch } from '@/lib/api-base';
 import { createOptionalClient } from '@/lib/supabase/client';
 import { TidyWriting } from '@/components/tidy-writing';
+import { TurnstileWidget } from '@/components/turnstile-widget';
 import {
   EMPTY_REPORT,
   stepsForRoute,
@@ -23,6 +24,8 @@ import {
   type ReportErrors,
   type StepId,
 } from '@/lib/report-flow';
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? '';
 
 const field =
   'mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-basirah-teal/45 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] aria-invalid:border-basirah-rust aria-invalid:shadow-[0_0_0_3px_rgb(148_33_6_/_18%)] motion-reduce:transition-none';
@@ -522,6 +525,9 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [actionPlan, setActionPlan] = useState<IncidentActionPlan | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
+  const [turnstileAttempt, setTurnstileAttempt] = useState(0);
 
   const set = <K extends keyof IncidentReport>(key: K, value: IncidentReport[K]) => {
     setReport((r) => ({ ...r, [key]: value }));
@@ -537,6 +543,9 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
     setPrivacy(nextPrivacy);
     setErrors({});
     setError(null);
+    setTurnstileToken(null);
+    setTurnstileError(null);
+    setTurnstileAttempt((attempt) => attempt + 1);
     setIndex(0);
 
     if (nextPrivacy === 'account') {
@@ -570,10 +579,15 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
   const submit = async () => {
     if (!privacy) return;
 
+    const isAnonymous = privacy === 'anonymous';
+    if (isAnonymous && TURNSTILE_SITE_KEY && !turnstileToken) {
+      setError('Complete the security check before submitting this report.');
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
-      const isAnonymous = privacy === 'anonymous';
       const supabase = isAnonymous ? null : createOptionalClient();
       const token = supabase
         ? (await supabase.auth.getSession()).data.session?.access_token
@@ -586,7 +600,9 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
       const payload: Record<string, unknown> = {
         ...toApiPayload(report, { anonymous: isAnonymous }),
       };
-      if (isAnonymous) payload.turnstile_token = 'unconfigured';
+      if (isAnonymous) {
+        payload.turnstile_token = TURNSTILE_SITE_KEY ? turnstileToken : 'unconfigured';
+      }
 
       const res = await apiFetch(isAnonymous ? '/v1/tips' : '/v1/incidents', {
         method: 'POST',
@@ -622,6 +638,10 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Your report could not be submitted.');
     } finally {
+      if (isAnonymous && TURNSTILE_SITE_KEY) {
+        setTurnstileToken(null);
+        setTurnstileAttempt((attempt) => attempt + 1);
+      }
       setSubmitting(false);
     }
   };
@@ -999,6 +1019,39 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
             </dl>
           </>
         )}
+
+        {isReview && privacy === 'anonymous' && TURNSTILE_SITE_KEY && (
+          <div className="rounded-lg border border-basirah-teal/20 bg-white p-4">
+            <p className="text-sm font-semibold text-basirah-teal">Security check</p>
+            <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">
+              This helps keep automated submissions out of the reporting queue.
+            </p>
+            <TurnstileWidget
+              key={turnstileAttempt}
+              siteKey={TURNSTILE_SITE_KEY}
+              onVerify={setTurnstileToken}
+              onError={setTurnstileError}
+            />
+            {turnstileError && (
+              <div className="mt-2">
+                <p role="alert" className="text-sm font-medium text-basirah-rust">
+                  {turnstileError}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTurnstileError(null);
+                    setTurnstileToken(null);
+                    setTurnstileAttempt((attempt) => attempt + 1);
+                  }}
+                  className="mt-2 cursor-pointer text-sm font-semibold text-basirah-teal underline underline-offset-4"
+                >
+                  Try the security check again
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {error && (
@@ -1015,7 +1068,11 @@ export function ReportWizard({ accountContext = false }: ReportWizardProps) {
           Back
         </Button>
         {isReview ? (
-          <Button variant="primary" onClick={() => void submit()} disabled={submitting}>
+          <Button
+            variant="primary"
+            onClick={() => void submit()}
+            disabled={submitting || Boolean(TURNSTILE_SITE_KEY && !turnstileToken)}
+          >
             <img
               src="/icons/report-white.png"
               alt=""

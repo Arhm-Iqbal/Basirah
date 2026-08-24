@@ -78,6 +78,10 @@ export default function PrivacyPage() {
             short-lived signed links. The reporter and authorized verification staff can access a
             signed-in report as needed to review it.
           </p>
+          <p className={copyClass}>
+            When the anonymous-report security check is enabled, Cloudflare Turnstile processes
+            browser and device signals to decide whether a submission is automated.
+          </p>
         </section>
 
         <section className={sectionClass}>
