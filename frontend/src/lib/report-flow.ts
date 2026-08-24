@@ -122,6 +122,10 @@ export function validateStep(stepId: StepId, report: IncidentReport): ReportErro
 
 // Everything the API takes as a first-class column is lifted out; the rest rides in
 // details, which is what that jsonb column exists for until the form settles.
+//
+// reporter_name, reporter_email and reporter_phone are deliberately absent. They stay in
+// the browser (see saveContactLocally) and are never persisted server-side, so the
+// database holds an account of what happened without holding who reported it.
 export function toApiPayload(report: IncidentReport) {
   const occurred =
     report.occurred_on !== ''
@@ -145,9 +149,6 @@ export function toApiPayload(report: IncidentReport) {
     'before_context',
     'after_context',
     'other_details',
-    'reporter_name',
-    'reporter_email',
-    'reporter_phone',
     'reporting_for',
     'reported_elsewhere',
     'existing_reference',
@@ -173,4 +174,47 @@ export function toApiPayload(report: IncidentReport) {
         url: report.online_url.trim() || undefined,
       }
     : { ...base, location_description: report.location_address.trim() || undefined };
+}
+
+const CONTACT_KEY = 'basirah.contact';
+
+export type LocalContact = {
+  reporter_name: string;
+  reporter_email: string;
+  reporter_phone: string;
+  reporting_for: string;
+};
+
+// Kept on the device only. Prefills the next report so nobody retypes it, and never
+// travels with the payload.
+export function saveContactLocally(report: IncidentReport) {
+  const contact: LocalContact = {
+    reporter_name: report.reporter_name,
+    reporter_email: report.reporter_email,
+    reporter_phone: report.reporter_phone,
+    reporting_for: report.reporting_for,
+  };
+  if (Object.values(contact).every((v) => v.trim() === '')) return;
+  try {
+    localStorage.setItem(CONTACT_KEY, JSON.stringify(contact));
+  } catch {
+    // Private mode and blocked site data both throw; losing the convenience is survivable.
+  }
+}
+
+export function loadContactLocally(): Partial<LocalContact> {
+  try {
+    const raw = localStorage.getItem(CONTACT_KEY);
+    return raw ? (JSON.parse(raw) as LocalContact) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function clearContactLocally() {
+  try {
+    localStorage.removeItem(CONTACT_KEY);
+  } catch {
+    // See above.
+  }
 }

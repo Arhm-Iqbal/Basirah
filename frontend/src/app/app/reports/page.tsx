@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { StatusBadge } from '@/components/status-badge';
-import { fetchOwnIncidents, type OwnIncident } from '@/lib/queries';
+import { Button } from '@/components/button-link';
+import { downloadReport, fetchOwnIncidents, type OwnIncident } from '@/lib/queries';
 
 const CHANNEL_LABELS: Record<string, string> = {
   in_person: 'In person',
@@ -21,6 +22,35 @@ function formatDate(value: string) {
 
 function label(value: string) {
   return value.replace(/_/g, ' ');
+}
+
+function DownloadButton({ incidentId }: { incidentId: string }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="ghost"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            await downloadReport(incidentId);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Could not download the PDF.');
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? 'Preparing…' : 'Download PDF'}
+      </Button>
+      {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
+    </>
+  );
 }
 
 export default function ReportsPage() {
@@ -123,6 +153,10 @@ export default function ReportsPage() {
                 <p className="mt-2.5 line-clamp-2 text-base text-basirah-teal">
                   {incident.description ?? 'No description recorded.'}
                 </p>
+
+                <div className="mt-3.5 border-t border-basirah-teal/10 pt-3.5">
+                  <DownloadButton incidentId={incident.id} />
+                </div>
               </li>
             ))}
           </ul>

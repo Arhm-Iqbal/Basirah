@@ -193,3 +193,34 @@ export async function fetchMosqueEvents(mosqueId: string): Promise<MosqueEvent[]
   const body = (await res.json()) as { data: MosqueEvent[] };
   return body.data;
 }
+
+export type ReportDocument = {
+  url: string;
+  version: number;
+  byte_size: number | null;
+  created_at: string;
+};
+
+export async function fetchReportDocument(incidentId: string): Promise<ReportDocument> {
+  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}/document`, {
+    headers: await authHeaders(),
+  });
+  return (await unwrap(res)) as ReportDocument;
+}
+
+// The signed URL points at Supabase Storage, so the anchor is what actually saves the
+// file; navigating there directly would render the PDF instead of downloading it.
+export async function downloadReport(incidentId: string) {
+  const doc = await fetchReportDocument(incidentId);
+  const res = await fetch(doc.url);
+  if (!res.ok) throw new Error('Could not fetch the document.');
+  const blob = await res.blob();
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = `basirah-report-${incidentId.slice(0, 8)}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(href);
+}

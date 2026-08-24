@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/button-link';
 import { EvidenceUploader } from '@/components/evidence-uploader';
 import { createClient } from '@/lib/supabase/client';
+import { downloadReport } from '@/lib/queries';
 import {
   EMPTY_REPORT,
   stepsForRoute,
+  loadContactLocally,
+  saveContactLocally,
   toApiPayload,
   validateStep,
   type IncidentReport,
@@ -166,6 +169,8 @@ function Long({
 
 export function ReportWizard() {
   const [report, setReport] = useState<IncidentReport>(EMPTY_REPORT);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [errors, setErrors] = useState<ReportErrors>({});
   const [index, setIndex] = useState(0);
   const [started, setStarted] = useState(false);
@@ -174,6 +179,11 @@ export function ReportWizard() {
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [guidance, setGuidance] = useState<Guidance | null>(null);
   const [guidanceState, setGuidanceState] = useState<'idle' | 'loading' | 'failed'>('idle');
+
+  useEffect(() => {
+    const saved = loadContactLocally();
+    if (Object.keys(saved).length > 0) setReport((r) => ({ ...r, ...saved }));
+  }, []);
 
   const set = <K extends keyof IncidentReport>(key: K, value: IncidentReport[K]) => {
     setReport((r) => ({ ...r, [key]: value }));
@@ -222,6 +232,7 @@ export function ReportWizard() {
       }
 
       const id = (body as { id: string }).id;
+      saveContactLocally(report);
       setCreatedId(id);
       void loadGuidance(id, token);
     } catch (err) {
@@ -257,6 +268,36 @@ export function ReportWizard() {
           community-wide alert until a person has verified it.
         </p>
         <p className="mt-1 text-sm text-basirah-teal/70">Reference {createdId}</p>
+
+        <div className="mt-5 rounded-lg border border-basirah-teal/20 bg-white p-4">
+          <p className="text-sm font-semibold text-basirah-teal">A copy of this report</p>
+          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">
+            A PDF recording everything you submitted is saved to your profile. Your name, email and
+            phone are not in it and were never sent to us — they stay on this device.
+          </p>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="mt-3"
+            disabled={downloading}
+            onClick={async () => {
+              setDownloading(true);
+              setDownloadError(null);
+              try {
+                await downloadReport(createdId);
+              } catch (err) {
+                setDownloadError(
+                  err instanceof Error ? err.message : 'Could not download the PDF.',
+                );
+              } finally {
+                setDownloading(false);
+              }
+            }}
+          >
+            {downloading ? 'Preparing…' : 'Download PDF'}
+          </Button>
+          {downloadError && <p className="mt-2 text-sm text-basirah-rust">{downloadError}</p>}
+        </div>
 
         {/* Evidence needs the incident id, so it attaches here rather than as a form step. */}
         <div className="mt-6 border-t border-basirah-teal/15 pt-5">
@@ -306,7 +347,9 @@ export function ReportWizard() {
     return (
       <div>
         <div className="rounded-lg border border-basirah-rust/30 bg-basirah-rust/8 p-4">
-          <h2 className="text-base font-semibold text-basirah-rust">Are you in immediate danger?</h2>
+          <h2 className="text-base font-semibold text-basirah-rust">
+            Are you in immediate danger?
+          </h2>
           <p className="mt-1.5 text-base leading-relaxed text-basirah-teal">
             If you or someone else is in immediate danger, call 911. This form is for documentation
             and follow-up, not emergency response.
@@ -343,7 +386,9 @@ export function ReportWizard() {
                     : 'border-basirah-teal/25 hover:border-basirah-teal'
                 }`}
               >
-                <span className="block text-base font-semibold text-basirah-teal">{option.title}</span>
+                <span className="block text-base font-semibold text-basirah-teal">
+                  {option.title}
+                </span>
                 <span className="mt-1 block text-sm leading-relaxed text-basirah-teal/80">
                   {option.body}
                 </span>
