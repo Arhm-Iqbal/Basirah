@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/button-link';
+import { apiFetch } from '@/lib/api-base';
 import { StatusBadge } from '@/components/status-badge';
 import { createClient } from '@/lib/supabase/client';
 
@@ -19,8 +20,6 @@ type PendingIncident = {
 };
 
 type Decision = 'verified' | 'false_alarm';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const CHANNEL_LABELS: Record<string, string> = {
   in_person: 'In person',
@@ -54,13 +53,13 @@ async function unwrap(res: Response) {
 }
 
 async function fetchPendingIncidents(): Promise<PendingIncident[]> {
-  const res = await fetch(`${API_URL}/v1/admin/incidents`, { headers: await authHeaders() });
+  const res = await apiFetch('/v1/admin/incidents', { headers: await authHeaders() });
   const body = (await unwrap(res)) as { data: PendingIncident[] };
   return body.data;
 }
 
 async function decideIncident(id: string, status: Decision): Promise<void> {
-  const res = await fetch(`${API_URL}/v1/admin/incidents/${id}/verify`, {
+  const res = await apiFetch(`/v1/admin/incidents/${id}/verify`, {
     method: 'POST',
     headers: await authHeaders(),
     body: JSON.stringify({ status }),

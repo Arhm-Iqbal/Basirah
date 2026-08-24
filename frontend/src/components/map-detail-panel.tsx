@@ -46,11 +46,13 @@ function MosqueBody({ mosque, titleId }: { mosque: NearbyMosque; titleId: string
     let active = true;
     setHours(null);
     setLoadedHours(false);
-    void fetchEnrichment(mosque.id).then((data) => {
-      if (!active) return;
-      setHours(data);
-      setLoadedHours(true);
-    });
+    void fetchEnrichment(mosque.id)
+      .catch(() => null)
+      .then((data) => {
+        if (!active) return;
+        setHours(data);
+        setLoadedHours(true);
+      });
     return () => {
       active = false;
     };

@@ -10,6 +10,15 @@ import type { Coords } from '@/lib/use-geolocation';
 
 const PROVINCES = ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'];
 
+// The schema requires an absolute URL, and type="url" refuses a scheme-less one without
+// ever reaching submit -- so someone typing their mosque's domain the way they say it out
+// loud just sees the form sit there. Supply the scheme rather than reject the entry.
+function normaliseWebsite(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
 const field =
   'mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-basirah-teal/45 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] aria-invalid:border-basirah-rust motion-reduce:transition-none';
 const label = 'block text-base font-semibold text-basirah-teal';
@@ -78,7 +87,7 @@ export function AddMosqueForm({
         city: city.trim() || undefined,
         province: province || undefined,
         phone: phone.trim() || undefined,
-        website: website.trim() || undefined,
+        website: normaliseWebsite(website),
         notes: notes.trim() || undefined,
         lat: coords?.lat,
         lng: coords?.lng,
@@ -207,8 +216,10 @@ export function AddMosqueForm({
           </label>
           <input
             id="m-website"
-            type="url"
-            placeholder="https://"
+            type="text"
+            inputMode="url"
+            autoComplete="url"
+            placeholder="masjid.ca"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
             className={field}

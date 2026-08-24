@@ -6,6 +6,7 @@ import type { IncidentActionPlan } from '@basirah/shared';
 
 import { ActionPlanView } from '@/components/action-plan-view';
 import { Button } from '@/components/button-link';
+import { apiFetch } from '@/lib/api-base';
 import { createOptionalClient } from '@/lib/supabase/client';
 import { TidyWriting } from '@/components/tidy-writing';
 import {
@@ -20,8 +21,6 @@ import {
   type ReportErrors,
   type StepId,
 } from '@/lib/report-flow';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const field =
   'mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-basirah-teal/45 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] aria-invalid:border-basirah-rust aria-invalid:shadow-[0_0_0_3px_rgb(148_33_6_/_18%)] motion-reduce:transition-none';
@@ -477,14 +476,10 @@ export function ReportWizard() {
         ? (await supabase.auth.getSession()).data.session?.access_token
         : undefined;
 
-      if (!API_URL) {
-        throw new Error('Report submission is not configured for this deployment yet.');
-      }
-
       const payload: Record<string, unknown> = { ...toApiPayload(report) };
       if (!token) payload.turnstile_token = 'unconfigured';
 
-      const res = await fetch(`${API_URL}${token ? '/v1/incidents' : '/v1/tips'}`, {
+      const res = await apiFetch(token ? '/v1/incidents' : '/v1/tips', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

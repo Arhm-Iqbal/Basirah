@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api-base';
 import { createClient } from '@/lib/supabase/client';
 import type { IncidentActionPlan } from '@basirah/shared';
 
@@ -77,10 +78,8 @@ export async function fetchOwnIncidents(): Promise<OwnIncident[]> {
 
 export type GeocodeResult = { label: string; lat: number; lng: number };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function geocodePlace(query: string): Promise<GeocodeResult[]> {
-  const res = await fetch(`${API_URL}/v1/geocode?q=${encodeURIComponent(query)}`);
+  const res = await apiFetch(`/v1/geocode?q=${encodeURIComponent(query)}`);
   if (!res.ok) throw new Error('Geocoding failed.');
   const body = (await res.json()) as { data: GeocodeResult[] };
   return body.data;
@@ -145,7 +144,7 @@ export type NewMosque = {
 };
 
 export async function createMosque(input: NewMosque): Promise<{ id: string; name: string }> {
-  const res = await fetch(`${API_URL}/v1/me/mosques/new`, {
+  const res = await apiFetch('/v1/me/mosques/new', {
     method: 'POST',
     headers: await authHeaders(),
     body: JSON.stringify(input),
@@ -154,7 +153,7 @@ export async function createMosque(input: NewMosque): Promise<{ id: string; name
 }
 
 export async function addMosqueToProfile(mosqueId: string): Promise<void> {
-  const res = await fetch(`${API_URL}/v1/me/mosques`, {
+  const res = await apiFetch('/v1/me/mosques', {
     method: 'POST',
     headers: await authHeaders(),
     body: JSON.stringify({ mosque_id: mosqueId }),
@@ -163,7 +162,7 @@ export async function addMosqueToProfile(mosqueId: string): Promise<void> {
 }
 
 export async function removeMosqueFromProfile(mosqueId: string): Promise<void> {
-  const res = await fetch(`${API_URL}/v1/me/mosques/${mosqueId}`, {
+  const res = await apiFetch(`/v1/me/mosques/${mosqueId}`, {
     method: 'DELETE',
     headers: await authHeaders(),
   });
@@ -172,10 +171,12 @@ export async function removeMosqueFromProfile(mosqueId: string): Promise<void> {
 
 // 502 here means Google simply had no match, which is common for smaller prayer spaces.
 // That is not an error worth surfacing -- the stored OSM profile still stands on its own.
+// Nothing here may reject: the callers render an indefinite "Loading..." that only a
+// settled promise clears, so a network failure has to arrive as an absent result.
 export async function fetchEnrichment(mosqueId: string): Promise<Enrichment | null> {
-  const res = await fetch(`${API_URL}/v1/mosques/${mosqueId}/enrichment`);
-  if (!res.ok) return null;
-  return (await res.json()) as Enrichment;
+  const res = await apiFetch(`/v1/mosques/${mosqueId}/enrichment`).catch(() => null);
+  if (!res?.ok) return null;
+  return (await res.json().catch(() => null)) as Enrichment | null;
 }
 
 export type MosqueEvent = {
@@ -189,10 +190,10 @@ export type MosqueEvent = {
 };
 
 export async function fetchMosqueEvents(mosqueId: string): Promise<MosqueEvent[]> {
-  const res = await fetch(`${API_URL}/v1/events/${mosqueId}`);
-  if (!res.ok) return [];
-  const body = (await res.json()) as { data: MosqueEvent[] };
-  return body.data;
+  const res = await apiFetch(`/v1/events/${mosqueId}`).catch(() => null);
+  if (!res?.ok) return [];
+  const body = (await res.json().catch(() => null)) as { data?: MosqueEvent[] } | null;
+  return body?.data ?? [];
 }
 
 export type ReportDocument = {
@@ -203,14 +204,14 @@ export type ReportDocument = {
 };
 
 export async function fetchReportDocument(incidentId: string): Promise<ReportDocument> {
-  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}/document`, {
+  const res = await apiFetch(`/v1/incidents/${incidentId}/document`, {
     headers: await authHeaders(),
   });
   return (await unwrap(res)) as ReportDocument;
 }
 
 export async function fetchIncidentActions(incidentId: string): Promise<IncidentActionPlan> {
-  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}/actions`, {
+  const res = await apiFetch(`/v1/incidents/${incidentId}/actions`, {
     headers: await authHeaders(),
   });
   return (await unwrap(res)) as IncidentActionPlan;
@@ -234,7 +235,7 @@ export async function downloadReport(incidentId: string) {
 }
 
 export async function deleteReport(incidentId: string): Promise<void> {
-  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}`, {
+  const res = await apiFetch(`/v1/incidents/${incidentId}`, {
     method: 'DELETE',
     headers: await authHeaders(),
   });
@@ -242,7 +243,7 @@ export async function deleteReport(incidentId: string): Promise<void> {
 }
 
 export async function appealReport(incidentId: string, reason: string): Promise<void> {
-  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}/appeal`, {
+  const res = await apiFetch(`/v1/incidents/${incidentId}/appeal`, {
     method: 'POST',
     headers: await authHeaders(),
     body: JSON.stringify({ reason }),
@@ -254,7 +255,7 @@ export async function editReport(
   incidentId: string,
   patch: { description?: string; category?: string | null },
 ): Promise<void> {
-  const res = await fetch(`${API_URL}/v1/incidents/${incidentId}`, {
+  const res = await apiFetch(`/v1/incidents/${incidentId}`, {
     method: 'PATCH',
     headers: await authHeaders(),
     body: JSON.stringify(patch),
@@ -263,7 +264,7 @@ export async function editReport(
 }
 
 export async function tidyWriting(text: string): Promise<{ original: string; rewritten: string }> {
-  const res = await fetch(`${API_URL}/v1/assist/rewrite`, {
+  const res = await apiFetch('/v1/assist/rewrite', {
     method: 'POST',
     headers: await authHeaders(),
     body: JSON.stringify({ text }),

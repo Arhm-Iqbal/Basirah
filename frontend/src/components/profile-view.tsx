@@ -26,14 +26,18 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
   useEffect(() => {
     if (!open || loadedHours) return;
     let active = true;
-    void fetchMosqueEvents(mosque.id).then((data) => {
-      if (active) setEvents(data);
-    });
-    void fetchEnrichment(mosque.id).then((data) => {
-      if (!active) return;
-      setHours(data);
-      setLoadedHours(true);
-    });
+    void fetchMosqueEvents(mosque.id)
+      .catch(() => [])
+      .then((data) => {
+        if (active) setEvents(data);
+      });
+    void fetchEnrichment(mosque.id)
+      .catch(() => null)
+      .then((data) => {
+        if (!active) return;
+        setHours(data);
+        setLoadedHours(true);
+      });
     return () => {
       active = false;
     };

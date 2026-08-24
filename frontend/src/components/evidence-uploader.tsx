@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/button-link';
+import { apiFetch } from '@/lib/api-base';
 import { createClient } from '@/lib/supabase/client';
 import {
   ACCEPTED_EVIDENCE_TYPES,
@@ -13,7 +14,6 @@ import {
   prepareEvidenceFile,
 } from '@/lib/exif';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const ACCEPT = ACCEPTED_EVIDENCE_TYPES.join(',');
 
 type ItemStatus = 'preparing' | 'ready' | 'uploading' | 'attached' | 'error';
@@ -197,7 +197,7 @@ export function EvidenceUploader({ incidentId }: { incidentId: string }) {
         );
 
         try {
-          const res = await fetch(`${API_URL}/v1/media/upload-url`, {
+          const res = await apiFetch('/v1/media/upload-url', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({
