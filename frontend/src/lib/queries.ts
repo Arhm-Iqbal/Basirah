@@ -176,3 +176,20 @@ export async function fetchEnrichment(mosqueId: string): Promise<Enrichment | nu
   if (!res.ok) return null;
   return (await res.json()) as Enrichment;
 }
+
+export type MosqueEvent = {
+  id: string;
+  title: string;
+  description: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  url: string | null;
+  source: string;
+};
+
+export async function fetchMosqueEvents(mosqueId: string): Promise<MosqueEvent[]> {
+  const res = await fetch(`${API_URL}/v1/events/${mosqueId}`);
+  if (!res.ok) return [];
+  const body = (await res.json()) as { data: MosqueEvent[] };
+  return body.data;
+}

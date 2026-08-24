@@ -6,9 +6,11 @@ import { Button } from '@/components/button-link';
 import { MosqueFinder } from '@/components/mosque-finder';
 import {
   fetchEnrichment,
+  fetchMosqueEvents,
   fetchMyMosques,
   removeMosqueFromProfile,
   type Enrichment,
+  type MosqueEvent,
   type MyMosque,
   type NearbyMosque,
 } from '@/lib/queries';
@@ -17,10 +19,14 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
   const [open, setOpen] = useState(false);
   const [hours, setHours] = useState<Enrichment | null>(null);
   const [loadedHours, setLoadedHours] = useState(false);
+  const [events, setEvents] = useState<MosqueEvent[] | null>(null);
 
   useEffect(() => {
     if (!open || loadedHours) return;
     let active = true;
+    void fetchMosqueEvents(mosque.id).then((data) => {
+      if (active) setEvents(data);
+    });
     void fetchEnrichment(mosque.id).then((data) => {
       if (!active) return;
       setHours(data);
@@ -103,6 +109,42 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
                 No published hours for this location yet.
               </p>
             )
+          )}
+
+          <h4 className="mt-5 text-sm font-semibold tracking-[-0.01em] text-basirah-teal">
+            Upcoming events
+          </h4>
+          {events === null ? (
+            <p className="mt-1.5 text-base text-basirah-teal/70">Loading…</p>
+          ) : events.length === 0 ? (
+            <p className="mt-1.5 text-base text-basirah-teal/70">No upcoming events listed.</p>
+          ) : (
+            <ul className="mt-2 space-y-2.5">
+              {events.map((event) => (
+                <li key={event.id}>
+                  <p className="text-base font-medium text-basirah-teal">
+                    {event.url ? (
+                      <a
+                        href={event.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline-offset-4 transition-colors hover:text-basirah-rust hover:underline"
+                      >
+                        {event.title}
+                      </a>
+                    ) : (
+                      event.title
+                    )}
+                  </p>
+                  <p className="text-sm text-basirah-teal/60">
+                    {new Date(event.starts_at).toLocaleString('en-CA', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
+                  </p>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}
