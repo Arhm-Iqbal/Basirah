@@ -6,7 +6,8 @@
   --color-basirah-cyan: #d0fafb;
   --color-basirah-cream: #ece8d9;
   --font-sans: var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-creato-display), var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-creato-display), var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -19,7 +20,9 @@ body {
   color: var(--color-basirah-teal);
   overflow-x: hidden;
   min-height: 100dvh;
-  font-feature-settings: 'kern' 1, 'liga' 1;
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -67,7 +70,7 @@ input[type='datetime-local'] {
   input[type='password'],
   input[type='url'],
   input[type='datetime-local'] {
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
 }
 
@@ -84,14 +87,22 @@ input[type='datetime-local'] {
 .auth-girih-vignette {
   background:
     radial-gradient(ellipse at 50% 42%, rgb(208 250 251 / 10%), transparent 42%),
-    linear-gradient(180deg, rgb(4 51 52 / 35%) 0%, transparent 28%, transparent 68%, rgb(4 51 52 / 55%) 100%);
+    linear-gradient(
+      180deg,
+      rgb(4 51 52 / 35%) 0%,
+      transparent 28%,
+      transparent 68%,
+      rgb(4 51 52 / 55%) 100%
+    );
 }
 
 .auth-girih-shine {
   background:
     radial-gradient(ellipse 120% 90% at 30% 40%, rgb(236 232 217 / 18%), transparent 70%),
     radial-gradient(ellipse 110% 85% at 72% 58%, rgb(208 250 251 / 14%), transparent 68%);
-  background-size: 160% 160%, 170% 170%;
+  background-size:
+    160% 160%,
+    170% 170%;
   mix-blend-mode: soft-light;
   animation: auth-girih-shine 28s ease-in-out infinite;
   opacity: 0.42;
@@ -100,11 +111,15 @@ input[type='datetime-local'] {
 @keyframes auth-girih-shine {
   0%,
   100% {
-    background-position: 12% 38%, 88% 62%;
+    background-position:
+      12% 38%,
+      88% 62%;
     opacity: 0.28;
   }
   50% {
-    background-position: 40% 52%, 60% 42%;
+    background-position:
+      40% 52%,
+      60% 42%;
     opacity: 0.46;
   }
 }
@@ -117,23 +132,23 @@ input[type='datetime-local'] {
 }
 
 .user-pages-bg {
-  position: absolute;
+  position: fixed;
   inset-inline: 0;
   bottom: 0;
   z-index: 0;
-  height: min(52vh, 32rem);
+  height: min(56vh, 34rem);
   pointer-events: none;
   background-image: url('/user%20pages%20background.png');
   background-repeat: no-repeat;
   background-position: bottom center;
   background-size: 100% auto;
   mix-blend-mode: screen;
-  opacity: 0.38;
-  mask-image: linear-gradient(to top, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.4) 48%, transparent 100%);
+  opacity: 0.46;
+  mask-image: linear-gradient(to top, rgb(0 0 0 / 0.9) 0%, rgb(0 0 0 / 0.42) 52%, transparent 100%);
   -webkit-mask-image: linear-gradient(
     to top,
-    rgb(0 0 0 / 0.85) 0%,
-    rgb(0 0 0 / 0.4) 48%,
+    rgb(0 0 0 / 0.9) 0%,
+    rgb(0 0 0 / 0.42) 52%,
     transparent 100%
   );
 }
@@ -141,8 +156,8 @@ input[type='datetime-local'] {
 .map-drawer {
   transform: translateX(100%);
   transition-property: transform;
-  transition-duration: 320ms;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-duration: 420ms;
+  transition-timing-function: cubic-bezier(0.33, 0.08, 0.25, 1);
 }
 
 .map-drawer.is-open {
@@ -160,7 +175,6 @@ input[type='datetime-local'] {
 @media (prefers-reduced-motion: reduce) {
   .map-drawer {
     transition: none;
-    transform: none;
   }
 }
 
@@ -211,4 +225,25 @@ input[type='datetime-local'] {
     width: min(17vw, 17rem);
     transform: translateX(4%) scaleX(-1);
   }
+}
+
+/* One global gate rather than a guard on every transition: anything spatial is neutered
+   and colour changes are shortened, without each component having to remember. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Baseline focus ring. Components may override with a tighter one; nothing interactive
+   should ever be left without a visible focus state. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-basirah-teal);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
 }

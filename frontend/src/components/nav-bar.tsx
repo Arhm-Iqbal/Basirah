@@ -6,7 +6,7 @@ import { MARKETING_NAV_LINKS } from '@/lib/nav-links';
 
 export function NavBar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-basirah-teal/10 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-basirah-teal/15 bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         <Link href="/" aria-label="Basirah home">
           <Logo className="h-10 w-auto sm:h-12" />

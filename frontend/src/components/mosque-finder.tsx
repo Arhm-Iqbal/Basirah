@@ -72,7 +72,7 @@ export function MosqueFinder({
         <h3 className="font-display text-base font-medium tracking-[-0.015em] text-basirah-teal">
           Add a mosque
         </h3>
-        <p className="mt-1 mb-6 text-sm text-basirah-teal/55">
+        <p className="mt-1 mb-5 text-base text-basirah-teal">
           Tell us what you know. Only the name is required.
         </p>
         <AddMosqueForm
@@ -103,22 +103,22 @@ export function MosqueFinder({
   return (
     <section>
       {promoteAdd && (
-        <div className="mb-6 rounded-2xl border border-basirah-teal/12 bg-white/70 p-5 backdrop-blur-sm">
-          <p className="font-display text-[0.9375rem] font-medium tracking-[-0.01em] text-basirah-teal">
+        <div className="mb-5 rounded-lg border border-basirah-teal/20 bg-white p-4">
+          <p className="font-display text-base font-semibold tracking-[-0.01em] text-basirah-teal">
             Can&apos;t find your mosque?
           </p>
-          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/55">
+          <p className="mt-1 text-base leading-relaxed text-basirah-teal">
             Smaller prayer spaces are often missing from public map data. Add yours and it is on
             your map straight away.
           </p>
-          <Button size="sm" className="mt-3.5" onClick={() => setAdding(true)}>
+          <Button size="sm" className="mt-3" onClick={() => setAdding(true)}>
             Add a mosque
           </Button>
         </div>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-basirah-teal/55">
+        <p className="text-base text-basirah-teal">
           {isLoading ? 'Searching…' : `${results.length} found within ${distance(radius)}`}
         </p>
         <RadiusChips
@@ -133,31 +133,31 @@ export function MosqueFinder({
         />
       </div>
 
-      {error && <p className="mt-4 text-sm text-basirah-rust">{error}</p>}
+      {error && <p className="mt-3 text-base text-basirah-rust">{error}</p>}
 
       {!isLoading && results.length === 0 && !error && (
-        <p className="mt-8 text-sm text-basirah-teal/50">
+        <p className="mt-5 text-base text-basirah-teal">
           Nothing within {distance(radius)}. Try a wider radius.
         </p>
       )}
 
-      <ul className="mt-4 divide-y divide-basirah-teal/8">
+      <ul className="mt-3 divide-y divide-basirah-teal/15">
         {results.map((mosque) => {
           const added = addedIds.has(mosque.id);
           return (
-            <li key={mosque.id} className="flex items-center gap-4 py-3.5">
+            <li key={mosque.id} className="flex items-center gap-3 py-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-[0.9375rem] font-medium tracking-[-0.01em] text-basirah-teal">
+                <p className="truncate font-display text-base font-semibold tracking-[-0.01em] text-basirah-teal">
                   {mosque.name}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-basirah-teal/50">
+                <p className="mt-0.5 truncate text-sm text-basirah-teal/75">
                   {distance(mosque.distance_m)}
                   {mosque.address ? ` · ${mosque.address}` : ''}
                 </p>
               </div>
 
               {added ? (
-                <span className="shrink-0 text-xs font-medium text-basirah-teal/40">Added</span>
+                <span className="shrink-0 text-sm font-semibold text-basirah-teal">Added</span>
               ) : (
                 <Button
                   size="sm"
@@ -175,9 +175,9 @@ export function MosqueFinder({
       </ul>
 
       {!promoteAdd && (
-        <div className="mt-6 border-t border-basirah-teal/10 pt-5">
-          <p className="text-sm text-basirah-teal/60">Don&apos;t see your mosque?</p>
-          <Button size="sm" variant="ghost" className="mt-2.5" onClick={() => setAdding(true)}>
+        <div className="mt-5 border-t border-basirah-teal/15 pt-4">
+          <p className="text-base text-basirah-teal">Don&apos;t see your mosque?</p>
+          <Button size="sm" variant="ghost" className="mt-2" onClick={() => setAdding(true)}>
             Add it
           </Button>
         </div>
