@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/button-link';
+import { EvidenceUploader } from '@/components/evidence-uploader';
 import { createClient } from '@/lib/supabase/client';
 import {
   EMPTY_REPORT,
@@ -189,6 +190,11 @@ export function ReportWizard() {
           community-wide alert until a person has verified it.
         </p>
         <p className="mt-1 text-xs text-basirah-teal/40">Reference {createdId}</p>
+
+        {/* Evidence needs the incident id, so it attaches here rather than as a form step. */}
+        <div className="mt-8 border-t border-basirah-teal/10 pt-6">
+          <EvidenceUploader incidentId={createdId} />
+        </div>
 
         <div className="mt-8 border-t border-basirah-teal/10 pt-6">
           <h3 className="font-display text-lg font-medium tracking-[-0.015em] text-basirah-teal">
