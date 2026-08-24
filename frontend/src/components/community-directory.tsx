@@ -77,43 +77,32 @@ function useSubtypeFilter<T>(items: T[], subType: string, typesOf: (item: T) => 
   }, [items, subType]);
 }
 
-function Chips({
+function FilterSelect({
+  label,
   options,
   value,
   onChange,
-  label,
 }: {
+  label: string;
   options: { label: string; count: number }[];
   value: string;
   onChange: (next: string) => void;
-  label: string;
 }) {
   return (
-    <div role="group" aria-label={label} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
-        {options.map((option) => {
-          const active = option.label === value;
-          return (
-            <button
-              key={option.label}
-              type="button"
-              aria-pressed={active}
-              onClick={() => onChange(option.label)}
-              className={`min-h-11 cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none ${
-                active
-                  ? 'border-basirah-teal bg-basirah-teal text-white'
-                  : 'border-basirah-teal/25 bg-white text-basirah-teal hover:border-basirah-teal/50'
-              }`}
-            >
-              {option.label}
-              <span className={active ? 'ms-1.5 text-white/70' : 'ms-1.5 text-basirah-teal/55'}>
-                {option.count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+    <label className="block sm:max-w-xs">
+      <span className="text-sm font-semibold text-basirah-teal">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1.5 w-full cursor-pointer rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] motion-reduce:transition-none"
+      >
+        {options.map((option) => (
+          <option key={option.label} value={option.label}>
+            {option.label} ({option.count})
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -479,9 +468,9 @@ export function CommunityDirectory() {
     [normalisedQuery],
   );
 
-  // Counts come from the whole set rather than the current filter, so a chip always says how
-  // much sits behind it instead of collapsing to zero once another chip is picked.
-  const businessChips = useMemo(() => {
+  // Counts come from the whole set rather than the current filter, so an option always says how
+  // much sits behind it instead of collapsing to zero once another one is picked.
+  const businessTypes = useMemo(() => {
     const counts = new Map<string, number>();
     for (const item of BUSINESSES) {
       const type = businessType(item.category);
@@ -495,23 +484,23 @@ export function CommunityDirectory() {
     ];
   }, []);
 
-  const professionalChips = (items: DirectoryProfessional[], facets: Facet[]) => [
+  const professionalOptions = (items: DirectoryProfessional[], facets: Facet[]) => [
     { label: ALL, count: items.length },
     ...facets
       .map((facet) => ({
         label: facet.label,
         count: items.filter((item) => facetsFor(item, facets).includes(facet.label)).length,
       }))
-      .filter((chip) => chip.count > 0),
+      .filter((option) => option.count > 0),
   ];
 
-  const healthChips = useMemo(
-    () => professionalChips(HEALTH_PROFESSIONALS, HEALTH_FACETS),
+  const healthDisciplines = useMemo(
+    () => professionalOptions(HEALTH_PROFESSIONALS, HEALTH_FACETS),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
-  const lawyerChips = useMemo(
-    () => professionalChips(LAWYERS, LAW_FACETS),
+  const lawyerAreas = useMemo(
+    () => professionalOptions(LAWYERS, LAW_FACETS),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -590,13 +579,13 @@ export function CommunityDirectory() {
             <div className="space-y-4">
               <SectionIntro
                 title="Businesses"
-                description="Choose a business type below, or browse every listing."
+                description="Pick a business type, or browse every listing."
               />
-              <Chips
-                options={businessChips}
+              <FilterSelect
+                label="Business type"
+                options={businessTypes}
                 value={subType}
                 onChange={setSubType}
-                label="Filter businesses by type"
               />
               <Results notice={BUSINESS_NOTICE} total={businesses.length}>
                 {businesses.map((business) => (
@@ -613,13 +602,13 @@ export function CommunityDirectory() {
             <div className="space-y-4">
               <SectionIntro
                 title="Health professionals"
-                description="Choose a discipline below, or browse every health listing."
+                description="Pick a discipline, or browse every health listing."
               />
-              <Chips
-                options={healthChips}
+              <FilterSelect
+                label="Discipline"
+                options={healthDisciplines}
                 value={subType}
                 onChange={setSubType}
-                label="Filter health professionals by discipline"
               />
               <Results notice={PROFESSIONAL_NOTICE} total={health.length}>
                 {health.map((person) => (
@@ -633,13 +622,13 @@ export function CommunityDirectory() {
             <div className="space-y-4">
               <SectionIntro
                 title="Lawyers"
-                description="Choose a practice area below, or browse every legal listing."
+                description="Pick a practice area, or browse every legal listing."
               />
-              <Chips
-                options={lawyerChips}
+              <FilterSelect
+                label="Practice area"
+                options={lawyerAreas}
                 value={subType}
                 onChange={setSubType}
-                label="Filter lawyers by practice area"
               />
               <Results notice={PROFESSIONAL_NOTICE} total={lawyers.length}>
                 {lawyers.map((person) => (
