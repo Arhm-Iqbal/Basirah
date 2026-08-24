@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Map, { Marker } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 import { Button } from '@/components/button-link';
 import { createMosque, geocodePlace } from '@/lib/queries';
@@ -151,9 +153,28 @@ export function AddMosqueForm({
         <p className="text-sm font-medium text-basirah-teal">Where is it on the map?</p>
         <p className="mt-1 text-xs leading-relaxed text-basirah-teal/55">
           {pinned
-            ? `Pinned to ${pinned}.`
-            : 'Not pinned yet — it will save, but will not appear on the map.'}
+            ? `Pinned to ${pinned}. Tap the map to move it.`
+            : 'Tap the map to drop a pin, or look it up from the address below.'}
         </p>
+
+        {coords && (
+          <div className="mt-3 h-52 overflow-hidden rounded-lg border border-basirah-teal/10">
+            <Map
+              initialViewState={{ longitude: coords.lng, latitude: coords.lat, zoom: 14 }}
+              mapStyle="https://tiles.openfreemap.org/styles/liberty"
+              style={{ width: '100%', height: '100%' }}
+              onClick={(event) => {
+                setCoords({ lat: event.lngLat.lat, lng: event.lngLat.lng });
+                setPinned('the spot you chose');
+              }}
+            >
+              <Marker longitude={coords.lng} latitude={coords.lat} anchor="bottom">
+                <img src="/icons/masjid-pin.png" alt="" width={23} height={29} />
+              </Marker>
+            </Map>
+          </div>
+        )}
+
         <Button
           type="button"
           size="sm"

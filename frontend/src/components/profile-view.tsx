@@ -239,7 +239,12 @@ export function ProfileView({ email }: { email: string | null }) {
             Near you
           </h2>
           <div className="mt-4">
-            <MosqueFinder addedIds={addedIds} onAdded={onAdded} onCreated={reload} />
+            <MosqueFinder
+              addedIds={addedIds}
+              onAdded={onAdded}
+              onCreated={reload}
+              promoteAdd={mosques.length === 0}
+            />
           </div>
         </section>
       )}

@@ -17,10 +17,12 @@ export function MosqueFinder({
   addedIds,
   onAdded,
   onCreated,
+  promoteAdd = false,
 }: {
   addedIds: Set<string>;
   onAdded: (mosque: NearbyMosque) => void;
   onCreated: () => void;
+  promoteAdd?: boolean;
 }) {
   const { coords, status, locate, setManual } = useGeolocation();
   const {
@@ -100,6 +102,21 @@ export function MosqueFinder({
 
   return (
     <section>
+      {promoteAdd && (
+        <div className="mb-6 rounded-2xl border border-basirah-teal/12 bg-white/70 p-5 backdrop-blur-sm">
+          <p className="font-display text-[0.9375rem] font-medium tracking-[-0.01em] text-basirah-teal">
+            Can&apos;t find your mosque?
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/55">
+            Smaller prayer spaces are often missing from public map data. Add yours and it is on
+            your map straight away.
+          </p>
+          <Button size="sm" className="mt-3.5" onClick={() => setAdding(true)}>
+            Add a mosque
+          </Button>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-basirah-teal/55">
           {isLoading ? 'Searching…' : `${results.length} found within ${distance(radius)}`}
@@ -157,12 +174,14 @@ export function MosqueFinder({
         })}
       </ul>
 
-      <div className="mt-6 border-t border-basirah-teal/10 pt-5">
-        <p className="text-sm text-basirah-teal/60">Don&apos;t see your mosque?</p>
-        <Button size="sm" variant="ghost" className="mt-2.5" onClick={() => setAdding(true)}>
-          Add it
-        </Button>
-      </div>
+      {!promoteAdd && (
+        <div className="mt-6 border-t border-basirah-teal/10 pt-5">
+          <p className="text-sm text-basirah-teal/60">Don&apos;t see your mosque?</p>
+          <Button size="sm" variant="ghost" className="mt-2.5" onClick={() => setAdding(true)}>
+            Add it
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
