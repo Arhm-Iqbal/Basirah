@@ -167,10 +167,148 @@ function Long({
   );
 }
 
+// Most of what this form asks has a small, known set of answers. Free text there costs the
+// reporter effort and makes the data unusable for the aggregate reporting the incidents
+// are collected for, so anything answerable from a list is answered from a list.
+function Choice({
+  legend,
+  hintText,
+  value,
+  onChange,
+  options,
+}: {
+  legend: string;
+  hintText?: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <fieldset>
+      <legend className={labelClass}>{legend}</legend>
+      {hintText && <p className={hintClass}>{hintText}</p>}
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {options.map((o) => {
+          const active = value === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onChange(active ? '' : o.value)}
+              className={`min-h-11 cursor-pointer rounded-full border px-4 text-base font-medium transition-colors duration-150 motion-reduce:transition-none ${
+                active
+                  ? 'border-basirah-teal bg-basirah-teal text-white'
+                  : 'border-basirah-teal/30 text-basirah-teal hover:border-basirah-teal/60 hover:bg-basirah-teal/5'
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+// Stored as a comma-joined string so it rides in details alongside the other answers
+// without needing a shape change.
+function MultiChoice({
+  legend,
+  hintText,
+  value,
+  onChange,
+  options,
+}: {
+  legend: string;
+  hintText?: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const selected = value ? value.split(',').map((v) => v.trim()) : [];
+  const toggle = (v: string) => {
+    const next = selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v];
+    onChange(next.join(', '));
+  };
+  return (
+    <fieldset>
+      <legend className={labelClass}>{legend}</legend>
+      {hintText && <p className={hintClass}>{hintText}</p>}
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {options.map((o) => {
+          const active = selected.includes(o.value);
+          return (
+            <button
+              key={o.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => toggle(o.value)}
+              className={`min-h-11 cursor-pointer rounded-full border px-4 text-base font-medium transition-colors duration-150 motion-reduce:transition-none ${
+                active
+                  ? 'border-basirah-teal bg-basirah-teal text-white'
+                  : 'border-basirah-teal/30 text-basirah-teal hover:border-basirah-teal/60 hover:bg-basirah-teal/5'
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+const YES_NO = [
+  { value: 'yes', label: 'Yes' },
+  { value: 'no', label: 'No' },
+  { value: 'unsure', label: 'Not sure' },
+];
+
+const PLACE_KINDS = [
+  { value: 'mosque', label: 'Mosque' },
+  { value: 'street', label: 'Street or public space' },
+  { value: 'school', label: 'School or campus' },
+  { value: 'workplace', label: 'Workplace' },
+  { value: 'shop', label: 'Shop or business' },
+  { value: 'transit', label: 'Transit' },
+  { value: 'home', label: 'Home' },
+  { value: 'other', label: 'Somewhere else' },
+];
+
+const REPORTING_FOR = [
+  { value: 'myself', label: 'Myself' },
+  { value: 'someone_else', label: 'Someone else' },
+  { value: 'organisation', label: 'An organisation' },
+  { value: 'witness', label: 'I witnessed it' },
+];
+
+const SUPPORT = [
+  { value: 'police', label: 'Help contacting police' },
+  { value: 'legal', label: 'Legal advice' },
+  { value: 'counselling', label: 'Counselling' },
+  { value: 'mosque', label: 'Support from my mosque' },
+  { value: 'security', label: 'Security advice' },
+  { value: 'none', label: 'Nothing right now' },
+];
+
+const PLATFORMS = [
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'x', label: 'X / Twitter' },
+  { value: 'tiktok', label: 'TikTok' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'email', label: 'Email' },
+  { value: 'website', label: 'A website or forum' },
+  { value: 'other', label: 'Somewhere else' },
+];
+
 export function ReportWizard() {
   const [report, setReport] = useState<IncidentReport>(EMPTY_REPORT);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [claimCode, setClaimCode] = useState<string | null>(null);
   const [errors, setErrors] = useState<ReportErrors>({});
   const [index, setIndex] = useState(0);
   const [started, setStarted] = useState(false);
@@ -216,12 +354,17 @@ export function ReportWizard() {
     try {
       const { data } = await createClient().auth.getSession();
       const token = data.session?.access_token;
-      if (!token) throw new Error('You are signed out. Sign in and try again.');
 
-      const res = await fetch(`${API_URL}/v1/incidents`, {
+      const payload: Record<string, unknown> = { ...toApiPayload(report) };
+      if (!token) payload.turnstile_token = 'unconfigured';
+
+      const res = await fetch(`${API_URL}${token ? '/v1/incidents' : '/v1/tips'}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(toApiPayload(report)),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
       });
       const body = await res.json().catch(() => null);
       if (!res.ok) {
@@ -231,10 +374,11 @@ export function ReportWizard() {
         );
       }
 
-      const id = (body as { id: string }).id;
+      const created = body as { id: string; claim_code?: string };
       saveContactLocally(report);
-      setCreatedId(id);
-      void loadGuidance(id, token);
+      setClaimCode(created.claim_code ?? null);
+      setCreatedId(created.id);
+      if (token) void loadGuidance(created.id, token);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Your report could not be submitted.');
     } finally {
@@ -269,35 +413,48 @@ export function ReportWizard() {
         </p>
         <p className="mt-1 text-sm text-basirah-teal/70">Reference {createdId}</p>
 
-        <div className="mt-5 rounded-lg border border-basirah-teal/20 bg-white p-4">
-          <p className="text-sm font-semibold text-basirah-teal">A copy of this report</p>
-          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">
-            A PDF recording everything you submitted is saved to your profile. Your name, email and
-            phone are not in it and were never sent to us — they stay on this device.
-          </p>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="mt-3"
-            disabled={downloading}
-            onClick={async () => {
-              setDownloading(true);
-              setDownloadError(null);
-              try {
-                await downloadReport(createdId);
-              } catch (err) {
-                setDownloadError(
-                  err instanceof Error ? err.message : 'Could not download the PDF.',
-                );
-              } finally {
-                setDownloading(false);
-              }
-            }}
-          >
-            {downloading ? 'Preparing…' : 'Download PDF'}
-          </Button>
-          {downloadError && <p className="mt-2 text-sm text-basirah-rust">{downloadError}</p>}
-        </div>
+        {claimCode && (
+          <div className="mt-5 rounded-lg border border-basirah-rust/30 bg-basirah-rust/5 p-4">
+            <p className="text-sm font-semibold text-basirah-rust">Save this code now</p>
+            <p className="mt-1 text-sm leading-relaxed text-basirah-teal/75">
+              It is the only way to check on this report. We stored no account and no contact
+              details, so we cannot look it up for you without it.
+            </p>
+            <p className="mt-3 font-mono text-xl tracking-widest text-basirah-teal">{claimCode}</p>
+          </div>
+        )}
+
+        {!claimCode && (
+          <div className="mt-5 rounded-lg border border-basirah-teal/20 bg-white p-4">
+            <p className="text-sm font-semibold text-basirah-teal">A copy of this report</p>
+            <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">
+              A PDF recording everything you submitted is saved to your profile. Your name, email
+              and phone are not in it and were never sent to us — they stay on this device.
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="mt-3"
+              disabled={downloading}
+              onClick={async () => {
+                setDownloading(true);
+                setDownloadError(null);
+                try {
+                  await downloadReport(createdId);
+                } catch (err) {
+                  setDownloadError(
+                    err instanceof Error ? err.message : 'Could not download the PDF.',
+                  );
+                } finally {
+                  setDownloading(false);
+                }
+              }}
+            >
+              {downloading ? 'Preparing…' : 'Download PDF'}
+            </Button>
+            {downloadError && <p className="mt-2 text-sm text-basirah-rust">{downloadError}</p>}
+          </div>
+        )}
 
         {/* Evidence needs the incident id, so it attaches here rather than as a form step. */}
         <div className="mt-6 border-t border-basirah-teal/15 pt-5">
@@ -428,15 +585,15 @@ export function ReportWizard() {
       <div className="mt-6 space-y-5">
         {step === 'online_details' && (
           <>
-            <Text
-              id="online_platform"
-              labelText="Which site or app was this on?"
-              hintText="Facebook, Instagram, email, a group chat — whatever you know."
-              placeholder="Instagram, a Facebook group, email…"
+            <Choice
+              legend="Where online did this happen?"
               value={report.online_platform}
               onChange={(v) => set('online_platform', v)}
-              error={errors.online_platform}
+              options={PLATFORMS}
             />
+            {errors.online_platform && (
+              <p className="text-sm text-basirah-rust">{errors.online_platform}</p>
+            )}
             <Text
               id="online_url"
               labelText="Link to the post or message (optional)"
@@ -454,15 +611,15 @@ export function ReportWizard() {
 
         {step === 'in_person_location' && (
           <>
-            <Text
-              id="location_kind"
-              labelText="What kind of place was it?"
-              hintText="A mosque, a street, a school, a workplace, a shop. A neighbourhood is enough."
-              placeholder="Mosque parking lot, street outside…"
+            <Choice
+              legend="What kind of place was it?"
               value={report.location_kind}
               onChange={(v) => set('location_kind', v)}
-              error={errors.location_kind}
+              options={PLACE_KINDS}
             />
+            {errors.location_kind && (
+              <p className="text-sm text-basirah-rust">{errors.location_kind}</p>
+            )}
             <Text
               id="location_name"
               labelText="Name of the place (optional)"
@@ -511,29 +668,29 @@ export function ReportWizard() {
                 onChange={(v) => set('occurred_at', v)}
               />
             </div>
-            <Text
-              id="still_happening"
-              labelText="Is this still happening? (optional)"
+            <Choice
+              legend="Is this still happening?"
               value={report.still_happening}
               onChange={(v) => set('still_happening', v)}
+              options={YES_NO}
             />
-            <Text
-              id="witnesses"
-              labelText="Were there witnesses? (optional)"
+            <Choice
+              legend="Were there witnesses?"
               value={report.witnesses}
               onChange={(v) => set('witnesses', v)}
+              options={YES_NO}
             />
-            <Text
-              id="threats"
-              labelText="Were any threats made? (optional)"
+            <Choice
+              legend="Were any threats made?"
               value={report.threats}
               onChange={(v) => set('threats', v)}
+              options={YES_NO}
             />
-            <Text
-              id="weapon"
-              labelText="Was a weapon involved? (optional)"
+            <Choice
+              legend="Was a weapon involved?"
               value={report.weapon}
               onChange={(v) => set('weapon', v)}
+              options={YES_NO}
             />
           </>
         )}
@@ -588,23 +745,24 @@ export function ReportWizard() {
               value={report.reporter_phone}
               onChange={(v) => set('reporter_phone', v)}
             />
-            <Text
-              id="reporting_for"
-              labelText="Are you reporting for yourself or someone else? (optional)"
+            <Choice
+              legend="Who are you reporting for?"
               value={report.reporting_for}
               onChange={(v) => set('reporting_for', v)}
+              options={REPORTING_FOR}
             />
-            <Text
-              id="reported_elsewhere"
-              labelText="Have you reported this anywhere else? (optional)"
+            <Choice
+              legend="Have you reported this anywhere else?"
               value={report.reported_elsewhere}
               onChange={(v) => set('reported_elsewhere', v)}
+              options={YES_NO}
             />
-            <Text
-              id="support_needed"
-              labelText="What support would help right now? (optional)"
+            <MultiChoice
+              legend="What support would help right now?"
+              hintText="Choose as many as apply."
               value={report.support_needed}
               onChange={(v) => set('support_needed', v)}
+              options={SUPPORT}
             />
           </>
         )}

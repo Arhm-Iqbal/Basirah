@@ -1,21 +1,26 @@
 import { MarketingPage } from '@/components/marketing-page';
-import { ReportForm } from '@/components/report-form';
+import { ReportWizard } from '@/components/report-wizard';
 
-export const metadata = { title: 'Report an Incident · Basirah' };
+export const metadata = {
+  title: 'Report an Incident · Basirah',
+  description:
+    'Document Islamophobia, hate, harassment, threats, or another safety concern. You can report without an account.',
+};
 
+// Same component as /app/report. A signed-in visitor files an incident against their
+// profile; a guest files anonymously and gets a claim code. Two forms would have drifted.
 export default function ReportPage() {
   return (
-    <MarketingPage className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="font-display text-[1.75rem] font-semibold tracking-tight text-basirah-teal sm:text-[2rem]">
+    <MarketingPage className="mx-auto w-full max-w-2xl px-5 py-10 sm:px-6 sm:py-14">
+      <h1 className="font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-basirah-teal sm:text-3xl">
         Report an incident
       </h1>
-      <p className="mt-2 text-base text-basirah-teal">
-        Your report goes to your community&apos;s verification team first. Skip anything you do not
-        know except what happened.
+      <p className="mt-2 max-w-lg text-base leading-relaxed text-basirah-teal/75">
+        You will be asked one thing at a time, and most questions are a tap. Only a description is
+        required. You can report without an account.
       </p>
-
-      <div className="mt-5">
-        <ReportForm />
+      <div className="mt-10">
+        <ReportWizard />
       </div>
     </MarketingPage>
   );
