@@ -227,9 +227,14 @@ function SimpleChoices({ intro, options }: { intro: string; options: SimpleChoic
             key={label}
             type="button"
             onClick={onSelect}
-            className="group min-h-24 cursor-pointer rounded-[2rem] border-2 border-basirah-teal/20 bg-white px-8 py-6 text-center font-display text-xl font-semibold text-basirah-teal shadow-[0_14px_30px_-22px_rgb(4_51_52_/_70%)] transition-[border-color,background-color,color,box-shadow,transform] duration-150 hover:-translate-y-1 hover:border-basirah-teal hover:bg-basirah-teal hover:text-white hover:shadow-[0_20px_36px_-20px_rgb(4_51_52_/_65%)] active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-basirah-teal motion-reduce:transform-none motion-reduce:transition-none sm:min-h-28 sm:px-10 sm:py-7 sm:text-2xl"
+            className="group min-h-28 cursor-pointer rounded-[2rem] border-2 border-basirah-teal/20 bg-white px-5 py-7 text-center text-basirah-teal shadow-[0_14px_30px_-22px_rgb(4_51_52_/_70%)] transition-[border-color,background-color,color,box-shadow,transform] duration-150 hover:-translate-y-1 hover:border-basirah-teal hover:bg-basirah-teal hover:text-white hover:shadow-[0_20px_36px_-20px_rgb(4_51_52_/_65%)] active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-basirah-teal motion-reduce:transform-none motion-reduce:transition-none sm:min-h-32 sm:px-6 sm:py-8"
           >
-            <span className="block">{label}</span>
+            {/* Size lives on the span, not the button: globals.css sets
+                `button { font-size: inherit }` outside any @layer, and unlayered CSS beats
+                Tailwind's layered utilities, so a text-* class on a button is inert. */}
+            <span className="block font-display text-3xl font-semibold tracking-[-0.02em] break-words sm:text-4xl">
+              {label}
+            </span>
             <span
               aria-hidden
               className="mx-auto mt-3 block h-1 w-10 rounded-full bg-basirah-rust/70 transition-[background-color,width] duration-150 group-hover:w-16 group-hover:bg-white/80 motion-reduce:transition-none"
