@@ -2,46 +2,47 @@ import Link from 'next/link';
 
 import { Logo } from '@/components/logo';
 import { MobileSidebar } from '@/components/mobile-sidebar';
-
-const NAV_LINKS = [
-  { href: '/about', label: 'About Us' },
-  { href: '/report', label: 'Report' },
-  { href: '/resources', label: 'Resources' },
-  { href: '/contact', label: 'Contact' },
-];
+import { NAV_LINKS } from '@/components/nav-links';
 
 export function NavBar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-basirah-teal/10 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" aria-label="Basirah home">
-          <Logo className="h-8 w-auto" />
+    <header className="sticky top-0 z-50 border-b border-basirah-teal/10 bg-white/85 backdrop-blur-md">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-6 focus:z-10 focus:rounded-lg focus:bg-basirah-teal focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Skip to content
+      </a>
+
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
+        <Link href="/" aria-label="Basirah home" className="shrink-0">
+          <Logo className="h-9 w-auto" />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav aria-label="Main" className="hidden items-center gap-9 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-basirah-teal/80 transition-colors hover:text-basirah-rust"
+              className="text-sm font-medium text-basirah-teal/75 transition-colors hover:text-basirah-teal"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-6 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
           <Link
             href="/login"
-            className="text-sm font-medium text-basirah-teal/80 transition-colors hover:text-basirah-rust"
+            className="rounded-xl px-4 py-2.5 text-sm font-medium text-basirah-teal/75 transition-colors hover:text-basirah-teal"
           >
-            Log in
+            Sign In
           </Link>
           <Link
-            href="/#get-started"
-            className="rounded-full bg-basirah-rust px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-basirah-rust/90"
+            href="/signup"
+            className="rounded-xl bg-basirah-teal px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
-            Get Started
+            Sign Up
           </Link>
         </div>
 
