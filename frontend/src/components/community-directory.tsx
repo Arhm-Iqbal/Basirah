@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Briefcase, Gavel, Search, Stethoscope, Store, X } from 'lucide-react';
+import { ArrowLeft, Gavel, Search, Stethoscope, X, type LucideIcon } from 'lucide-react';
 import { useId, useMemo, useRef, useState } from 'react';
 
 import {
@@ -206,12 +206,36 @@ function ProfessionalCard({ person }: { person: DirectoryProfessional }) {
 }
 
 type Choice = {
-  icon: typeof Store;
+  icon: LucideIcon;
   label: string;
   description: string;
   count: number;
   onSelect: () => void;
 };
+
+type SimpleChoice = Pick<Choice, 'label' | 'onSelect'>;
+
+function SimpleChoices({ intro, options }: { intro: string; options: SimpleChoice[] }) {
+  return (
+    <div>
+      <h2 className="text-center font-display text-xl font-semibold tracking-tight text-basirah-teal sm:text-2xl">
+        {intro}
+      </h2>
+      <div className="mx-auto mt-6 grid max-w-xl gap-3 sm:grid-cols-2">
+        {options.map(({ label, onSelect }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={onSelect}
+            className="min-h-14 cursor-pointer rounded-full border-2 border-basirah-teal/20 bg-white px-8 py-3 text-center text-lg font-semibold text-basirah-teal transition-[border-color,background-color,color] duration-150 hover:border-basirah-teal hover:bg-basirah-teal hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Choices({ intro, options }: { intro: string; options: Choice[] }) {
   return (
@@ -505,21 +529,15 @@ export function CommunityDirectory() {
       ) : (
         <div className="mt-6">
           {view === 'root' ? (
-            <Choices
+            <SimpleChoices
               intro="What are you looking for?"
               options={[
                 {
-                  icon: Store,
                   label: 'Businesses',
-                  description: 'Muslim-owned and halal businesses across Edmonton.',
-                  count: BUSINESSES.length,
                   onSelect: () => go('businesses'),
                 },
                 {
-                  icon: Briefcase,
                   label: 'Professionals',
-                  description: 'Health professionals and lawyers serving the community.',
-                  count: HEALTH_PROFESSIONALS.length + LAWYERS.length,
                   onSelect: () => go('professionals'),
                 },
               ]}
