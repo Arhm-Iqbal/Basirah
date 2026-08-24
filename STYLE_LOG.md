@@ -24,6 +24,15 @@ What: Replaced the frosted glass login/signup panel with a solid cream card (`ma
 Why: The glass overlay washed out the type, the sheen read as a smear, and the
 `max-w-sm` card left unused margin on phones.
 
+## 2026-08-23 — Login lanterns hang straight; gloss is a wash
+
+What: Lanterns hang vertically from the top edge (`top: -2px`, no rotate). The right
+cluster is only flipped and smaller. Strings were drawn flush to the PNG top and the
+asset is a full-res `img` so the lines survive. The girih gloss is now a wide
+soft-light wash (slow radial drift) instead of a tight screen stripe.
+Why: Rotation lifted the cords off the ceiling. The old shine read as a white bar
+sweeping the page. Flip without tilt keeps the two sides from looking copy-pasted.
+
 ## 2026-08-23 — Home flower field, larger type
 
 What: Removed the Three.js rosette. The home screen now uses the cropped

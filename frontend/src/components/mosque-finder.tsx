@@ -4,14 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/button-link';
 import { LocationGate } from '@/components/location-gate';
+import { RadiusChips, useSearchRadius } from '@/components/radius-chips';
 import { addMosqueToProfile, fetchNearbyMosques, type NearbyMosque } from '@/lib/queries';
 import { useGeolocation } from '@/lib/use-geolocation';
-
-const RADII = [
-  { m: 5_000, label: '5 km' },
-  { m: 15_000, label: '15 km' },
-  { m: 50_000, label: '50 km' },
-];
 
 function distance(metres: number) {
   return metres < 1000 ? `${Math.round(metres)} m` : `${(metres / 1000).toFixed(1)} km`;
@@ -25,7 +20,16 @@ export function MosqueFinder({
   onAdded: (mosque: NearbyMosque) => void;
 }) {
   const { coords, status, locate, setManual } = useGeolocation();
-  const [radius, setRadius] = useState(15_000);
+  const {
+    radius,
+    customMode,
+    customKm,
+    setCustomKm,
+    customInputRef,
+    commitCustom,
+    choosePreset,
+    chooseCustom,
+  } = useSearchRadius(15_000);
   const [results, setResults] = useState<NearbyMosque[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,23 +79,16 @@ export function MosqueFinder({
         <p className="text-sm text-basirah-teal/55">
           {isLoading ? 'Searching…' : `${results.length} found within ${distance(radius)}`}
         </p>
-        <div className="flex gap-1" role="group" aria-label="Search radius">
-          {RADII.map((r) => (
-            <button
-              key={r.m}
-              type="button"
-              onClick={() => setRadius(r.m)}
-              aria-pressed={radius === r.m}
-              className={`min-h-9 cursor-pointer rounded-full px-3.5 text-[0.8125rem] font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
-                radius === r.m
-                  ? 'bg-basirah-teal text-white'
-                  : 'text-basirah-teal/60 hover:bg-basirah-teal/5'
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <RadiusChips
+          radius={radius}
+          customMode={customMode}
+          customKm={customKm}
+          customInputRef={customInputRef}
+          onPreset={choosePreset}
+          onChooseCustom={chooseCustom}
+          onCustomKmChange={setCustomKm}
+          onCustomCommit={commitCustom}
+        />
       </div>
 
       {error && <p className="mt-4 text-sm text-basirah-rust">{error}</p>}

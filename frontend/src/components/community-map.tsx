@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Map, { Marker, Popup, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+import { LocationGate } from '@/components/location-gate';
+import { RadiusChips, useSearchRadius } from '@/components/radius-chips';
 import {
   fetchMapIncidents,
   fetchNearbyMosques,
@@ -11,7 +13,6 @@ import {
   type NearbyMosque,
 } from '@/lib/queries';
 import { useGeolocation } from '@/lib/use-geolocation';
-import { LocationGate } from '@/components/location-gate';
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 
@@ -33,6 +34,16 @@ function formatWhen(iso: string) {
 export function CommunityMap() {
   const { coords, status, locate, setManual } = useGeolocation();
   const mapRef = useRef<MapRef | null>(null);
+  const {
+    radius,
+    customMode,
+    customKm,
+    setCustomKm,
+    customInputRef,
+    commitCustom,
+    choosePreset,
+    chooseCustom,
+  } = useSearchRadius(15_000);
 
   const [mosques, setMosques] = useState<NearbyMosque[]>([]);
   const [incidents, setIncidents] = useState<MapIncident[]>([]);
@@ -55,7 +66,10 @@ export function CommunityMap() {
     setError(null);
     setSelected(null);
 
-    Promise.all([fetchNearbyMosques(lat, lng), fetchMapIncidents(lat, lng)])
+    Promise.all([
+      fetchNearbyMosques(lat, lng, radius),
+      fetchMapIncidents(lat, lng, radius),
+    ])
       .then(([nextMosques, nextIncidents]) => {
         if (!active) return;
         setMosques(nextMosques);
@@ -74,7 +88,7 @@ export function CommunityMap() {
     return () => {
       active = false;
     };
-  }, [lat, lng]);
+  }, [lat, lng, radius]);
 
   useEffect(() => {
     if (!coords) return;
@@ -222,6 +236,19 @@ export function CommunityMap() {
           <span className="rounded-full border border-basirah-teal/10 bg-white/90 px-3 py-1.5 text-xs font-medium text-basirah-teal/70 backdrop-blur">
             {summary}
           </span>
+          <div className="rounded-2xl border border-basirah-teal/10 bg-white/90 p-1 backdrop-blur">
+            <RadiusChips
+              radius={radius}
+              customMode={customMode}
+              customKm={customKm}
+              customInputRef={customInputRef}
+              onPreset={choosePreset}
+              onChooseCustom={chooseCustom}
+              onCustomKmChange={setCustomKm}
+              onCustomCommit={commitCustom}
+              className="flex flex-wrap items-center gap-1"
+            />
+          </div>
           {error && (
             <p className="max-w-[16rem] rounded-2xl border border-basirah-rust/20 bg-white/90 px-3 py-2 text-xs font-medium text-basirah-rust backdrop-blur">
               {error}
