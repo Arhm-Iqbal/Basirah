@@ -9,10 +9,10 @@ export function MarketingPage({
   className?: string;
 }) {
   return (
-    <div className="relative isolate min-h-dvh bg-basirah-cream">
+    <div className="relative isolate flex min-h-dvh flex-col bg-basirah-cream">
       <div aria-hidden className="user-pages-bg" />
       <NavBar />
-      <main className={`relative z-10 ${className}`}>{children}</main>
+      <main className={`relative z-10 flex-1 ${className}`}>{children}</main>
       <div className="relative z-10">
         <SiteFooter />
       </div>
