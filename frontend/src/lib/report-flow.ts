@@ -1,4 +1,5 @@
 export type IncidentRoute = 'online' | 'in_person';
+export type ReportPrivacy = 'anonymous' | 'account';
 
 export type StepId =
   | 'online_details'
@@ -25,8 +26,12 @@ const IN_PERSON_STEPS: StepDefinition[] = [
   { id: 'review', title: 'Review' },
 ];
 
-export function stepsForRoute(route: IncidentRoute): StepDefinition[] {
-  return route === 'online' ? ONLINE_STEPS : IN_PERSON_STEPS;
+export function stepsForRoute(
+  route: IncidentRoute,
+  privacy: ReportPrivacy = 'account',
+): StepDefinition[] {
+  const steps = route === 'online' ? ONLINE_STEPS : IN_PERSON_STEPS;
+  return privacy === 'anonymous' ? steps.filter(({ id }) => id !== 'about_you') : steps;
 }
 
 export type IncidentReport = {
@@ -150,7 +155,10 @@ export function validateStep(stepId: StepId, report: IncidentReport): ReportErro
 // reporter_name, reporter_email and reporter_phone are deliberately absent. They stay in
 // the browser (see saveContactLocally) and are never persisted server-side, so the
 // database holds an account of what happened without holding who reported it.
-export function toApiPayload(report: IncidentReport) {
+export function toApiPayload(
+  report: IncidentReport,
+  { anonymous = false }: { anonymous?: boolean } = {},
+) {
   const occurred =
     report.occurred_on !== ''
       ? new Date(`${report.occurred_on}T${report.occurred_at || '00:00'}`).toISOString()
@@ -174,12 +182,11 @@ export function toApiPayload(report: IncidentReport) {
     'before_context',
     'after_context',
     'other_details',
-    'reporting_for',
-    'reported_elsewhere',
-    'existing_reference',
-    'support_needed',
     'anything_else',
   ];
+  if (!anonymous) {
+    detailKeys.push('reporting_for', 'reported_elsewhere', 'existing_reference', 'support_needed');
+  }
   for (const key of detailKeys) {
     const value = report[key];
     if (typeof value === 'string' && value.trim() !== '') details[key] = value.trim();

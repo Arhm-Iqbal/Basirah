@@ -68,12 +68,9 @@ export type OwnIncident = {
 };
 
 export async function fetchOwnIncidents(): Promise<OwnIncident[]> {
-  const { data, error } = await createClient()
-    .from('incidents')
-    .select('id, channel, category, status, description, occurred_at, created_at, details')
-    .order('created_at', { ascending: false });
-  if (error) throw new Error(error.message);
-  return (data ?? []) as OwnIncident[];
+  const res = await apiFetch('/v1/incidents', { headers: await authHeaders() });
+  const body = (await unwrap(res)) as { data?: OwnIncident[] };
+  return body.data ?? [];
 }
 
 export type GeocodeResult = { label: string; lat: number; lng: number };
@@ -245,8 +242,10 @@ export async function downloadReport(incidentId: string) {
   window.setTimeout(() => URL.revokeObjectURL(href), 60_000);
 }
 
-export async function deleteReport(incidentId: string): Promise<void> {
-  const res = await apiFetch(`/v1/incidents/${incidentId}`, {
+export type DeleteReportScope = 'me' | 'everyone';
+
+export async function deleteReport(incidentId: string, scope: DeleteReportScope): Promise<void> {
+  const res = await apiFetch(`/v1/incidents/${incidentId}?scope=${scope}`, {
     method: 'DELETE',
     headers: await authHeaders(),
   });

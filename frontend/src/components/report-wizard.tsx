@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { IncidentActionPlan } from '@basirah/shared';
 
 import { ActionPlanView } from '@/components/action-plan-view';
@@ -18,6 +18,7 @@ import {
   validateStep,
   type IncidentReport,
   type IncidentRoute,
+  type ReportPrivacy,
   type ReportErrors,
   type StepId,
 } from '@/lib/report-flow';
@@ -425,9 +426,33 @@ const PLATFORMS = [
   { value: 'other', label: 'Somewhere else' },
 ];
 
-export function ReportWizard() {
+type ReportWizardProps = {
+  accountContext?: boolean;
+};
+
+type PrivateField =
+  | 'reporter_name'
+  | 'reporter_email'
+  | 'reporter_phone'
+  | 'reporting_for'
+  | 'reported_elsewhere'
+  | 'existing_reference'
+  | 'support_needed';
+
+const PRIVATE_FIELDS: PrivateField[] = [
+  'reporter_name',
+  'reporter_email',
+  'reporter_phone',
+  'reporting_for',
+  'reported_elsewhere',
+  'existing_reference',
+  'support_needed',
+];
+
+export function ReportWizard({ accountContext = false }: ReportWizardProps) {
   const router = useRouter();
   const [report, setReport] = useState<IncidentReport>(EMPTY_REPORT);
+  const [privacy, setPrivacy] = useState<ReportPrivacy | null>(accountContext ? null : 'anonymous');
   const [claimCode, setClaimCode] = useState<string | null>(null);
   const [errors, setErrors] = useState<ReportErrors>({});
   const [index, setIndex] = useState(0);
@@ -436,11 +461,6 @@ export function ReportWizard() {
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [actionPlan, setActionPlan] = useState<IncidentActionPlan | null>(null);
-
-  useEffect(() => {
-    const saved = loadContactLocally();
-    if (Object.keys(saved).length > 0) setReport((r) => ({ ...r, ...saved }));
-  }, []);
 
   const set = <K extends keyof IncidentReport>(key: K, value: IncidentReport[K]) => {
     setReport((r) => ({ ...r, [key]: value }));
@@ -452,7 +472,26 @@ export function ReportWizard() {
     });
   };
 
-  const steps = report.route ? stepsForRoute(report.route) : [];
+  const choosePrivacy = (nextPrivacy: ReportPrivacy) => {
+    setPrivacy(nextPrivacy);
+    setErrors({});
+    setError(null);
+    setIndex(0);
+
+    if (nextPrivacy === 'account') {
+      const saved = loadContactLocally();
+      if (Object.keys(saved).length > 0) setReport((current) => ({ ...current, ...saved }));
+      return;
+    }
+
+    setReport((current) => {
+      const scrubbed = { ...current };
+      for (const key of PRIVATE_FIELDS) scrubbed[key] = '';
+      return scrubbed;
+    });
+  };
+
+  const steps = report.route && privacy ? stepsForRoute(report.route, privacy) : [];
   const step: StepId | undefined = steps[index]?.id;
 
   const next = () => {
@@ -468,22 +507,32 @@ export function ReportWizard() {
   };
 
   const submit = async () => {
+    if (!privacy) return;
+
     setSubmitting(true);
     setError(null);
     try {
-      const supabase = createOptionalClient();
+      const isAnonymous = privacy === 'anonymous';
+      const supabase = isAnonymous ? null : createOptionalClient();
       const token = supabase
         ? (await supabase.auth.getSession()).data.session?.access_token
         : undefined;
 
-      const payload: Record<string, unknown> = { ...toApiPayload(report) };
-      if (!token) payload.turnstile_token = 'unconfigured';
+      if (!isAnonymous && !token) {
+        throw new Error('You are signed out. Sign in again before submitting this report.');
+      }
 
-      const res = await apiFetch(token ? '/v1/incidents' : '/v1/tips', {
+      const payload: Record<string, unknown> = {
+        ...toApiPayload(report, { anonymous: isAnonymous }),
+      };
+      if (isAnonymous) payload.turnstile_token = 'unconfigured';
+
+      const res = await apiFetch(isAnonymous ? '/v1/tips' : '/v1/incidents', {
         method: 'POST',
+        credentials: isAnonymous ? 'omit' : 'same-origin',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(!isAnonymous && token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -500,9 +549,8 @@ export function ReportWizard() {
         claim_code?: string;
         actions?: IncidentActionPlan;
       };
-      saveContactLocally(report);
-
-      if (token) {
+      if (!isAnonymous) {
+        saveContactLocally(report);
         router.push(`/app/reports/${created.id}/next-steps`);
         return;
       }
@@ -568,6 +616,58 @@ export function ReportWizard() {
 
         <fieldset className="mt-6">
           <legend className="font-display text-lg font-semibold tracking-[-0.015em] text-basirah-teal">
+            How would you like to submit?
+          </legend>
+          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/75">
+            {accountContext
+              ? 'Choose whether this report is linked to your account.'
+              : 'Reports started on this page are anonymous by default.'}
+          </p>
+          <div className={`mt-3 grid gap-2.5 ${accountContext ? 'sm:grid-cols-2' : ''}`}>
+            <button
+              type="button"
+              onClick={() => choosePrivacy('anonymous')}
+              aria-pressed={privacy === 'anonymous'}
+              className={`cursor-pointer rounded-lg border p-3.5 text-start transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
+                privacy === 'anonymous'
+                  ? 'border-basirah-teal bg-basirah-teal/8'
+                  : 'border-basirah-teal/25 hover:border-basirah-teal'
+              }`}
+            >
+              <span className="block text-base font-semibold text-basirah-teal">
+                Anonymous report
+              </span>
+              <span className="mt-1 block text-sm leading-relaxed text-basirah-teal/80">
+                No account or contact details are attached. You will not be asked for your name,
+                email, phone, or other personal information.
+              </span>
+            </button>
+
+            {accountContext && (
+              <button
+                type="button"
+                onClick={() => choosePrivacy('account')}
+                aria-pressed={privacy === 'account'}
+                className={`cursor-pointer rounded-lg border p-3.5 text-start transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal ${
+                  privacy === 'account'
+                    ? 'border-basirah-teal bg-basirah-teal/8'
+                    : 'border-basirah-teal/25 hover:border-basirah-teal'
+                }`}
+              >
+                <span className="block text-base font-semibold text-basirah-teal">
+                  Save to my account
+                </span>
+                <span className="mt-1 block text-sm leading-relaxed text-basirah-teal/80">
+                  Links the report to your account so it appears in My reports. Personal details
+                  remain optional.
+                </span>
+              </button>
+            )}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-6">
+          <legend className="font-display text-lg font-semibold tracking-[-0.015em] text-basirah-teal">
             Where did this happen?
           </legend>
           <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
@@ -609,7 +709,7 @@ export function ReportWizard() {
 
         <Button
           className="mt-6 w-full sm:w-auto"
-          disabled={!report.route}
+          disabled={!report.route || !privacy}
           onClick={() => setStarted(true)}
         >
           <img src="/icons/report-white.png" alt="" width={14} height={16} className="h-4 w-auto" />
@@ -785,8 +885,10 @@ export function ReportWizard() {
         {step === 'about_you' && (
           <>
             <p className="text-base leading-relaxed text-basirah-teal">
-              So someone can follow up with you. This is not shown to the community, and it is not
-              sent to the model that suggests next steps.
+              Your optional name, email, and phone stay on this device to prefill your next account
+              report. They are not attached to this report, shown to the community, or sent to the
+              model that suggests next steps. Your remaining answers on this step are saved with the
+              incident so Basirah can understand what support is needed.
             </p>
             <Text
               id="reporter_name"
@@ -837,20 +939,32 @@ export function ReportWizard() {
         )}
 
         {isReview && (
-          <dl className="divide-y divide-basirah-teal/15">
-            {REVIEW_ROWS.flatMap(({ key, label }) => {
-              const value = report[key];
-              if (typeof value !== 'string' || value.trim() === '') return [];
-              return [
-                <div key={key} className="py-2.5 sm:grid sm:grid-cols-3 sm:gap-4">
-                  <dt className="text-sm text-basirah-teal/70">{label}</dt>
-                  <dd className="mt-0.5 text-base break-words text-basirah-teal sm:col-span-2 sm:mt-0">
-                    {formatReviewValue(key, value)}
-                  </dd>
-                </div>,
-              ];
-            })}
-          </dl>
+          <>
+            <div className="rounded-lg border border-basirah-teal/20 bg-basirah-teal/5 p-4">
+              <p className="text-sm font-semibold text-basirah-teal">
+                {privacy === 'anonymous' ? 'Submitting anonymously' : 'Saving to your account'}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-basirah-teal/75">
+                {privacy === 'anonymous'
+                  ? 'Your account and contact details will not be attached to this report.'
+                  : 'This report will appear in My reports and can be managed from your profile. Any name or contact details shown below remain on this device only.'}
+              </p>
+            </div>
+            <dl className="divide-y divide-basirah-teal/15">
+              {REVIEW_ROWS.flatMap(({ key, label }) => {
+                const value = report[key];
+                if (typeof value !== 'string' || value.trim() === '') return [];
+                return [
+                  <div key={key} className="py-2.5 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <dt className="text-sm text-basirah-teal/70">{label}</dt>
+                    <dd className="mt-0.5 text-base break-words text-basirah-teal sm:col-span-2 sm:mt-0">
+                      {formatReviewValue(key, value)}
+                    </dd>
+                  </div>,
+                ];
+              })}
+            </dl>
+          </>
         )}
       </div>
 

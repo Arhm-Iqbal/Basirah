@@ -43,6 +43,7 @@ media.post(
       .select('id')
       .eq('id', incident_id)
       .eq('reporter_id', c.get('userId'))
+      .is('reporter_hidden_at', null)
       .maybeSingle();
 
     if (lookupError) {
@@ -109,6 +110,7 @@ media.get('/:incident_id', async (c) => {
     .select('id')
     .eq('id', incidentId)
     .eq('reporter_id', c.get('userId'))
+    .is('reporter_hidden_at', null)
     .maybeSingle();
 
   if (lookupError) {

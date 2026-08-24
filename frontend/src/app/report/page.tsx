@@ -7,8 +7,8 @@ export const metadata = {
     'Document Islamophobia, hate, harassment, threats, or another safety concern. You can report without an account.',
 };
 
-// Same component as /app/report. A signed-in visitor files an incident against their
-// profile; a guest files anonymously and gets a claim code. Two forms would have drifted.
+// The public entry point is anonymous by default even when the browser has a session.
+// The profile entry point uses the same form but explicitly offers both privacy modes.
 export default function ReportPage() {
   return (
     <MarketingPage className="mx-auto w-full max-w-2xl px-5 py-10 sm:px-6 sm:py-14">

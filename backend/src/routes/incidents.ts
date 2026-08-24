@@ -11,7 +11,7 @@ import { z } from 'zod';
 import {
   currentDocument,
   generateAndStore,
-  removeDocuments,
+  removeIncidentFiles,
   signDocument,
 } from '../lib/report-store';
 import { buildActionPlan } from '../lib/action-plan';
@@ -87,6 +87,7 @@ incidents.get('/', async (c) => {
       'id, mosque_id, channel, category, status, occurred_at, description, details, created_at, updated_at',
     )
     .eq('reporter_id', c.get('userId'))
+    .is('reporter_hidden_at', null)
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -104,6 +105,7 @@ incidents.get('/:id/actions', async (c) => {
     .select('channel, category, details')
     .eq('id', id)
     .eq('reporter_id', c.get('userId'))
+    .is('reporter_hidden_at', null)
     .maybeSingle();
 
   if (error) {
@@ -133,6 +135,7 @@ incidents.post('/:id/guidance', async (c) => {
     .select('id, channel, category, description, details, mosque_id, reporter_id')
     .eq('id', id)
     .eq('reporter_id', c.get('userId'))
+    .is('reporter_hidden_at', null)
     .maybeSingle();
 
   if (error) {
@@ -194,6 +197,7 @@ async function ownIncident(c: any, id: string) {
     .select('id, status, reporter_id')
     .eq('id', id)
     .eq('reporter_id', c.get('userId'))
+    .is('reporter_hidden_at', null)
     .maybeSingle();
   if (error) {
     console.error(error);
@@ -245,17 +249,44 @@ incidents.patch(
   },
 );
 
+const deleteScope = z.enum(['me', 'everyone']);
+
 incidents.delete('/:id', async (c) => {
   const id = c.req.param('id');
   if (!isUuid(id)) return fail(c, 404, 'not_found', 'No report with that id.');
+
+  // Missing scope defaults to the non-destructive option for older clients.
+  const scope = deleteScope.safeParse(c.req.query('scope') ?? 'me');
+  if (!scope.success) {
+    return fail(c, 400, 'invalid_scope', 'Choose whether to delete for you or for everyone.');
+  }
 
   const { db, incident, failed } = await ownIncident(c, id);
   if (failed) return fail(c, 500, 'query_failed', 'Could not load that report.');
   if (!incident) return fail(c, 404, 'not_found', 'No report with that id.');
 
-  // Rows cascade from the incident, but storage objects do not -- clear them first so a
-  // deleted report cannot leave its PDF sitting in the bucket.
-  await removeDocuments(db, id);
+  if (scope.data === 'me') {
+    const { error } = await db
+      .from('incidents')
+      .update({ reporter_hidden_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('reporter_id', c.get('userId'));
+
+    if (error) {
+      console.error(error);
+      return fail(c, 500, 'delete_failed', 'Could not remove that report from your account.');
+    }
+    return c.body(null, 204);
+  }
+
+  // Rows cascade from the incident, but Storage objects do not. Clear every PDF and
+  // attachment first so permanent deletion cannot leave report data in either bucket.
+  try {
+    await removeIncidentFiles(db, id);
+  } catch (error) {
+    console.error(error);
+    return fail(c, 502, 'storage_delete_failed', 'Could not permanently delete the stored files.');
+  }
 
   const { error } = await db.from('incidents').delete().eq('id', id);
   if (error) {

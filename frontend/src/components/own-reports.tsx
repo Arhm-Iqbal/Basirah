@@ -12,6 +12,7 @@ import {
   editReport,
   downloadReport,
   fetchOwnIncidents,
+  type DeleteReportScope,
   type OwnIncident,
 } from '@/lib/queries';
 
@@ -70,6 +71,7 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
   const [draft, setDraft] = useState(incident.description ?? '');
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
+  const [deletingFor, setDeletingFor] = useState<DeleteReportScope | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [appealed, setAppealed] = useState(false);
 
@@ -147,22 +149,56 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
 
   if (mode === 'confirmDelete') {
     return (
-      <div>
-        <p className="text-base text-basirah-teal">
-          Delete this report permanently? Its PDF goes too, and this cannot be undone.
+      <div className="w-full">
+        <p className="text-base font-semibold text-basirah-teal">Who should it be deleted for?</p>
+        <p className="mt-1 text-sm text-basirah-teal/70">
+          These choices handle the stored report differently. Read both before continuing.
         </p>
         {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant="primary"
-            disabled={busy}
-            onClick={() => void run(() => deleteReport(incident.id), onRemoved)}
-          >
-            {busy ? 'Deleting…' : 'Yes, delete it'}
-          </Button>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border border-basirah-teal/20 bg-basirah-cream/45 p-4">
+            <h3 className="font-semibold text-basirah-teal">Delete for me</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-basirah-teal/75">
+              Removes this report from your account only. The report and its data remain stored by
+              Basirah.
+            </p>
+            <Button
+              className="mt-3 w-full"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => {
+                setDeletingFor('me');
+                void run(() => deleteReport(incident.id, 'me'), onRemoved);
+              }}
+            >
+              {busy && deletingFor === 'me' ? 'Deleting…' : 'Delete for me'}
+            </Button>
+          </div>
+
+          <div className="rounded-lg border border-basirah-rust/30 bg-basirah-rust/5 p-4">
+            <h3 className="font-semibold text-basirah-rust">Delete for everyone</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-basirah-teal/80">
+              Permanently removes this report, its PDF, and attachments from Basirah&apos;s active
+              database and storage. This cannot be undone.
+            </p>
+            <Button
+              className="mt-3 w-full"
+              size="sm"
+              variant="primary"
+              disabled={busy}
+              onClick={() => {
+                setDeletingFor('everyone');
+                void run(() => deleteReport(incident.id, 'everyone'), onRemoved);
+              }}
+            >
+              {busy && deletingFor === 'everyone' ? 'Deleting permanently…' : 'Delete for everyone'}
+            </Button>
+          </div>
+        </div>
+        <div className="mt-3">
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => setMode('idle')}>
-            Keep it
+            Cancel
           </Button>
         </div>
       </div>

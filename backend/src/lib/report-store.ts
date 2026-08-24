@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { buildReportPdf, type ReportPdfInput } from './pdf';
 
-const BUCKET = 'report-documents';
+const DOCUMENT_BUCKET = 'report-documents';
+const MEDIA_BUCKET = 'incident-media';
 
 async function loadForPdf(db: SupabaseClient, incidentId: string): Promise<ReportPdfInput | null> {
   const { data, error } = await db
@@ -55,7 +56,7 @@ export async function generateAndStore(
   const path = `${incidentId}/v${version}.pdf`;
 
   const { error: uploadError } = await db.storage
-    .from(BUCKET)
+    .from(DOCUMENT_BUCKET)
     .upload(path, bytes, { contentType: 'application/pdf', upsert: true });
   if (uploadError) throw new Error(uploadError.message);
 
@@ -79,16 +80,41 @@ export async function currentDocument(db: SupabaseClient, incidentId: string) {
 }
 
 export async function signDocument(db: SupabaseClient, path: string): Promise<string | null> {
-  const { data } = await db.storage.from(BUCKET).createSignedUrl(path, 300);
+  const { data } = await db.storage.from(DOCUMENT_BUCKET).createSignedUrl(path, 300);
   return data?.signedUrl ?? null;
 }
 
-// Storage has no cascade, so the objects must go explicitly when a report is deleted.
-export async function removeDocuments(db: SupabaseClient, incidentId: string) {
-  const { data } = await db
-    .from('report_documents')
-    .select('storage_path')
-    .eq('incident_id', incidentId);
-  const paths = (data ?? []).map((d) => d.storage_path as string);
-  if (paths.length > 0) await db.storage.from(BUCKET).remove(paths);
+async function storedPaths(
+  db: SupabaseClient,
+  table: 'report_documents' | 'incident_media',
+  incidentId: string,
+): Promise<string[]> {
+  const { data, error } = await db.from(table).select('storage_path').eq('incident_id', incidentId);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => row.storage_path as string);
+}
+
+async function removeStoredObjects(
+  db: SupabaseClient,
+  bucket: string,
+  paths: string[],
+): Promise<void> {
+  if (paths.length === 0) return;
+  const { error } = await db.storage.from(bucket).remove(paths);
+  if (error) throw new Error(error.message);
+}
+
+// Database rows cascade from the incident, but Storage objects do not. Permanent deletion
+// therefore clears every generated PDF and attachment before the incident row is removed.
+export async function removeIncidentFiles(db: SupabaseClient, incidentId: string): Promise<void> {
+  const [documentPaths, mediaPaths] = await Promise.all([
+    storedPaths(db, 'report_documents', incidentId),
+    storedPaths(db, 'incident_media', incidentId),
+  ]);
+
+  await Promise.all([
+    removeStoredObjects(db, DOCUMENT_BUCKET, documentPaths),
+    removeStoredObjects(db, MEDIA_BUCKET, mediaPaths),
+  ]);
 }

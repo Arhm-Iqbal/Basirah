@@ -12,7 +12,7 @@ export default function AppReportPage() {
         One question at a time. Answer in your own words. Only the description is required.
       </p>
       <div className="mt-6">
-        <ReportWizard />
+        <ReportWizard accountContext />
       </div>
     </div>
   );
