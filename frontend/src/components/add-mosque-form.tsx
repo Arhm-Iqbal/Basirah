@@ -11,7 +11,7 @@ import type { Coords } from '@/lib/use-geolocation';
 const PROVINCES = ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'];
 
 const field =
-  'mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-colors placeholder:text-basirah-teal/45 focus:border-basirah-teal';
+  'mt-1.5 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-basirah-teal/45 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] aria-invalid:border-basirah-rust motion-reduce:transition-none';
 const label = 'block text-base font-semibold text-basirah-teal';
 
 export function AddMosqueForm({
@@ -101,6 +101,7 @@ export function AddMosqueForm({
           id="m-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          aria-invalid={error != null && name.trim().length < 2 ? true : undefined}
           className={field}
         />
       </div>

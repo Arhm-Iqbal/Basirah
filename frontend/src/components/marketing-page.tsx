@@ -1,4 +1,5 @@
 import { NavBar } from '@/components/nav-bar';
+import { SiteFooter } from '@/components/site-footer';
 
 export function MarketingPage({
   children,
@@ -8,9 +9,13 @@ export function MarketingPage({
   className?: string;
 }) {
   return (
-    <>
+    <div className="relative isolate min-h-dvh bg-basirah-cream">
+      <div aria-hidden className="user-pages-bg" />
       <NavBar />
-      <main className={className}>{children}</main>
-    </>
+      <main className={`relative z-10 ${className}`}>{children}</main>
+      <div className="relative z-10">
+        <SiteFooter />
+      </div>
+    </div>
   );
 }

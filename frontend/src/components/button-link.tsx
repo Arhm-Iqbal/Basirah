@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import type { ComponentProps } from 'react';
 
-type Size = 'sm' | 'md' | 'lg';
+type Size = 'sm' | 'md' | 'lg' | 'xl';
 type Variant = 'primary' | 'secondary' | 'teal' | 'ghost';
 
 const SIZES: Record<Size, string> = {
   sm: 'min-h-10 gap-1.5 px-3.5 text-sm',
   md: 'min-h-11 gap-2 px-5 text-base',
   lg: 'min-h-12 gap-2 px-7 text-base',
+  xl: 'min-h-16 gap-2 px-10 text-xl sm:min-h-[4.5rem] sm:px-12 sm:text-2xl',
 };
 
 const VARIANTS: Record<Variant, string> = {

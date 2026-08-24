@@ -6,6 +6,50 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-23 — Product cards scale up and fade in
+
+What: Hero, the three cards, and the home footer fade in on scroll (opacity +
+12px rise, 700ms, staggered 90ms). Cards are larger from `md` up (more
+padding, `text-3xl` titles, `min-h-16` buttons, `max-w-7xl`). Phone stays
+one column so the hero still fits.
+Why: The cards read as captions on a wide screen. Motion is one-shot and
+honours `prefers-reduced-motion` / no-JS so nothing stays invisible.
+
+---
+
+## 2026-08-23 — Product page: bigger card actions, shorter page
+
+What: The three product cards now end in full-width rust buttons (`min-h-14`,
+`text-lg`). Removed the privacy principles block and the "Bring it into the
+light" closing band from `/`.
+Why: The rust text links read as captions. Sign up stays in the nav; the
+page does not need a second essay and a second CTA band under the cards.
+
+---
+
+## 2026-08-23 — Product hero is logo plus motto
+
+What: Dropped Sign up / Log in from the product hero (nav and the closing
+band still have them). Enlarged the wordmark (`h-40` / `sm:h-56` / `md:h-72`)
+and made the line under it "Report. Connect. Protect."
+Why: The hero pair duplicated the nav. The motto belongs under the mark, not
+repeated as a section heading over the three cards.
+
+---
+
+## 2026-08-23 — Signup lanterns, landing looks like ours
+
+What: Auth girih/lanterns sit in a fixed teal layer so the taller signup card no
+longer clips them. `/` uses the teal flower field instead of Hassan's cream
+hero and fake report mock. Cream bands (landing mid-page, About, Report,
+Resources, Contact) carry the same bottom girih wash as `/app`. Cards stay
+`rounded-lg`; cyan hover fills are gone.
+Why: Signup is the same room as login. The product page was reading as a
+generic SaaS template on cream; the flower, lanterns, and girih are the
+Basirah surfaces.
+
+---
+
 ## Template
 
 ```
@@ -15,6 +59,25 @@ Why: <why you made this choice>
 ```
 
 ---
+
+## 2026-08-23 — Hassan product landing on /
+
+What: `/` now uses Hassan's product landing (hero, three pillars, principles,
+closing CTA, footer) with our existing nav. Sign up / Log in go to the pages we
+already have. Pillars that pointed at missing `/support` and `/mosques` routes
+now go to `/resources` and `/map`.
+Why: The product page is the first screen for people who are not signed in.
+Auth and the app stay as they were.
+
+## 2026-08-23 — Forms and copy
+
+What: Rewrote report/login/signup/mosque form copy into specific verbs, wired
+labels to hints and errors, and used a radius scale (`rounded-md` inputs,
+`rounded-lg` cards). Review now shows human labels. Nav and the three-step
+section say "Create an account" / "How a report moves" instead of "Get started".
+Why: Generic CTAs and snake_case review keys read as template UI. A person
+filling in a hate-incident report needs plain questions, visible errors, and
+no "please tell us" padding.
 
 ## 2026-08-23 — Mosque panel opens more quietly
 

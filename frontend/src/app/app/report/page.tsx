@@ -9,8 +9,7 @@ export default function AppReportPage() {
         Report an incident
       </h1>
       <p className="mt-2 max-w-lg text-base leading-relaxed text-basirah-teal">
-        You will be asked one thing at a time, and you can answer in your own words. Nothing is
-        required except a description.
+        One question at a time. Answer in your own words. Only the description is required.
       </p>
       <div className="mt-6">
         <ReportWizard />

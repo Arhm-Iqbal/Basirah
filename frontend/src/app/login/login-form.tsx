@@ -81,9 +81,9 @@ export default function LoginForm() {
         <Logo className="h-20 w-auto sm:h-24" priority />
       </Link>
 
-      <h1 className="mt-6 text-2xl font-semibold text-basirah-teal">Log in</h1>
-      <p className="mt-2 text-sm text-basirah-teal/90">
-        Access incident reports, alerts, and your community&apos;s dashboard.
+      <h1 className="mt-6 text-3xl text-basirah-teal">Log in</h1>
+      <p className="mt-2 text-base text-basirah-teal">
+        Log in to read reports and alerts for your mosque.
       </p>
 
       <button
@@ -93,7 +93,7 @@ export default function LoginForm() {
         className="mt-8 flex min-h-11 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-basirah-teal/20 bg-white/45 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <GoogleIcon />
-        Continue with Google
+        Log in with Google
       </button>
 
       <AuthDivider />
@@ -110,7 +110,7 @@ export default function LoginForm() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-basirah-teal/20 bg-white/70 px-3.5 py-2.5 text-sm text-basirah-teal outline-none focus:border-basirah-rust"
+            className="mt-1.5 w-full rounded-md border border-basirah-teal/20 bg-white/70 px-3.5 py-2.5 text-sm text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] motion-reduce:transition-none"
           />
         </div>
         <div>
@@ -124,7 +124,7 @@ export default function LoginForm() {
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-basirah-teal/20 bg-white/70 px-3.5 py-2.5 text-sm text-basirah-teal outline-none focus:border-basirah-rust"
+            className="mt-1.5 w-full rounded-md border border-basirah-teal/20 bg-white/70 px-3.5 py-2.5 text-sm text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] motion-reduce:transition-none"
           />
         </div>
 
@@ -137,7 +137,11 @@ export default function LoginForm() {
         </button>
       </form>
 
-      {error && <p className="mt-4 text-sm text-basirah-rust">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-4 text-sm font-medium text-basirah-rust">
+          {error}
+        </p>
+      )}
 
       {!isSupabaseConfigured && !error && (
         <p className="mt-4 text-xs text-basirah-teal/80">
@@ -149,7 +153,7 @@ export default function LoginForm() {
         href="/report"
         className="mt-4 flex min-h-11 w-full items-center justify-center rounded-full border border-basirah-teal/25 px-6 py-3 text-sm font-semibold text-basirah-teal transition-colors duration-150 hover:border-basirah-teal/40 hover:bg-white/40 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal motion-reduce:transition-none motion-reduce:active:scale-100"
       >
-        Continue as guest
+        File a report without an account
       </Link>
 
       <p className="mt-6 text-center text-sm text-basirah-teal">
@@ -163,7 +167,7 @@ export default function LoginForm() {
       </p>
 
       <p className="mt-6 text-center text-xs text-basirah-teal/80">
-        By continuing you agree to Basirah&apos;s community guidelines.
+        Reports stay with your mosque until someone verifies them.
       </p>
     </AuthShell>
   );

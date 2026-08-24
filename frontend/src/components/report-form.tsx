@@ -34,7 +34,7 @@ const CATEGORIES: { value: string; label: string }[] = [
 ];
 
 const fieldClass =
-  'w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-colors focus:border-basirah-teal';
+  'w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none transition-[border-color,box-shadow] duration-150 focus:border-basirah-teal focus:shadow-[0_0_0_3px_rgb(4_51_52_/_15%)] aria-invalid:border-basirah-rust motion-reduce:transition-none';
 const labelClass = 'block text-base font-semibold text-basirah-teal';
 
 function trimmed(value: string) {
@@ -132,7 +132,7 @@ export function ReportForm() {
 
       if (!response.ok) {
         const message = (body as { error?: { message?: string } } | null)?.error?.message;
-        setError(message ?? 'Your report could not be submitted. Please try again.');
+        setError(message ?? 'Your report could not be submitted. Try again in a moment.');
         return;
       }
 
@@ -236,6 +236,9 @@ export function ReportForm() {
           <label htmlFor="description" className={labelClass}>
             What happened?
           </label>
+          <p id="description-hint" className="mt-1 text-xs leading-relaxed text-basirah-teal/70">
+            What was said or done, and what happened just before and after.
+          </p>
           <textarea
             id="description"
             name="description"
@@ -244,6 +247,7 @@ export function ReportForm() {
             maxLength={10_000}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
+            aria-describedby="description-hint"
             className={`mt-2 resize-y ${fieldClass}`}
           />
         </div>
@@ -251,7 +255,7 @@ export function ReportForm() {
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="category" className={labelClass}>
-              Category
+              What kind of incident? <span className="font-normal text-basirah-teal/50">(optional)</span>
             </label>
             <select
               id="category"
@@ -271,7 +275,7 @@ export function ReportForm() {
 
           <div>
             <label htmlFor="occurred_at" className={labelClass}>
-              When
+              When it happened <span className="font-normal text-basirah-teal/50">(optional)</span>
             </label>
             <input
               id="occurred_at"
@@ -288,7 +292,7 @@ export function ReportForm() {
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label htmlFor="platform" className={labelClass}>
-                Platform
+                Which site or app?
               </label>
               <input
                 id="platform"
@@ -297,13 +301,15 @@ export function ReportForm() {
                 maxLength={100}
                 value={platform}
                 onChange={(event) => setPlatform(event.target.value)}
+                placeholder="Instagram, a Facebook group, email…"
                 className={`mt-2 ${fieldClass}`}
               />
             </div>
 
             <div>
               <label htmlFor="url" className={labelClass}>
-                Link
+                Link to the post or message{' '}
+                <span className="font-normal text-basirah-teal/50">(optional)</span>
               </label>
               <input
                 id="url"
@@ -319,7 +325,7 @@ export function ReportForm() {
         ) : (
           <div className="space-y-5">
             <div>
-              <span className={labelClass}>Location</span>
+              <span className={labelClass}>Place</span>
 
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <button
@@ -363,7 +369,7 @@ export function ReportForm() {
 
             <div>
               <label htmlFor="location_description" className={labelClass}>
-                Describe the place
+                Neighbourhood, street, or building
               </label>
               <input
                 id="location_description"
@@ -372,6 +378,7 @@ export function ReportForm() {
                 maxLength={500}
                 value={locationDescription}
                 onChange={(event) => setLocationDescription(event.target.value)}
+                placeholder="Mosque parking lot, nearest intersection…"
                 className={`mt-2 ${fieldClass}`}
               />
             </div>
@@ -379,7 +386,11 @@ export function ReportForm() {
         )}
       </div>
 
-      {error && <p className="text-sm text-basirah-rust">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm font-medium text-basirah-rust">
+          {error}
+        </p>
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
         <button

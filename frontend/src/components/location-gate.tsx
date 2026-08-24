@@ -74,11 +74,11 @@ export function LocationGate({ status, onLocate, onManual }: Props) {
             disabled={isSearching || query.trim().length < 2}
             className="min-h-11 shrink-0 rounded-md border border-basirah-teal/30 px-4 text-base font-semibold text-basirah-teal transition-colors hover:bg-basirah-cream disabled:opacity-40"
           >
-            {isSearching ? '…' : 'Go'}
+            {isSearching ? 'Searching…' : 'Search'}
           </button>
         </form>
 
-        {error && <p className="mt-3 text-xs text-basirah-rust">{error}</p>}
+        {error && <p role="alert" className="mt-3 text-sm font-medium text-basirah-rust">{error}</p>}
 
         {results.length > 0 && (
           <ul className="mt-3 space-y-1 text-start">

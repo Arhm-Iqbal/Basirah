@@ -10,7 +10,8 @@ export default function ReportPage() {
         Report an incident
       </h1>
       <p className="mt-2 text-base text-basirah-teal">
-        Your report goes to your community&apos;s verification team first.
+        Your report goes to your community&apos;s verification team first. Skip anything you do
+        not know except what happened.
       </p>
 
       <div className="mt-5">
