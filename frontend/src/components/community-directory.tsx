@@ -1,8 +1,10 @@
 'use client';
 
-import { ArrowLeft, Gavel, Search, Stethoscope, X, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Gavel, Plus, Search, Stethoscope, X, type LucideIcon } from 'lucide-react';
 import { useId, useMemo, useRef, useState } from 'react';
 
+import { Button, PrimaryButtonLink } from '@/components/button-link';
+import { DirectorySubmissionForm } from '@/components/directory-submission-form';
 import {
   BUSINESSES,
   DIRECTORY_COMPILED,
@@ -392,10 +394,17 @@ function SearchResults({
   );
 }
 
-export function CommunityDirectory() {
+export function CommunityDirectory({
+  submissionHref,
+  initialSubmissionOpen = false,
+}: {
+  submissionHref?: string;
+  initialSubmissionOpen?: boolean;
+}) {
   const [view, setView] = useState<View>('root');
   const [query, setQuery] = useState('');
   const [subType, setSubType] = useState(ALL);
+  const [submissionOpen, setSubmissionOpen] = useState(initialSubmissionOpen);
   const normalisedQuery = query.trim().toLowerCase();
 
   const go = (next: View) => {
@@ -513,6 +522,10 @@ export function CommunityDirectory() {
 
   const parent = PARENT[view];
 
+  if (submissionOpen) {
+    return <DirectorySubmissionForm onDone={() => setSubmissionOpen(false)} />;
+  }
+
   return (
     <div>
       {parent ? (
@@ -525,6 +538,28 @@ export function CommunityDirectory() {
           Back
         </button>
       ) : null}
+
+      <div className="mb-7 flex flex-col gap-4 rounded-2xl border border-basirah-teal/20 bg-basirah-cream/65 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div>
+          <p className="font-display text-xl font-semibold text-basirah-teal">
+            Know a business or professional we should include?
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-basirah-teal/70">
+            Send the details for review before they appear in the directory.
+          </p>
+        </div>
+        {submissionHref ? (
+          <PrimaryButtonLink href={submissionHref} className="shrink-0">
+            <Plus className="size-5" aria-hidden />
+            Add a listing
+          </PrimaryButtonLink>
+        ) : (
+          <Button className="shrink-0" onClick={() => setSubmissionOpen(true)}>
+            <Plus className="size-5" aria-hidden />
+            Add a listing
+          </Button>
+        )}
+      </div>
 
       <SearchBox value={query} onChange={setQuery} />
 
@@ -643,7 +678,7 @@ export function CommunityDirectory() {
       {/* Sits outside the view switch so it is reachable from the chooser and from every
           list, rather than only wherever someone happens to have drilled to. */}
       <p className="mt-10 border-t border-basirah-teal/15 pt-5 text-sm leading-relaxed text-pretty text-basirah-teal/70">
-        To request an update to the website, or to add a new business or professional, please{' '}
+        To correct an existing listing, please{' '}
         <a
           href="mailto:contact@basirah.ca"
           className="font-semibold text-basirah-rust underline-offset-4 hover:underline"

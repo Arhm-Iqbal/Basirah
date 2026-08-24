@@ -159,22 +159,34 @@ input[type='datetime-local'] {
 }
 
 .map-drawer {
-  transform: translateX(100%);
+  transform: translateY(calc(100% + 1px));
   transition-property: transform;
-  transition-duration: 420ms;
-  transition-timing-function: cubic-bezier(0.33, 0.08, 0.25, 1);
+  transition-duration: 300ms;
+  transition-timing-function: ease-out;
 }
 
 .map-drawer.is-open {
-  transform: translateX(0);
+  transform: translateY(0);
 }
 
-[dir='rtl'] .map-drawer {
-  transform: translateX(-100%);
-}
+@media (min-width: 48rem) {
+  .map-drawer {
+    transform: translateX(100%);
+    transition-duration: 420ms;
+    transition-timing-function: cubic-bezier(0.33, 0.08, 0.25, 1);
+  }
 
-[dir='rtl'] .map-drawer.is-open {
-  transform: translateX(0);
+  .map-drawer.is-open {
+    transform: translateX(0);
+  }
+
+  [dir='rtl'] .map-drawer {
+    transform: translateX(-100%);
+  }
+
+  [dir='rtl'] .map-drawer.is-open {
+    transform: translateX(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

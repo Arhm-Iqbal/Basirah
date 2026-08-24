@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { mosqueCreate } from '@basirah/shared';
+import { directorySubmissionCreate, mosqueCreate } from '@basirah/shared';
 import type { Env } from '../lib/env';
 import { serviceClient } from '../lib/supabase';
 import { requireAuth } from '../lib/auth';
@@ -134,5 +134,43 @@ me.post(
     }
 
     return c.json(mosque, 201);
+  },
+);
+
+me.post(
+  '/directory-submissions',
+  zValidator('json', directorySubmissionCreate, (r, c) =>
+    r.success ? undefined : zodFail(c, r.error.issues),
+  ),
+  async (c) => {
+    const body = c.req.valid('json');
+    const db = serviceClient(c.env);
+
+    const professional = body.listing_type !== 'business';
+    const { data, error } = await db
+      .from('directory_submissions')
+      .insert({
+        submitted_by: c.get('userId'),
+        listing_type: body.listing_type,
+        name: body.name,
+        category: body.listing_type === 'business' ? body.category : null,
+        role: professional ? body.role : null,
+        specialty: professional ? body.specialty : null,
+        organization: professional ? body.organization || null : null,
+        address: body.address || null,
+        website: body.website || null,
+        public_email: professional ? body.public_email || null : null,
+        evidence: body.evidence,
+        notes: body.notes || null,
+      })
+      .select('id, status, created_at')
+      .single();
+
+    if (error) {
+      console.error(error);
+      return fail(c, 500, 'insert_failed', 'Could not submit that directory listing.');
+    }
+
+    return c.json(data, 201);
   },
 );

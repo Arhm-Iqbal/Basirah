@@ -11,7 +11,7 @@ export default function ResourcesPage() {
   return (
     <MarketingPage className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
       <h1 className="sr-only">Resources</h1>
-      <CommunityDirectory />
+      <CommunityDirectory submissionHref="/login?next=%2Fapp%2Fresources%3Fadd%3D1" />
     </MarketingPage>
   );
 }

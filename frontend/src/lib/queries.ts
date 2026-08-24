@@ -1,6 +1,6 @@
 import { apiFetch } from '@/lib/api-base';
 import { createClient } from '@/lib/supabase/client';
-import type { IncidentActionPlan } from '@basirah/shared';
+import type { DirectorySubmissionCreate, IncidentActionPlan } from '@basirah/shared';
 
 export type NearbyMosque = {
   id: string;
@@ -121,6 +121,17 @@ export async function createMosque(input: NewMosque): Promise<{ id: string; name
     body: JSON.stringify(input),
   });
   return (await unwrap(res)) as { id: string; name: string };
+}
+
+export async function submitDirectoryListing(
+  input: DirectorySubmissionCreate,
+): Promise<{ id: string; status: 'pending'; created_at: string }> {
+  const res = await apiFetch('/v1/me/directory-submissions', {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify(input),
+  });
+  return (await unwrap(res)) as { id: string; status: 'pending'; created_at: string };
 }
 
 export async function addMosqueToProfile(mosqueId: string): Promise<void> {

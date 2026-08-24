@@ -27,11 +27,27 @@ type Selection = { kind: 'mosque'; item: NearbyMosque };
 
 const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
 
-// The detail panel overlays the end of the map, so the camera keeps its subject in the
-// strip that is still visible rather than behind the panel.
+// Phones use a bottom sheet while larger screens use an end drawer. Padding the matching
+// edge keeps the selected pin in the visible map instead of throwing it almost off-screen.
 function panelPadding(map: MapRef, open: boolean) {
-  const right = open ? Math.min(360, Math.round(map.getContainer().clientWidth * 0.92)) : 0;
-  return { top: 0, right, bottom: 0, left: 0 };
+  if (!open) return { top: 0, right: 0, bottom: 0, left: 0 };
+
+  const container = map.getContainer();
+  if (container.clientWidth < 768) {
+    return {
+      top: Math.min(160, Math.round(container.clientHeight * 0.24)),
+      right: 0,
+      bottom: Math.min(416, Math.round(container.clientHeight * 0.52)),
+      left: 0,
+    };
+  }
+
+  return {
+    top: 0,
+    right: Math.min(360, Math.round(container.clientWidth * 0.45)),
+    bottom: 0,
+    left: 0,
+  };
 }
 
 export function CommunityMap() {
@@ -123,8 +139,15 @@ export function CommunityMap() {
       flyingToResult.current = false;
       return;
     }
-    map.easeTo({ padding: panelPadding(map, panelOpen), duration: 420, easing: easeOut });
-  }, [panelOpen]);
+    map.easeTo({
+      ...(panelOpen && selected
+        ? { center: [selected.item.lng, selected.item.lat] as [number, number] }
+        : {}),
+      padding: panelPadding(map, panelOpen),
+      duration: 420,
+      easing: easeOut,
+    });
+  }, [panelOpen, selected]);
 
   useEffect(() => {
     if (panelOpen || !selected) return;
@@ -284,7 +307,7 @@ export function CommunityMap() {
         <>
           <div
             aria-hidden
-            className={`pointer-events-none absolute inset-0 z-10 bg-basirah-teal/25 transition-opacity duration-300 motion-reduce:transition-none ${
+            className={`pointer-events-none absolute inset-0 z-10 bg-basirah-teal/10 transition-opacity duration-300 motion-reduce:transition-none md:bg-basirah-teal/25 ${
               panelOpen ? 'opacity-100' : 'opacity-0'
             }`}
           />

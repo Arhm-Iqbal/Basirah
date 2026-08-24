@@ -13,7 +13,7 @@ import { signInWithGoogle } from '@/lib/supabase/oauth';
 
 const hasSupabaseConfig = isSupabaseConfigured();
 
-export default function SignUpForm() {
+export default function SignUpForm({ nextPath }: { nextPath: string }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function SignUpForm() {
     setError(null);
 
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(nextPath);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not start Google sign-in.');
       setIsLoading(false);
@@ -54,13 +54,15 @@ export default function SignUpForm() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/app` },
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        },
       });
 
       if (error) {
         setError(error.message);
       } else if (data.session) {
-        window.location.replace('/app');
+        window.location.replace(nextPath);
         return;
       } else {
         setMessage('Check your email to confirm your account.');
@@ -163,7 +165,7 @@ export default function SignUpForm() {
       <p className="mt-6 text-center text-sm text-basirah-teal">
         Already have an account?{' '}
         <Link
-          href="/login"
+          href={`/login?next=${encodeURIComponent(nextPath)}`}
           className="font-semibold text-basirah-rust transition-colors hover:text-basirah-rust/80"
         >
           Log in

@@ -113,7 +113,7 @@ export function MapDetailPanel({
   }, []);
 
   useEffect(() => {
-    if (open) closeRef.current?.focus();
+    if (open) closeRef.current?.focus({ preventScroll: true });
   }, [open, selected]);
 
   useEffect(() => {
@@ -129,13 +129,17 @@ export function MapDetailPanel({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className={`map-drawer absolute inset-y-0 end-0 z-20 flex w-[min(100%,22.5rem)] flex-col bg-basirah-teal shadow-[-24px_0_48px_rgb(4_51_52_/_45%)] ${
+      className={`map-drawer absolute inset-x-0 bottom-0 z-20 flex max-h-[52%] w-full flex-col rounded-t-2xl bg-basirah-teal shadow-[0_-16px_36px_rgb(4_51_52_/_28%)] md:inset-x-auto md:inset-y-0 md:end-0 md:max-h-none md:w-[min(100%,22.5rem)] md:rounded-none md:shadow-[-24px_0_48px_rgb(4_51_52_/_45%)] ${
         entered && open ? 'is-open' : ''
       }`}
     >
-      <div className="absolute inset-y-0 start-0 w-1 bg-basirah-rust" aria-hidden />
+      <div
+        className="absolute inset-x-0 top-0 h-1 bg-basirah-rust md:inset-y-0 md:start-0 md:end-auto md:h-auto md:w-1"
+        aria-hidden
+      />
 
-      <div className="flex items-center justify-end px-2 pt-2">
+      <div className="flex items-center justify-between px-2 pt-2 md:justify-end">
+        <span className="ms-4 h-1 w-10 rounded-full bg-basirah-cream/35 md:hidden" aria-hidden />
         <button
           ref={closeRef}
           type="button"
@@ -152,7 +156,7 @@ export function MapDetailPanel({
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 ps-7">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 sm:px-6 md:pb-8 md:ps-7">
         <MosqueBody mosque={selected.item} titleId={titleId} />
       </div>
     </aside>

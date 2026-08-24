@@ -165,7 +165,7 @@ export default function LoginForm() {
       <p className="mt-6 text-center text-sm text-basirah-teal">
         Don&apos;t have an account?{' '}
         <Link
-          href="/signup"
+          href={`/signup?next=${encodeURIComponent(nextPath)}`}
           className="font-semibold text-basirah-rust transition-colors hover:text-basirah-rust/80"
         >
           Sign up
