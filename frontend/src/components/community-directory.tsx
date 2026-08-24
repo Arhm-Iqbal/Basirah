@@ -639,6 +639,19 @@ export function CommunityDirectory() {
           ) : null}
         </div>
       )}
+
+      {/* Sits outside the view switch so it is reachable from the chooser and from every
+          list, rather than only wherever someone happens to have drilled to. */}
+      <p className="mt-10 border-t border-basirah-teal/15 pt-5 text-sm leading-relaxed text-pretty text-basirah-teal/70">
+        To request an update to the website, or to add a new business or professional, please{' '}
+        <a
+          href="mailto:contact@basirah.ca"
+          className="font-semibold text-basirah-rust underline-offset-4 hover:underline"
+        >
+          contact us
+        </a>
+        .
+      </p>
     </div>
   );
 }
