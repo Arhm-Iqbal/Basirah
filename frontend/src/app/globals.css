@@ -1,25 +1,31 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans:
-    var(--font-creato), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --color-basirah-rust: #942106;
+  --color-basirah-teal: #043334;
+  --color-basirah-cyan: #d0fafb;
+  --color-basirah-cream: #ece8d9;
+  --font-sans: var(--font-creato-display), ui-sans-serif, system-ui, sans-serif;
 
-  --color-ink: #043334;
-  --color-rust: #942106;
-  --color-mist: #d0fafb;
-  --color-cream: #ece8d9;
+  /* Aliases for the report-incident flow (merged from the Hassan branch), which was built
+     against this naming convention. Same palette as the basirah-* tokens above. */
+  --color-ink: var(--color-basirah-teal);
+  --color-rust: var(--color-basirah-rust);
+  --color-mist: var(--color-basirah-cyan);
+  --color-cream: var(--color-basirah-cream);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-basirah-cream);
+  color: var(--color-basirah-teal);
 }
 
 @layer base {
-  html {
-    -webkit-text-size-adjust: 100%;
-  }
-
-  body {
-    @apply bg-cream text-ink font-sans antialiased;
-  }
-
   /*
    * Scoped to controls that do not paint their own focus ring. Inputs and textareas use a
    * border-plus-ring treatment instead, so a second outline on top of them reads as a glitch.
