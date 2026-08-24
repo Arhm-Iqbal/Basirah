@@ -7,11 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { LocationGate } from '@/components/location-gate';
 import { MapDetailPanel } from '@/components/map-detail-panel';
 import { RadiusChips, useSearchRadius } from '@/components/radius-chips';
-import {
-  fetchMyMosques,
-  fetchNearbyMosques,
-  type NearbyMosque,
-} from '@/lib/queries';
+import { fetchMyMosques, fetchNearbyMosques, type NearbyMosque } from '@/lib/queries';
 import { useGeolocation } from '@/lib/use-geolocation';
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
