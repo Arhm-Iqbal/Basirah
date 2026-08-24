@@ -14,16 +14,6 @@ export type NearbyMosque = {
   distance_m: number;
 };
 
-export type MapIncident = {
-  id: string;
-  category: string | null;
-  channel: string;
-  lat: number;
-  lng: number;
-  occurred_at: string | null;
-  created_at: string;
-};
-
 export async function fetchNearbyMosques(
   lat: number,
   lng: number,
@@ -38,22 +28,6 @@ export async function fetchNearbyMosques(
   });
   if (error) throw new Error(error.message);
   return (data ?? []) as NearbyMosque[];
-}
-
-// Verified incidents only, coarse coordinates, no reporter and no free text. The RPC
-// enforces all three; the client cannot widen it.
-export async function fetchMapIncidents(
-  lat: number,
-  lng: number,
-  radiusM = 50_000,
-): Promise<MapIncident[]> {
-  const { data, error } = await createClient().rpc('incidents_map', {
-    in_lat: lat,
-    in_lng: lng,
-    in_radius_m: radiusM,
-  });
-  if (error) throw new Error(error.message);
-  return (data ?? []) as MapIncident[];
 }
 
 export type OwnIncident = {
