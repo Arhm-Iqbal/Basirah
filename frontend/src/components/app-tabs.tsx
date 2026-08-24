@@ -12,8 +12,8 @@ type Tab = { href: string; label: string; shortLabel: string; icon: React.ReactN
 const TABS: Tab[] = [
   {
     href: '/app/map',
-    label: 'Map',
-    shortLabel: 'Map',
+    label: 'My community',
+    shortLabel: 'Community',
     icon: <img src="/icons/masjid-pin.png" alt="" width={16} height={20} className="h-5 w-auto" />,
   },
   {

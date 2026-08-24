@@ -1,6 +1,6 @@
 export const MARKETING_NAV_LINKS = [
   { href: '/about', label: 'About Us' },
-  { href: '/map', label: 'Map' },
+  { href: '/map', label: 'Community' },
   { href: '/report', label: 'Report' },
   { href: '/resources', label: 'Resources' },
   { href: '/contact', label: 'Contact' },

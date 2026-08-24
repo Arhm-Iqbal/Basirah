@@ -4,7 +4,7 @@ import { CommunityMap } from '@/components/community-map';
 import { MapAddMosque } from '@/components/map-add-mosque';
 
 export const metadata: Metadata = {
-  title: 'Map · Basirah',
+  title: 'My community · Basirah',
 };
 
 export default function MapPage() {
@@ -12,10 +12,10 @@ export default function MapPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6 sm:py-5">
       <div>
         <h1 className="font-display text-2xl font-semibold tracking-tight text-basirah-teal">
-          Community map
+          My community
         </h1>
         <p className="mt-1 max-w-2xl text-base text-basirah-teal">
-          Verified incidents near you. Locations are approximate.
+          Your mosques and verified incidents near you. Incident locations are approximate.
         </p>
       </div>
 
