@@ -7,6 +7,7 @@ import type { IncidentActionPlan } from '@basirah/shared';
 import { ActionPlanView } from '@/components/action-plan-view';
 import { Button } from '@/components/button-link';
 import { createClient } from '@/lib/supabase/client';
+import { TidyWriting } from '@/components/tidy-writing';
 import {
   EMPTY_REPORT,
   stepsForRoute,
@@ -769,6 +770,7 @@ export function ReportWizard() {
               error={errors.description}
               rows={7}
             />
+            <TidyWriting text={report.description} onAccept={(v) => set('description', v)} />
             <Long
               id="other_details"
               labelText="Anything else we should know? (optional)"

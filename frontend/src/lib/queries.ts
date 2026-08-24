@@ -261,3 +261,12 @@ export async function editReport(
   });
   await unwrap(res);
 }
+
+export async function tidyWriting(text: string): Promise<{ original: string; rewritten: string }> {
+  const res = await fetch(`${API_URL}/v1/assist/rewrite`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ text }),
+  });
+  return (await unwrap(res)) as { original: string; rewritten: string };
+}

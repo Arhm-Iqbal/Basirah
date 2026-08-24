@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/button-link';
+import { TidyWriting } from '@/components/tidy-writing';
 import {
   appealReport,
   deleteReport,
@@ -110,6 +111,7 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
           onChange={(e) => setDraft(e.target.value)}
           className="mt-2 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none focus:border-basirah-teal"
         />
+        <TidyWriting text={draft} onAccept={setDraft} />
         {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
