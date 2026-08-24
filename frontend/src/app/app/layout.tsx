@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen flex-col bg-basirah-cream">
-      <AppTabs email={user.email ?? null} />
+      <AppTabs />
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
     </div>
   );

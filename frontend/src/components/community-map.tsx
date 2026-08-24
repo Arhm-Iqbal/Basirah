@@ -66,10 +66,7 @@ export function CommunityMap() {
     setError(null);
     setSelected(null);
 
-    Promise.all([
-      fetchNearbyMosques(lat, lng, radius),
-      fetchMapIncidents(lat, lng, radius),
-    ])
+    Promise.all([fetchNearbyMosques(lat, lng, radius), fetchMapIncidents(lat, lng, radius)])
       .then(([nextMosques, nextIncidents]) => {
         if (!active) return;
         setMosques(nextMosques);
@@ -130,7 +127,7 @@ export function CommunityMap() {
             key={mosque.id}
             longitude={mosque.lng}
             latitude={mosque.lat}
-            anchor="center"
+            anchor="bottom"
             onClick={(event) => {
               event.originalEvent.stopPropagation();
               setSelected({ kind: 'mosque', item: mosque });
@@ -139,8 +136,20 @@ export function CommunityMap() {
             <button
               type="button"
               aria-label={mosque.name}
-              className="block size-3.5 cursor-pointer rounded-full border-2 border-white bg-basirah-teal shadow-sm transition-colors hover:bg-basirah-teal/70"
-            />
+              className="block cursor-pointer transition-transform duration-150 hover:-translate-y-0.5 motion-reduce:transform-none"
+            >
+              <img
+                src={
+                  selected?.kind === 'mosque' && selected.item.id === mosque.id
+                    ? '/icons/masjid-pin-rust.png'
+                    : '/icons/masjid-pin.png'
+                }
+                alt=""
+                width={23}
+                height={29}
+                className="drop-shadow-sm"
+              />
+            </button>
           </Marker>
         ))}
 
@@ -275,7 +284,7 @@ export function CommunityMap() {
 
       <ul className="absolute bottom-3 start-3 space-y-1.5 rounded-2xl border border-basirah-teal/10 bg-white/90 px-3 py-2.5 text-xs text-basirah-teal/80 backdrop-blur">
         <li className="flex items-center gap-2">
-          <span className="size-2.5 shrink-0 rounded-full border border-white bg-basirah-teal" />
+          <img src="/icons/masjid-pin.png" alt="" width={11} height={14} className="shrink-0" />
           Mosque
         </li>
         <li className="flex items-center gap-2">

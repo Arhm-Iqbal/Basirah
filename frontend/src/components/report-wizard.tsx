@@ -284,6 +284,7 @@ export function ReportWizard() {
           disabled={!report.route}
           onClick={() => setStarted(true)}
         >
+          <img src="/icons/report-white.png" alt="" width={14} height={16} className="h-4 w-auto" />
           Start a report
         </Button>
       </div>
@@ -516,6 +517,13 @@ export function ReportWizard() {
         </Button>
         {isReview ? (
           <Button variant="primary" onClick={() => void submit()} disabled={submitting}>
+            <img
+              src="/icons/report-white.png"
+              alt=""
+              width={14}
+              height={16}
+              className="h-4 w-auto"
+            />
             {submitting ? 'Submitting…' : 'Submit report'}
           </Button>
         ) : (

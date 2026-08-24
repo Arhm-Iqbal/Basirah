@@ -8,23 +8,15 @@ import { createClient } from '@/lib/supabase/client';
 
 type Tab = { href: string; label: string; shortLabel: string; icon: React.ReactNode };
 
-const stroke = {
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.6,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-};
-
 const TABS: Tab[] = [
   {
     href: '/app/profile',
     label: 'Profile',
     shortLabel: 'Profile',
     icon: (
-      <svg viewBox="0 0 24 24" aria-hidden className="size-5">
-        <circle cx="12" cy="8" r="3.5" {...stroke} />
-        <path d="M4.5 19.5a7.5 7.5 0 0 1 15 0" {...stroke} />
+      <svg viewBox="0 0 24 24" aria-hidden className="size-5 fill-basirah-teal">
+        <circle cx="12" cy="7.5" r="3.9" />
+        <path d="M12 13c-4.2 0-7.5 2.6-7.5 5.9 0 .9.7 1.6 1.6 1.6h11.8c.9 0 1.6-.7 1.6-1.6C19.5 15.6 16.2 13 12 13Z" />
       </svg>
     ),
   },
@@ -32,33 +24,23 @@ const TABS: Tab[] = [
     href: '/app/map',
     label: 'Map',
     shortLabel: 'Map',
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden className="size-5">
-        <path d="M12 21s6.5-5.6 6.5-10.5a6.5 6.5 0 1 0-13 0C5.5 15.4 12 21 12 21Z" {...stroke} />
-        <circle cx="12" cy="10.5" r="2.25" {...stroke} />
-      </svg>
-    ),
+    icon: <img src="/icons/masjid-pin.png" alt="" width={16} height={20} className="h-5 w-auto" />,
   },
   {
     href: '/app/report',
     label: 'Report',
     shortLabel: 'Report',
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden className="size-5">
-        <path d="M12 4.5 21 19.5H3L12 4.5Z" {...stroke} />
-        <path d="M12 10v4" {...stroke} />
-        <circle cx="12" cy="16.75" r="0.6" fill="currentColor" />
-      </svg>
-    ),
+    icon: <img src="/icons/report.png" alt="" width={18} height={20} className="h-5 w-auto" />,
   },
   {
     href: '/app/reports',
     label: 'My Reports',
     shortLabel: 'Reports',
     icon: (
-      <svg viewBox="0 0 24 24" aria-hidden className="size-5">
-        <path d="M6 3.5h9L19 8v12.5H6V3.5Z" {...stroke} />
-        <path d="M14.5 3.5V8H19M9 12.5h6M9 16h4" {...stroke} />
+      <svg viewBox="0 0 24 24" aria-hidden className="size-5 fill-basirah-teal">
+        <rect x="3.5" y="5" width="17" height="2.6" rx="1.3" />
+        <rect x="3.5" y="10.7" width="17" height="2.6" rx="1.3" />
+        <rect x="3.5" y="16.4" width="11" height="2.6" rx="1.3" />
       </svg>
     ),
   },
@@ -68,7 +50,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppTabs({ email }: { email: string | null }) {
+export function AppTabs() {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -111,18 +93,13 @@ export function AppTabs({ email }: { email: string | null }) {
               })}
             </nav>
 
-            <div className="flex items-center gap-3">
-              <span className="hidden max-w-[12rem] truncate text-xs text-basirah-teal/45 lg:inline">
-                {email}
-              </span>
-              <button
-                type="button"
-                onClick={signOut}
-                className="cursor-pointer rounded-full px-2 py-1 text-sm font-medium text-basirah-teal/65 transition-colors duration-150 hover:text-basirah-rust focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal"
-              >
-                Sign out
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={signOut}
+              className="cursor-pointer rounded-full px-2 py-1 text-sm font-medium text-basirah-teal/65 transition-colors duration-150 hover:text-basirah-rust focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-basirah-teal"
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </header>
@@ -146,7 +123,7 @@ export function AppTabs({ email }: { email: string | null }) {
                     active ? 'text-basirah-teal' : 'text-basirah-teal/45'
                   }`}
                 >
-                  <span className={active ? '' : 'opacity-80'}>{tab.icon}</span>
+                  <span className={active ? 'opacity-100' : 'opacity-45'}>{tab.icon}</span>
                   {tab.shortLabel}
                 </Link>
               </li>
