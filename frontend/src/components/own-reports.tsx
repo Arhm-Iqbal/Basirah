@@ -7,7 +7,6 @@ import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/button-link';
 import { TidyWriting } from '@/components/tidy-writing';
 import {
-  appealReport,
   deleteReport,
   editReport,
   downloadReport,
@@ -66,14 +65,19 @@ function DownloadButton({ incidentId }: { incidentId: string }) {
 // has been acted on and the server returns 409.
 const EDITABLE_STATUSES = ['submitted', 'triaged'];
 
-function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemoved: () => void }) {
-  const [mode, setMode] = useState<'idle' | 'confirmDelete' | 'appeal' | 'edit'>('idle');
+function ReportActions({
+  incident,
+  onRemoved,
+}: {
+  incident: OwnIncident;
+  onRemoved: (scope: DeleteReportScope) => void;
+}) {
+  const [mode, setMode] = useState<'idle' | 'confirmDelete' | 'edit'>('idle');
   const [draft, setDraft] = useState(incident.description ?? '');
-  const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const [deletingFor, setDeletingFor] = useState<DeleteReportScope | null>(null);
+  const [permanentDeleteAcknowledged, setPermanentDeleteAcknowledged] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [appealed, setAppealed] = useState(false);
 
   const run = async (fn: () => Promise<void>, after: () => void) => {
     setBusy(true);
@@ -87,14 +91,6 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
       setBusy(false);
     }
   };
-
-  if (appealed) {
-    return (
-      <p className="text-base text-basirah-teal/75">
-        Appeal filed. Your community&apos;s verification team will review it.
-      </p>
-    );
-  }
 
   if (mode === 'edit') {
     return (
@@ -150,17 +146,18 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
   if (mode === 'confirmDelete') {
     return (
       <div className="w-full">
-        <p className="text-base font-semibold text-basirah-teal">Who should it be deleted for?</p>
+        <p className="text-base font-semibold text-basirah-teal">Delete this report</p>
         <p className="mt-1 text-sm text-basirah-teal/70">
-          These choices handle the stored report differently. Read both before continuing.
+          Choose carefully. These options handle your report and its stored data differently.
         </p>
         {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-basirah-teal/20 bg-basirah-cream/45 p-4">
             <h3 className="font-semibold text-basirah-teal">Delete for me</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-basirah-teal/75">
-              Removes this report from your account only. The report and its data remain stored by
-              Basirah.
+              Removes the report from your account only. Basirah will still keep the report, PDF,
+              attachments, and related data in its database and storage. Authorized staff may
+              continue to use it, and you will no longer be able to manage it here.
             </p>
             <Button
               className="mt-3 w-full"
@@ -169,7 +166,10 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
               disabled={busy}
               onClick={() => {
                 setDeletingFor('me');
-                void run(() => deleteReport(incident.id, 'me'), onRemoved);
+                void run(
+                  () => deleteReport(incident.id, 'me'),
+                  () => onRemoved('me'),
+                );
               }}
             >
               {busy && deletingFor === 'me' ? 'Deleting…' : 'Delete for me'}
@@ -179,17 +179,30 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
           <div className="rounded-lg border border-basirah-rust/30 bg-basirah-rust/5 p-4">
             <h3 className="font-semibold text-basirah-rust">Delete for everyone</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-basirah-teal/80">
-              Permanently removes this report, its PDF, and attachments from Basirah&apos;s active
-              database and storage. This cannot be undone.
+              Permanently removes the report and its related records from Basirah&apos;s active
+              database, plus its PDF and uploaded files from storage. This cannot be undone.
             </p>
+            <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-sm leading-relaxed font-medium text-basirah-teal">
+              <input
+                type="checkbox"
+                checked={permanentDeleteAcknowledged}
+                disabled={busy}
+                onChange={(event) => setPermanentDeleteAcknowledged(event.target.checked)}
+                className="mt-0.5 size-4 shrink-0 accent-basirah-rust"
+              />
+              <span>I understand this deletes the report data for everyone permanently.</span>
+            </label>
             <Button
               className="mt-3 w-full"
               size="sm"
               variant="primary"
-              disabled={busy}
+              disabled={busy || !permanentDeleteAcknowledged}
               onClick={() => {
                 setDeletingFor('everyone');
-                void run(() => deleteReport(incident.id, 'everyone'), onRemoved);
+                void run(
+                  () => deleteReport(incident.id, 'everyone'),
+                  () => onRemoved('everyone'),
+                );
               }}
             >
               {busy && deletingFor === 'everyone' ? 'Deleting permanently…' : 'Delete for everyone'}
@@ -197,48 +210,17 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
           </div>
         </div>
         <div className="mt-3">
-          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setMode('idle')}>
-            Cancel
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (mode === 'appeal') {
-    return (
-      <div>
-        <label
-          htmlFor={`appeal-${incident.id}`}
-          className="text-base font-semibold text-basirah-teal"
-        >
-          What was wrong with this report?
-        </label>
-        <p className="mt-1 text-sm text-basirah-teal/70">
-          A person reviews every appeal. Upholding one takes the report off the community map.
-        </p>
-        <textarea
-          id={`appeal-${incident.id}`}
-          rows={3}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className="mt-2 w-full rounded-md border border-basirah-teal/30 bg-white px-3.5 py-2.5 text-base text-basirah-teal outline-none focus:border-basirah-teal"
-        />
-        {error && <p className="mt-2 text-sm text-basirah-rust">{error}</p>}
-        <div className="mt-3 flex flex-wrap gap-2">
           <Button
             size="sm"
-            disabled={busy || reason.trim().length < 10}
-            onClick={() =>
-              void run(
-                () => appealReport(incident.id, reason.trim()),
-                () => setAppealed(true),
-              )
-            }
+            variant="ghost"
+            disabled={busy}
+            onClick={() => {
+              setPermanentDeleteAcknowledged(false);
+              setDeletingFor(null);
+              setError(null);
+              setMode('idle');
+            }}
           >
-            {busy ? 'Filing…' : 'File appeal'}
-          </Button>
-          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setMode('idle')}>
             Cancel
           </Button>
         </div>
@@ -254,11 +236,17 @@ function ReportActions({ incident, onRemoved }: { incident: OwnIncident; onRemov
           Edit
         </Button>
       )}
-      <Button size="sm" variant="ghost" onClick={() => setMode('appeal')}>
-        Appeal
-      </Button>
-      <Button size="sm" variant="ghost" onClick={() => setMode('confirmDelete')}>
-        Delete
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => {
+          setPermanentDeleteAcknowledged(false);
+          setDeletingFor(null);
+          setError(null);
+          setMode('confirmDelete');
+        }}
+      >
+        Delete report
       </Button>
     </div>
   );
@@ -268,6 +256,7 @@ export function OwnReports() {
   const [incidents, setIncidents] = useState<OwnIncident[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -310,6 +299,15 @@ export function OwnReports() {
       </div>
 
       <div className="mt-5">
+        {notice && (
+          <p
+            role="status"
+            className="mb-4 rounded-lg border border-basirah-teal/20 bg-basirah-cream p-4 text-sm leading-relaxed text-basirah-teal"
+          >
+            {notice}
+          </p>
+        )}
+
         {isLoading && <p className="text-base text-basirah-teal/70">Loading your reports…</p>}
 
         {!isLoading && error && (
@@ -375,9 +373,14 @@ export function OwnReports() {
                     </Link>
                     <ReportActions
                       incident={incident}
-                      onRemoved={() =>
-                        setIncidents((rows) => rows.filter((r) => r.id !== incident.id))
-                      }
+                      onRemoved={(scope) => {
+                        setIncidents((rows) => rows.filter((r) => r.id !== incident.id));
+                        setNotice(
+                          scope === 'everyone'
+                            ? 'Report deleted for everyone. Its active database record, PDF, and uploaded files were permanently removed.'
+                            : 'Report deleted from your account. Basirah still retains the report and its related data.',
+                        );
+                      }}
                     />
                   </div>
                 </div>
