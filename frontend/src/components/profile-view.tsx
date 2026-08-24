@@ -35,7 +35,7 @@ function MosqueCard({ mosque, onRemove }: { mosque: MyMosque; onRemove: (id: str
   const website = mosque.website ?? hours?.website ?? null;
 
   return (
-    <li className="py-5">
+    <li className="rounded-2xl border border-basirah-teal/10 bg-white/80 p-5 backdrop-blur-sm transition-colors duration-150 hover:border-basirah-teal/20">
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
           <h3 className="font-display text-base font-medium tracking-[-0.015em] text-basirah-teal">
@@ -176,11 +176,14 @@ export function ProfileView({ email }: { email: string | null }) {
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-10 sm:px-6 sm:py-14">
-      <header>
-        <h1 className="font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-basirah-teal sm:text-3xl">
+      <header className="border-b border-basirah-teal/10 pb-7">
+        <p className="text-xs font-medium tracking-[0.14em] text-basirah-teal/40 uppercase">
+          Basirah
+        </p>
+        <h1 className="mt-2.5 font-display text-[2rem] leading-[1.1] font-semibold tracking-[-0.03em] text-basirah-teal sm:text-[2.5rem]">
           Your profile
         </h1>
-        {email && <p className="mt-1.5 text-sm text-basirah-teal/50">{email}</p>}
+        {email && <p className="mt-2 text-sm text-basirah-teal/45">{email}</p>}
       </header>
 
       {error && <p className="mt-6 text-sm text-basirah-rust">{error}</p>}
@@ -189,6 +192,11 @@ export function ProfileView({ email }: { email: string | null }) {
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="font-display text-lg font-medium tracking-[-0.015em] text-basirah-teal">
             Your mosques
+            {mosques.length > 0 && (
+              <span className="ms-2 text-sm font-normal text-basirah-teal/35">
+                {mosques.length}
+              </span>
+            )}
           </h2>
           {mosques.length > 0 && (
             <button
@@ -204,11 +212,20 @@ export function ProfileView({ email }: { email: string | null }) {
         {isLoading ? (
           <p className="mt-6 text-sm text-basirah-teal/45">Loading…</p>
         ) : mosques.length === 0 ? (
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-basirah-teal/55">
-            Add the mosques you attend. Their details, alerts, and reports all follow from this.
-          </p>
+          <div className="mt-5 rounded-2xl border border-basirah-teal/10 bg-white/70 px-6 py-10 text-center backdrop-blur-sm">
+            <img
+              src="/icons/masjid-pin.png"
+              alt=""
+              width={30}
+              height={38}
+              className="mx-auto h-9 w-auto opacity-25"
+            />
+            <p className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-basirah-teal/55">
+              Add the mosques you attend. Their details, alerts, and reports all follow from this.
+            </p>
+          </div>
         ) : (
-          <ul className="mt-2 divide-y divide-basirah-teal/8">
+          <ul className="mt-4 space-y-3">
             {mosques.map((m) => (
               <MosqueCard key={m.id} mosque={m} onRemove={(id) => void remove(id)} />
             ))}
