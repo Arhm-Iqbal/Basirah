@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Bindings } from './env';
 
@@ -129,12 +128,14 @@ function toText(html: string): string {
     .slice(0, 12_000);
 }
 
+// OpenAI structured outputs require every property to be listed in `required` and
+// additionalProperties false when strict is on, so nullable fields are expressed as a type
+// union rather than by omission.
 const EVENT_SCHEMA = {
   type: 'object',
   properties: {
     events: {
       type: 'array',
-      maxItems: 15,
       items: {
         type: 'object',
         properties: {
@@ -143,7 +144,7 @@ const EVENT_SCHEMA = {
           starts_at: { type: 'string' },
           ends_at: { type: ['string', 'null'] },
         },
-        required: ['title', 'starts_at', 'ends_at', 'description'],
+        required: ['title', 'description', 'starts_at', 'ends_at'],
         additionalProperties: false,
       },
     },
@@ -160,6 +161,8 @@ Rules:
 - Do not invent events, times, or descriptions. An empty list is the correct answer for a page that has none.
 - Skip anything already past.`;
 
+// Raw fetch rather than the openai package: this is one call, it keeps the Workers bundle
+// small, and it avoids adding a dependency outside the approved list in CLAUDE.md.
 // Returns [] rather than throwing when the key is unset, so ingestion degrades to the ICS
 // and admin tiers instead of failing.
 export async function extractEventsFromHtml(
@@ -167,29 +170,46 @@ export async function extractEventsFromHtml(
   html: string,
   mosqueName: string,
 ): Promise<ParsedEvent[]> {
-  if (!env.ANTHROPIC_API_KEY) return [];
+  if (!env.OPENAI_API_KEY) return [];
 
   const text = toText(html);
   if (text.length < 200) return [];
 
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-  const response = await client.messages.create({
-    model: 'claude-opus-5',
-    max_tokens: 4000,
-    system: SYSTEM,
-    output_config: { format: { type: 'json_schema', schema: EVENT_SCHEMA } },
-    messages: [
-      {
-        role: 'user',
-        content: `Today is ${new Date().toISOString().slice(0, 10)}.\nMosque: ${mosqueName}\n\n${text}`,
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      temperature: 0,
+      messages: [
+        { role: 'system', content: SYSTEM },
+        {
+          role: 'user',
+          content: `Today is ${new Date().toISOString().slice(0, 10)}.\nMosque: ${mosqueName}\n\n${text}`,
+        },
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'mosque_events', strict: true, schema: EVENT_SCHEMA },
       },
-    ],
+    }),
   });
 
-  const block = response.content.find((b) => b.type === 'text');
-  if (!block || block.type !== 'text') return [];
+  if (!res.ok) {
+    console.error('openai extraction failed', res.status, await res.text().catch(() => ''));
+    return [];
+  }
 
-  const parsed = JSON.parse(block.text) as {
+  const body = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  const content = body.choices?.[0]?.message?.content;
+  if (!content) return [];
+
+  let parsed: {
     events: {
       title: string;
       description: string | null;
@@ -197,10 +217,15 @@ export async function extractEventsFromHtml(
       ends_at: string | null;
     }[];
   };
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    return [];
+  }
 
-  return parsed.events.flatMap((e) => {
+  return (parsed.events ?? []).flatMap((e) => {
     const start = Date.parse(e.starts_at);
-    if (Number.isNaN(start)) return [];
+    if (Number.isNaN(start) || !e.title) return [];
     return [
       {
         title: e.title.slice(0, 300),
